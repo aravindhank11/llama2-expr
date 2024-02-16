@@ -1,6 +1,10 @@
 #!/bin/bash
 
-VENV=~/venv/
+VENV=tie-breaker-venv/
+
+function is_mig_feature_available() {
+    echo $(nvidia-smi --query-gpu=name --format=csv,noheader | egrep -i "a100|h100" | wc -l)
+}
 
 function assert_mig_status()
 {
@@ -11,7 +15,8 @@ function assert_mig_status()
             exit 1
         fi
     else
-        if [[ $(sudo nvidia-smi -i ${DEVICE_ID} --query-gpu=mig.mode.current --format=csv | grep "Disabled" | wc -l) -eq 0 ]]; then
+	mig_gpu=$(is_mig_feature_available)
+        if [[ $mig_gpu -ne 0 && $(sudo nvidia-smi -i ${DEVICE_ID} --query-gpu=mig.mode.current --format=csv | grep "Disabled" | wc -l) -eq 0 ]]; then
             echo "MIG mode is not disabled"
             exit 1
         fi
