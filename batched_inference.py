@@ -8,6 +8,7 @@ from torchvision import transforms
 from transformers import LlamaTokenizer, LlamaForCausalLM
 
 import os
+import pickle
 import pathlib
 import argparse
 import traceback
@@ -106,6 +107,8 @@ class BatchedInference:
         total_time = 0
         tokens_generated = 0
         num_input_tokens = len(self._input_tokens)
+        time_taken_arr = []
+
         for i in range(num_reqs):
             start_time = time.time()
 
@@ -117,17 +120,20 @@ class BatchedInference:
                 max_new_tokens=self.batch_size
             )
 
-            total_time = time.time() - start_time
+            time_taken = time.time() - start_time
+            time_taken_arr.append(time_taken)
+            total_time += time_taken
             tokens_generated += generation_output.size()[1]
 
             if (self.finish):
                 break
 
-        return tokens_generated / total_time
+        return tokens_generated / total_time, time_taken_arr
 
     def __infer_img(self, num_reqs):
         total_time = 0
         reqs = 0
+        time_taken_arr = []
 
         for _ in range(num_reqs):
             start_time = time.time()
@@ -137,13 +143,15 @@ class BatchedInference:
                 output = self._model(to_infer)
             torch.cuda.synchronize()
 
-            total_time += time.time() - start_time
+            time_taken = time.time() - start_time
+            time_taken_arr.append(time_taken)
+            total_time += time_taken
             reqs += 1
 
             if (self.finish):
                 break
 
-        return (reqs * self.batch_size) / total_time
+        return (reqs * self.batch_size) / total_time, time_taken_arr
 
     def infer(self, num_reqs):
         try:
@@ -163,7 +171,9 @@ class BatchedInference:
 
     def _catch(self, signum, frame):
         torch.cuda.cudart().cudaProfilerStart()
-        rps = self.infer(10000000)
+        rps, time_taken = self.infer(10000000)
+        with open(f"/tmp/{os.getpid()}.pkl", "wb") as h:
+            pickle.dump(time_taken, h)
         log("/tmp/{}".format(os.getpid()), "{:.2f}".format(rps))
         torch.cuda.cudart().cudaProfilerStop()
         sys.exit(0)

@@ -130,12 +130,14 @@ kill -SIGUSR2 ${loaded_procs[@]}
 kill -SIGINT ${stats_pid}
 
 # Start recording now
-rt=""
+tput=""
+pkl_files=()
 for pid in "${loaded_procs[@]}"
 do
     while taskset -c 0 kill -0 ${pid} >/dev/null 2>&1; do sleep 1; done
     if [[ -f /tmp/${pid} ]]; then
-        rt="$rt, $(cat /tmp/${pid})"
+        tput="$tput, $(cat /tmp/${pid})"
+        pkl_files+=("/tmp/${pid}.pkl")
         rm -f /tmp/${pid}
     elif [[ -f /tmp/${pid}_oom ]]; then
         rm -f /tmp/${pid}_oom
@@ -145,11 +147,26 @@ done
 
 cleanup ${mode}
 
-kill -SIGINT ${stats_pid}
 while taskset -c 0 kill -0 ${stats_pid} >/dev/null 2>&1; do sleep 1; done
 
-rt="${rt/, /}"
+tput="${tput/, /}"
+IFS=", " read -ra numbers <<< "$tput"
+tput_sum=0
+for number in "${numbers[@]}"; do
+    # Add each number to the sum using bc for floating-point arithmetic
+    tput_sum=$(echo "$tput_sum + $number" | bc)
+done
+latency=$(python3 latency_stats.py ${pkl_files[@]})
 cpu_mem=$(./stats.sh ${RESULT_FILE})
-echo "Throughputs: ${rt}"
+echo ""
+
+echo "Throughputs: ${tput}"
+echo "Total Throughput: ${tput_sum}"
+echo ""
+
+echo "min_lat, 50th_lat, 90th_lat, 99_lat, max_lat"
+echo "${latency}"
+echo ""
+
 echo "min_compute, avg_compute, max_compute, min_mem, avg_mem, max_mem"
 echo "${cpu_mem}"
