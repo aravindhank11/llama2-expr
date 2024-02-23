@@ -34,10 +34,11 @@ def log(filename, string):
         h.write(string)
 
 class BatchedInference:
-    def __init__(self, device_name, model_name):
+    def __init__(self, device_name, model_name, num_infer):
         self._device = torch.device(device_name)
         self._model_name = model_name
         self.finish = False
+        self.num_infer = num_infer
 
     ################## LOAD MODELS ###################
     def __load_llama_model(self):
@@ -171,11 +172,14 @@ class BatchedInference:
 
     def _catch(self, signum, frame):
         torch.cuda.cudart().cudaProfilerStart()
-        rps, time_taken = self.infer(10000000)
+        torch.cuda.nvtx.range_push("start")
+        rps, time_taken = self.infer(self.num_infer)
+        torch.cuda.nvtx.range_pop()
+        torch.cuda.cudart().cudaProfilerStop()
+
         with open(f"/tmp/{os.getpid()}.pkl", "wb") as h:
             pickle.dump(time_taken, h)
         log("/tmp/{}".format(os.getpid()), "{:.2f}".format(rps))
-        torch.cuda.cudart().cudaProfilerStop()
         sys.exit(0)
 
 if __name__ == "__main__":
@@ -185,9 +189,10 @@ if __name__ == "__main__":
     parser.add_argument('--device-name', type=str, default="cuda:0")
     parser.add_argument('--model', type=str, default="resnet50")
     parser.add_argument('--batch-size', type=int, required=True)
+    parser.add_argument('--num-infer', type=int, default=10000000)
     opt = parser.parse_args()
 
-    obj = BatchedInference(opt.device_name, opt.model)
+    obj = BatchedInference(opt.device_name, opt.model, opt.num_infer)
 
     # Try loading model, if model load fails -> exit
     success = obj.load_model()
