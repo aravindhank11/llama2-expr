@@ -1,5 +1,6 @@
 #!/bin/bash
-file=$1
+mode=$1
+file=$2
 
 
 if [[ -z $file ]]; then
@@ -41,4 +42,5 @@ do
 done
 avg_compute=$(echo "scale=2; $avg_compute / ${#compute[@]}" | bc)
 
-echo "${min_compute}, ${avg_compute}, ${max_compute}, ${min_mem}, ${avg_mem}, ${max_mem}"
+echo "mode, compute_p0, compute_p50, compute_p100, mem_p0, mem_p50, mem_p100"
+echo "${mode}, ${min_compute}, ${avg_compute}, ${max_compute}, ${min_mem}, ${avg_mem}, ${max_mem}"
