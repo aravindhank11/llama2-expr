@@ -5,7 +5,7 @@ from PIL import Image
 import numpy as np
 
 # Import to profile
-from torchvision import transforms
+from torchvision import transforms, models
 from transformers import LlamaTokenizer, LlamaForCausalLM
 
 import os
@@ -69,12 +69,17 @@ class BatchedInference:
         return True
 
     def __load_img_model(self):
-        self._model = torch.hub.load(
-            "pytorch/vision:v0.14.1",
-            self._model_name,
-            verbose=False,
-            pretrained=True
-        )
+        try:
+            self._model = torch.hub.load(
+                "pytorch/vision:v0.14.1",
+                self._model_name,
+                verbose=False,
+                pretrained=True
+            )
+        except ImportError:
+            # Orion profiler hack
+            self._model = models.__dict__[self._model_name](num_classes=1000)
+
         self._model.eval()
         self._model.to(self._device)
         return True
@@ -104,20 +109,47 @@ class BatchedInference:
 
         # Images for standard torch models
         image_path = os.path.join(curr_path, "data/images/dog.jpg")
-        img = Image.open(image_path)
+        image = Image.open(image_path)
 
-        preprocess = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize(
-                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-            ),
-        ])
+        try:
+            preprocess = transforms.Compose([
+                transforms.Resize(256),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                ),
+            ])
 
-        input_tensor = preprocess(img)
-        imgs = input_tensor.unsqueeze(0)
-        self._imgs = imgs.repeat(self.batch_size, 1, 1, 1).pin_memory()
+            input_tensor = preprocess(image)
+            imgs = input_tensor.unsqueeze(0)
+            self._imgs = imgs.repeat(self.batch_size, 1, 1, 1).pin_memory()
+
+        except RuntimeError:
+            # Orion profiler hack
+            image = image.resize((256, 256))
+            left = (256 - 224) // 2
+            top = (256 - 224) // 2
+            right = (256 + 224) // 2
+            bottom = (256 + 224) // 2
+            image = image.crop((left, top, right, bottom))
+
+            # Convert PIL image to tensor manually
+            tensor_image = torch.tensor(
+                [list(image.getdata())], dtype=torch.float32
+            )
+            # Reshape to CHW format
+            tensor_image = tensor_image.view(1, 3, 224, 224)
+
+            # Normalize
+            mean = torch.tensor([0.485, 0.456, 0.406])
+            std = torch.tensor([0.229, 0.224, 0.225])
+            tensor_image = (
+                tensor_image - mean.view(1, 3, 1, 1)
+            ) / std.view(1, 3, 1, 1)
+
+            # Repeat the image batch_size times
+            self._imgs = tensor_image.repeat(self.batch_size, 1, 1, 1).pin_memory()
 
         return True
 

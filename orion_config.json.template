@@ -1,0 +1,16 @@
+[
+    {
+        "arch": "{{ model }}",
+        "kernel_file": "{{ kernel_file }}",
+        "num_kernels": {{ num_kernels }},
+        "num_iters": {{ iters }},
+        "args": {
+            "model_name": "{{ model }}",
+            "batchsize": {{ batchsize }},
+            "rps": {{ rps }},
+            "uniform": true,
+            "dummy_data": true,
+            "train": false
+        }
+    }
+]

@@ -14,6 +14,7 @@ if [[ $# -lt 3 ]]; then
     exit 1
 fi
 
+export USE_SUDO=0
 source helper.sh
 if [[ ! -d ${VENV} ]]; then
     echo "Look at README.md and install python3 virtual environment"
