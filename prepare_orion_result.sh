@@ -14,7 +14,7 @@ run_decorated_inference() {
         post=$2
     fi
 
-    command="${pre} ${PYTHON} batched_inference.py --model ${model} --batch-size ${batch} --num-infer 1 --distribution_type closed --rps -1 ${post}"
+    command="${pre} ${PYTHON} batched_inference.py --model-type ${model_type} --model ${model} --batch-size ${batch} --num-infer 1 --distribution_type closed --rps -1 ${post}"
     eval "$command" &
     ncu_pid=$!
     sleep 1
@@ -60,7 +60,6 @@ profile_model() {
     result_dir=$(pwd)/orion-results/${device_type}/${model}/batchsize-${batch}
     orion_dir=orion-fork
     kernel_file=${result_dir}/orion_input.csv
-    config_file=${result_dir}/orion_config.json
 
     mkdir -p ${result_dir}
     rm -fr ${result_dir}/*
@@ -76,7 +75,7 @@ profile_model() {
 
     echo "CONVERSION OF RESULT..."
     ${NCU_DIR}/ncu --csv --page raw -i ${result_dir}/output_ncu.ncu-rep > ${result_dir}/raw_ncu.csv
-    sed -i '/^==PROF==/d' ${result_dir}/output_ncu.csv
+    sed -i '/^"ID","Process ID"/,$!d' ${result_dir}/output_ncu.csv 
 
     echo "CREATING ORION CONSUMABLE INPUT"
     ${PYTHON} ${orion_dir}/profiling/postprocessing/process_ncu.py --results_dir ${result_dir}
@@ -86,15 +85,6 @@ profile_model() {
         --input_file_name ${result_dir}/output_ncu_sms_roofline.csv \
         --output_file_name ${kernel_file} \
         --model_type ${model_type}
-
-
-    num_kernels=$(($(wc -l < "${kernel_file}") - 1))
-
-    sed -e "s|{{ model }}|${model}|" \
-        -e "s|{{ kernel_file }}|${kernel_file}|" \
-        -e "s|{{ num_kernels }}|${num_kernels}|" \
-        -e "s|{{ batchsize }}|${batch}|" \
-        orion_config.json.template > ${config_file}
 }
 
 if [[ $# -lt 4 ]]; then
