@@ -17,9 +17,10 @@ from torchvision import transforms, models
 from transformers import LlamaTokenizer, LlamaForCausalLM
 from ctypes import cdll
 
-WARMUP_REQS = 5
+WARMUP_REQS = 10
 LARGE_NUM_REQS = 100000
 MAX_QUEUE_SIZE = 1000
+ORION_LIB = "/root/orion/src/cuda_capture/libinttemp.so"
 
 
 def log(filename, string):
@@ -28,6 +29,7 @@ def log(filename, string):
 
 def block(backend_lib, it):
     # block client until request served
+    print(f"blocking on {it}")
     backend_lib.block(it)
 
 
@@ -180,19 +182,17 @@ class LlamaBatchedInference(BatchedInference):
 
 
 def vgg_infer(model_obj, barrier, num_iters):
-    backend_lib = cdll.LoadLibrary("/root/orion/src/cuda_capture/libinttemp.so")
+    backend_lib = cdll.LoadLibrary(ORION_LIB)
     barrier.wait()
 
     model_obj.load_model()
     model_obj.load_data()
 
     for i in range(num_iters):
-        print("Befor", i)
         model_obj.infer()
         block(backend_lib, i)
         if (i+1 == 10):
             barrier.wait()
-        print("After", i)
 
     barrier.wait()
 
@@ -212,6 +212,11 @@ class BatchedInferenceExecutor:
         # Process synchronization mechanism
         self.start = False
         self.finish = False
+
+        self._orion_lib = None
+        self.warmup_finished = 0
+        if os.path.exists(ORION_LIB):
+            self._orion_lib = cdll.LoadLibrary(ORION_LIB)
 
         if distribution_type == "closed":
             self._sleep_time = [0]
@@ -240,7 +245,7 @@ class BatchedInferenceExecutor:
         total_time = 0
         total_time_arr = []
         queued_time_arr = []
-        for _ in range(num_reqs):
+        for i in range(num_reqs):
             if self.finish:
                 break
 
@@ -255,6 +260,7 @@ class BatchedInferenceExecutor:
             total_time += end_time - queued_time
             total_time_arr.append(end_time - queued_time)
             queued_time_arr.append(start_time - queued_time)
+            block(self._orion_lib, i + self.warmup_finished)
 
         enqueue_thread.join()
         return [completed / total_time, total_time_arr, queued_time_arr]
@@ -324,8 +330,13 @@ class BatchedInferenceExecutor:
             with open(f"/tmp/{os.getpid()}.pkl", "wb") as h:
                 pickle.dump(infer_stats, h)
 
+    def _thread_block(self):
+        if self.thread_barrier:
+            self.thread_barrier.wait()
+
     def run(self):
-        self.thread_barrier.wait()
+        # Ready to load
+        self._thread_block()
 
         # Load Model
         print("Starting to load")
@@ -340,6 +351,15 @@ class BatchedInferenceExecutor:
         self.run_infer_executor(WARMUP_REQS)
         print("Done warmup")
 
+        # Ready for experiment
+        self._thread_block()
+
+        print(f"Inferring {self.num_infer}")
+        self.warmup_finished = WARMUP_REQS
+        infer_stats = self.run_infer_executor(self.num_infer - self.warmup_finished)
+        print(f"Done infer")
+        self._thread_block()
+        print(infer_stats)
         """
         # Indicate we are ready to infer and calculate stats
         self._indicate_ready()
