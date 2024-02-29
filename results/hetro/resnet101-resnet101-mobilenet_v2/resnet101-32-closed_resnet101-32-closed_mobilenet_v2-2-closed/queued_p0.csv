@@ -1,2 +1,0 @@
-mode,load,1_resnet101-32,2_resnet101-32,3_mobilenet_v2-2
-mps-uncap,1.0,0.0,0.0,0.0

@@ -243,10 +243,11 @@ class BatchedInferenceExecutor:
             enqueue_thread.start()
 
         completed = 0
-        total_time = 0
         total_time_arr = []
         queued_time_arr = []
         i = 0
+
+        process_start_time = time.time()
         while i < num_reqs:
             if self.finish:
                 break
@@ -262,17 +263,20 @@ class BatchedInferenceExecutor:
             completed += self.model_obj.infer()
             end_time = time.time()
 
-            total_time += end_time - queued_time
             total_time_arr.append(end_time - queued_time)
             queued_time_arr.append(start_time - queued_time)
             if self._orion_lib:
                 block(self._orion_lib, i + self._reqs_completed)
             i += 1
+        process_end_time = time.time()
 
         if enqueue_thread:
             enqueue_thread.join()
-        return [completed / total_time, total_time_arr, queued_time_arr]
-
+        return [
+            completed / (process_end_time - process_start_time),
+            total_time_arr,
+            queued_time_arr
+        ]
 
     def install_signal_handler(self):
         signal.signal(signal.SIGUSR1, self._catch_to_start)
