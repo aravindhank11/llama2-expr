@@ -14,6 +14,7 @@ from enum import Enum
 import numpy as np
 from PIL import Image
 import torch
+import random
 from torchvision import transforms, models
 from transformers import LlamaTokenizer, LlamaForCausalLM
 from ctypes import cdll
@@ -73,15 +74,15 @@ class VisionBatchedInference(BatchedInference):
 
     def load_model(self):
         try:
+            # Orion profiler hack
+            self._model = models.__dict__[self._model_name](num_classes=1000)
+        except:
             self._model = torch.hub.load(
                 "pytorch/vision:v0.14.1",
                 self._model_name,
                 verbose=False,
                 pretrained=True
             )
-        except ImportError:
-            # Orion profiler hack
-            self._model = models.__dict__[self._model_name](num_classes=1000)
 
         self._model.eval()
         self._model.to(self._device)
@@ -245,7 +246,8 @@ class BatchedInferenceExecutor:
         total_time = 0
         total_time_arr = []
         queued_time_arr = []
-        for i in range(num_reqs):
+        i = 0
+        while i < num_reqs:
             if self.finish:
                 break
 
@@ -265,6 +267,7 @@ class BatchedInferenceExecutor:
             queued_time_arr.append(start_time - queued_time)
             if self._orion_lib:
                 block(self._orion_lib, i + self._reqs_completed)
+            i += 1
 
         if enqueue_thread:
             enqueue_thread.join()
@@ -342,6 +345,8 @@ class BatchedInferenceExecutor:
         self._thread_block()
 
         # Load Model
+        if self.thread_barrier:
+            time.sleep(random.randint(1, 5))
         self.model_obj.load_model()
 
         # Read input to infer

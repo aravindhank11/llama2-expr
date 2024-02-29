@@ -3,13 +3,13 @@
 EXPERIMENT_DURATION=20
 
 if [[ $# -lt 3 ]]; then
-    echo "Expected Syntax: '$0 <v100|h100|a100> <orion|ts|mps-uncap|mps-equi|mps-miglike|mig> <model_type1-model1-batch1-distribution_type1-rps1> <model_type2-model2-batch2-distribution_type2-rps2> ... '"
+    echo "Expected Syntax: '$0 <v100|h100|a100> <orion|ts|mps-uncap|mps-equi|mps-miglike|mig> <load> <model_type1-model1-batch1-distribution_type1-rps1> <model_type2-model2-batch2-distribution_type2-rps2> ... '"
     echo "Examples:"
-    echo " $0 v100 ts vision-vgg19-32-point-10"
-    echo " $0 v100 ts vision-vgg19-32-poisson-10 vision-mobilenet_v2-1-closed-100"
-    echo " $0 h100 mps-equi vision-vgg19-32-point-10 vision-mobilenet_v2-1-point-10"
-    echo " $0 a100 mps-uncap llama-llama-32-poisson-100 vision-inception_v3-32-closed-23"
-    echo " $0 a100 mig vision-densenet121-32-closed-10 vision-inception_v3-32-poisson-100"
+    echo " $0 v100 ts 1 vision-vgg19-32-point-10"
+    echo " $0 v100 ts 0.8 vision-vgg19-32-poisson-10 vision-mobilenet_v2-1-closed-100"
+    echo " $0 h100 mps-equi 0.4 vision-vgg19-32-point-10 vision-mobilenet_v2-1-point-10"
+    echo " $0 a100 mps-uncap 0.2 llama-llama-32-poisson-100 vision-inception_v3-32-closed-23"
+    echo " $0 a100 mig 0.6 vision-densenet121-32-closed-10 vision-inception_v3-32-poisson-100"
     echo "NOTE: MIG must be enabled | disabled explicitly followed by a reboot"
     echo "--> nvidia-smi -i 0 -mig ENABLED (OR) nvidia-smi -i 0 -mig DISABLED"
     echo "--> reboot"
@@ -28,8 +28,15 @@ device_name=$1
 shift
 mode=$1
 shift
+load=$1
+shift
 model_run_params=( "$@" )
 num_procs=${#model_run_params[@]}
+
+if [[ ! ${load} =~ ^[+-]?[0-9]*\.?[0-9]+$ ]]; then
+    echo "load must be a float. Got ${load}"
+    exit 1
+fi
 
 if [[ ${mode} != "mps-uncap" && ${mode} != "mps-equi" && ${mode} != "mps-miglike" && ${mode} != "mig" && ${mode} != "ts" && ${mode} != "orion" ]]; then
     echo "Invalid mode: ${mode}"
@@ -79,7 +86,6 @@ done
 result_id=${concatenated_string%_}
 result_dir=results/hetro/${result_base}/${result_id}
 mkdir -p ${result_dir}
-per_model_stats_file=${result_dir}/per_model_stats
 cpu_mem_stats_file=${result_dir}/cpu_mem_stats_file
 
 run_orion_expr() {
@@ -89,19 +95,12 @@ run_orion_expr() {
     # Setup orion container
     setup_orion_container
 
-    # Start recording metrics
-    nvidia-smi --query-gpu=timestamp,name,pci.bus_id,driver_version,pstate,pcie.link.gen.max,pcie.link.gen.current,temperature.gpu,utilization.gpu,utilization.memory,memory.total,memory.free,memory.used --format=csv -l 1 -f ${cpu_mem_metrics_file} &
-    stats_pid=$!
-
     # Run the experiment
     ws=$(git rev-parse --show-toplevel)
     docker_ws=$(basename ${ws})
+    model_defn_string="${model_run_params[*]}"
     ${DOCKER} exec -it ${ORION_CTR} bash -c \
-        "cd /root/${docker_ws} && LD_PRELOAD='/root/orion/src/cuda_capture/libinttemp.so' python3.8 orion_scheduler.py --device-type ${device_name} --duration ${EXPERIMENT_DURATION} ${model_run_params[$@]}"
-
-    # Stop collecting state
-    kill -SIGINT ${stats_pid}
-    while taskset -c 0 kill -0 ${stats_pid} >/dev/null 2>&1; do sleep 1; done
+        "cd /root/${docker_ws} && LD_PRELOAD='/root/orion/src/cuda_capture/libinttemp.so' python3.8 orion_scheduler.py --device-type ${device_name} --duration ${EXPERIMENT_DURATION} ${model_defn_string}"
 
     # Copy the results
     ${DOCKER} exec ${ORION_CTR} sh -c "ls /tmp/*.pkl" | while read -r file; do
@@ -185,10 +184,6 @@ run_other_expr() {
         done
     done
 
-    # Start recording metrics
-    nvidia-smi --query-gpu=timestamp,name,pci.bus_id,driver_version,pstate,pcie.link.gen.max,pcie.link.gen.current,temperature.gpu,utilization.gpu,utilization.memory,memory.total,memory.free,memory.used --format=csv -l 1 -f ${cpu_mem_metrics_file} &
-    stats_pid=$!
-
     # Start inference
     echo "Starting inference on ${loaded_procs[@]}"
     kill -SIGUSR1 ${loaded_procs[@]}
@@ -198,9 +193,6 @@ run_other_expr() {
 
     # Stop inference
     kill -SIGUSR2 ${loaded_procs[@]}
-
-    # Stop collecting state
-    kill -SIGINT ${stats_pid}
 
     # Start recording now
     pkl_files=()
@@ -217,25 +209,13 @@ run_other_expr() {
 
 
     cleanup ${mode}
-
-    # Stop cpu mem stats process and collect cpu mem stats
-    while taskset -c 0 kill -0 ${stats_pid} >/dev/null 2>&1; do sleep 1; done
 }
 
 compute_stats()
 {
-    for pkl_file in ${pkl_files[@]}
-    do
-        output=$(python3 stats.py ${mode} ${pkl_file})
-        header=$(echo "$output" | head -n 1)
-        stats=$(echo "$output" | tail -n 1)
-        if [[ ! -f ${per_model_stats_file} ]]; then
-            echo -e "$header" > ${per_model_stats_file}
-        fi
-        echo -e "$stats" >> ${per_model_stats_file}
-    done
+    python3 stats.py --mode ${mode} --load ${load} --result_dir ${result_dir} ${pkl_files[@]}
 
-
+    : '
     output=$(./stats.sh ${mode} ${cpu_mem_metrics_file})
     header=$(echo "$output" | head -n 1)
     stats=$(echo "$output" | tail -n 1)
@@ -243,6 +223,7 @@ compute_stats()
         echo "$header" > ${cpu_mem_stats_file}
     fi
     echo "$stats" >> ${cpu_mem_stats_file}
+    '
 }
 
 if [[ ${mode} == "orion" ]]; then
@@ -251,4 +232,4 @@ else
     run_other_expr
 fi
 
-#compute_stats
+compute_stats

@@ -1,7 +1,12 @@
-import pickle
-import numpy as np
-import sys
+# Sample command: python3 new_stats.py --mode mps-uncap --load 0.1 --result_dir dir1 /tmp/111003.pkl /tmp/111004.pkl /tmp/111005.pkl
+
+import argparse
 import os
+import sys
+import pickle
+from collections import defaultdict
+import numpy as np
+import pandas as pd
 
 
 def load_pickle_file(file_path):
@@ -9,49 +14,68 @@ def load_pickle_file(file_path):
         return pickle.load(f)
 
 
-def get_stats(array):
+def populate_stats(id, array, metrics):
     # Calculate percentiles
-    min_val = np.min(array) * 1000
-    percentile_50 = np.percentile(array, 50) * 1000
-    percentile_90 = np.percentile(array, 90) * 1000
-    percentile_99 = np.percentile(array, 99) * 1000
-    max_val = np.max(array) * 1000
-
-    # return results as string
-    return "{:.2f}, {:.2f}, {:.2f}, {:.2f}, {:.2f}".format(
-        min_val, percentile_50, percentile_90, percentile_99, max_val
-    )
+    metrics[f"{id}_p0"].append(np.min(array) * 1000)
+    metrics[f"{id}_p50"].append(np.percentile(array, 50) * 1000)
+    metrics[f"{id}_p90"].append(np.percentile(array, 90) * 1000)
+    metrics[f"{id}_p99"].append(np.percentile(array, 99) * 1000)
+    metrics[f"{id}_p100"].append(np.max(array) * 1000)
 
 
-def main():
-    # Check if arguments are provided
-    if len(sys.argv) != 3:
-        print("Usage: python script.py <mode> <pickle_file>")
-        print(len(sys.argv))
-        sys.exit(1)
-
-    # Get file paths from command line arguments
-    mode = sys.argv[1]
-    pickle_file = sys.argv[2]
-
-    # Validate file paths
-    if not os.path.isfile(pickle_file):
-        print(f"File '{pickle_file}' does not exist.")
-        sys.exit(1)
-
-    # Load arrays from pickle files
-    model, tput, total_times, queued_times = load_pickle_file(pickle_file)
-    total_time_stats = get_stats(total_times)
-    queued_time_stats = get_stats(queued_times)
-    print(
-        "mode, model, tput, " +
-        "lat_p0, lat_p50, lat_p90, lat_p99, lat_p100, " +
-        "q_p0, q_p50, q_p90, q_p99, q_p100"
-    )
-    print("{}, {}, {:.2f}, {} {}".format(
-        mode, model, tput, total_time_stats, queued_time_stats
-    ))
-
+def create_dir(directory):
+    try:
+        os.makedirs(directory)
+    except:
+        pass
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mode", type=str, required=True)
+    parser.add_argument("--load", type=float, required=True)
+    parser.add_argument("--result_dir", type=str, required=True)
+    parser.add_argument(
+        "pickle_files",
+        metavar="<pkl_file>",
+        nargs="+",
+        help="List of model and details"
+    )
+    opt = parser.parse_args()
+
+    create_dir(opt.result_dir)
+
+    ctr = 1
+    models = []
+    metrics = defaultdict(list)
+    for pickle_file in opt.pickle_files:
+        # Validate file paths
+        if not os.path.isfile(pickle_file):
+            print(f"File '{pickle_file}' does not exist.")
+            sys.exit(1)
+
+        # Load arrays from pickle files
+        model, tput, total_times, queued_times = load_pickle_file(pickle_file)
+        populate_stats("total", total_times, metrics)
+        populate_stats("queued", queued_times, metrics)
+        metrics["tput"].append(tput)
+        models.append(f"{ctr}_{model}")
+        ctr += 1
+
+    # Create a DataFrame for each metric type
+    for metric_type, metrics_list in metrics.items():
+        df_data = {
+            model_name: metrics_list[i] for i, model_name in enumerate(models)
+        }
+        df_data["mode"] = opt.mode
+        df_data["load"] = opt.load
+        df = pd.DataFrame(df_data, index=[metric_type])
+        cols = (["mode", "load"] +
+                [col for col in df.columns if col != "mode" and col != "load"])
+        df = df[cols]
+
+
+        csv_file = os.path.join(opt.result_dir, f"{metric_type}.csv")
+        if os.path.exists(csv_file):
+            df.to_csv(csv_file, mode='a', header=False, index=False)
+        else:
+            df.to_csv(csv_file, index=False)

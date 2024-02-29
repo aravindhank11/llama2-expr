@@ -4,10 +4,10 @@ multiply_and_round() {
 }
 
 device=v100
-mode=mps-uncap
+mode=ts
 distri=poisson
 models=("vision-resnet101-32-${distri}" "vision-resnet101-32-${distri}" "vision-mobilenet_v2-2-${distri}")
-rps=(12 10.5 48)
+rps=(12 10.45 47.5)
 
 start=0.1
 end=1.5
@@ -22,6 +22,5 @@ for ((i = 1; i <= 15; i++)); do
         mul=$(multiply_and_round ${ratio} ${rps[${j}]})
         params="${params} ${models[${j}]}-${mul}"
     done
-    echo ${ratio}
-    "./run_expr.sh ${device} ${mode} ${params}"
+    ./run_expr.sh ${device} ${mode} ${ratio} ${params}
 done
