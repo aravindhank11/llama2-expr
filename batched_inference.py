@@ -29,7 +29,6 @@ def log(filename, string):
 
 def block(backend_lib, it):
     # block client until request served
-    print(f"blocking on {it}")
     backend_lib.block(it)
 
 
@@ -181,27 +180,17 @@ class LlamaBatchedInference(BatchedInference):
         return generation_output.size()[1]
 
 
-def vgg_infer(model_obj, barrier, num_iters):
-    backend_lib = cdll.LoadLibrary(ORION_LIB)
-    barrier.wait()
-
-    model_obj.load_model()
-    model_obj.load_data()
-
-    for i in range(num_iters):
-        model_obj.infer()
-        block(backend_lib, i)
-        if (i+1 == 10):
-            barrier.wait()
-
-    barrier.wait()
-
-
 class BatchedInferenceExecutor:
-    def __init__(self, model_obj, distribution_type, rps, num_infer=LARGE_NUM_REQS, thread_barrier=None, return_queue=None, duration=-1):
+    def __init__(
+        self, model_obj, distribution_type, rps,
+        num_infer=LARGE_NUM_REQS,
+        thread_barrier=None,
+        return_queue=None,
+        duration=-1
+    ):
         self.model_obj = model_obj
         self.num_infer = num_infer
-        self.distribution_type=distribution_type
+        self.distribution_type = distribution_type
         self.rps = rps
         self.duration = duration
 
@@ -214,7 +203,7 @@ class BatchedInferenceExecutor:
         self.finish = False
 
         self._orion_lib = None
-        self.warmup_finished = 0
+        self._reqs_completed = 0
         if os.path.exists(ORION_LIB):
             self._orion_lib = cdll.LoadLibrary(ORION_LIB)
 
@@ -260,7 +249,8 @@ class BatchedInferenceExecutor:
             total_time += end_time - queued_time
             total_time_arr.append(end_time - queued_time)
             queued_time_arr.append(start_time - queued_time)
-            block(self._orion_lib, i + self.warmup_finished)
+            if self._orion_lib:
+                block(self._orion_lib, i + self._reqs_completed)
 
         enqueue_thread.join()
         return [completed / total_time, total_time_arr, queued_time_arr]
@@ -298,11 +288,7 @@ class BatchedInferenceExecutor:
         # This can be either:
         # 1) Via barrier sync: For multi threads
         # 2) Via signal: For multi process
-        print(f"In _indicate ready with {self.thread_barrier}")
-        if self.thread_barrier:
-            print("Waiting for thread barrier in batched_inference")
-            self.thread_barrier.wait()
-            print("Wait success in batched_inference")
+        if self._thread_block():
             self.start = True
         else:
             # Install Signal Handler
@@ -333,49 +319,46 @@ class BatchedInferenceExecutor:
     def _thread_block(self):
         if self.thread_barrier:
             self.thread_barrier.wait()
+            return True
+        return False
 
     def run(self):
         # Ready to load
         self._thread_block()
 
         # Load Model
-        print("Starting to load")
         self.model_obj.load_model()
-        print("Loaded model")
 
         # Read input to infer
         self.model_obj.load_data()
 
         # Warm up the model
-        print("Starting warmup")
         self.run_infer_executor(WARMUP_REQS)
-        print("Done warmup")
+        self._reqs_completed += WARMUP_REQS
 
         # Ready for experiment
-        self._thread_block()
-
-        print(f"Inferring {self.num_infer}")
-        self.warmup_finished = WARMUP_REQS
-        infer_stats = self.run_infer_executor(self.num_infer - self.warmup_finished)
-        print(f"Done infer")
-        self._thread_block()
-        print(infer_stats)
-        """
-        # Indicate we are ready to infer and calculate stats
         self._indicate_ready()
 
         torch.cuda.cudart().cudaProfilerStart()
         torch.cuda.nvtx.range_push("start")
-        print("Starting actual")
-        infer_stats = self.run_infer_executor(self.num_infer)
-        print("Done actual")
+        infer_stats = self.run_infer_executor(
+            max(1, self.num_infer - self._reqs_completed)
+        )
         torch.cuda.nvtx.range_pop()
         torch.cuda.cudart().cudaProfilerStop()
 
         # Give stats back to user
         self._return_infer_stats(infer_stats)
-        """
 
+
+def get_batched_inference_object(model_type, device_name, model, batch_size):
+    if model_type == "vision":
+        return VisionBatchedInference(device_name, model, batch_size)
+    elif model_type == "llama":
+        return LlamaBatchedInference(device_name, model, batch_size)
+    else:
+        print("Unknown model-type. Must be one of 'vision', 'llama'")
+        sys.exit(1)
 
 if __name__ == "__main__":
     # Parse argument
@@ -389,13 +372,21 @@ if __name__ == "__main__":
     parser.add_argument("--rps", type=int, default=30)
     opt = parser.parse_args()
 
-    if opt.model_type == "vision":
-        model_obj = VisionBatchedInference(opt.device_name, opt.model, opt.batch_size)
-    elif opt.model_type == "llama":
-        model_obj = LlamaBatchedInference(opt.device_name, opt.model, opt.batch_size)
-    else:
-        print("Unknown model-type. Must be one of 'vision', 'llama'")
-        sys.exit(1)
+    # Create batched inference object
+    model_obj = get_batched_inference_object(
+        opt.model_type,
+        opt.device_name,
+        opt.model,
+        opt.batch_size
+    )
 
-    executor_obj = BatchedInferenceExecutor(model_obj, opt.distribution_type, opt.rps, opt.num_infer)
+    # Create executor object
+    executor_obj = BatchedInferenceExecutor(
+        model_obj,
+        opt.distribution_type,
+        opt.rps,
+        opt.num_infer
+    )
+
+    # Run experiment
     executor_obj.run()
