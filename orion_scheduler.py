@@ -31,7 +31,7 @@ class ModelDetails:
         self.model_name = self._parse(md_list, "model_name", 1, str)
         self.batch_size = self._parse(md_list, "batch_size", 2, int)
         self.distribution_type = self._parse(md_list, "distribution_type", 3, str)
-        self.rps = self._parse(md_list, "rps", 4, int)
+        self.rps = self._parse(md_list, "rps", 4, float)
         self._get_kernel_details()
 
     def _parse(self, md_list, id_, pos, type_):

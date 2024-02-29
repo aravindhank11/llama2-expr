@@ -1,6 +1,6 @@
 #!/bin/bash
 
-EXPERIMENT_DURATION=10
+EXPERIMENT_DURATION=20
 
 if [[ $# -lt 3 ]]; then
     echo "Expected Syntax: '$0 <v100|h100|a100> <orion|ts|mps-uncap|mps-equi|mps-miglike|mig> <model_type1-model1-batch1-distribution_type1-rps1> <model_type2-model2-batch2-distribution_type2-rps2> ... '"
@@ -30,6 +30,16 @@ mode=$1
 shift
 model_run_params=( "$@" )
 num_procs=${#model_run_params[@]}
+
+if [[ ${mode} != "mps-uncap" && ${mode} != "mps-equi" && ${mode} != "mps-miglike" && ${mode} != "mig" && ${mode} != "ts" && ${mode} != "orion" ]]; then
+    echo "Invalid mode: ${mode}"
+    exit 1
+fi
+
+if [[ ${device_name} != "v100" && ${device_name} != "a100" && ${device_name} != "h100" ]]; then
+    echo "Invalid device_name: ${device_name}"
+    exit 1
+fi
 
 model_types=()
 models=()
@@ -62,42 +72,47 @@ echo "distribution_types=${distribution_types[@]}"
 echo "rps=${rps[@]}"
 
 cpu_mem_metrics_file=/tmp/${models[0]}-${device_name}-${mode}-${num_procs}.csv
-result_id=$(IFS=- ; echo "${model_run_params[*]}")
 result_base=$(IFS=- ; echo "${models[*]}")
+for i in "${!models[@]}"; do
+    concatenated_string="${concatenated_string}${models[$i]}-${batch_sizes[$i]}-${distribution_types[$i]}_"
+done
+result_id=${concatenated_string%_}
 result_dir=results/hetro/${result_base}/${result_id}
 mkdir -p ${result_dir}
 per_model_stats_file=${result_dir}/per_model_stats
 cpu_mem_stats_file=${result_dir}/cpu_mem_stats_file
 
 run_orion_expr() {
+    # Setup directory to collect stats
+    tmpdir=$(mktemp -d)
+
     # Setup orion container
-    ./setup_orion_container.sh
+    setup_orion_container
 
     # Start recording metrics
     nvidia-smi --query-gpu=timestamp,name,pci.bus_id,driver_version,pstate,pcie.link.gen.max,pcie.link.gen.current,temperature.gpu,utilization.gpu,utilization.memory,memory.total,memory.free,memory.used --format=csv -l 1 -f ${cpu_mem_metrics_file} &
     stats_pid=$!
 
-    set -x
-
     # Run the experiment
     ws=$(git rev-parse --show-toplevel)
     docker_ws=$(basename ${ws})
-    sudo docker exec -it orion bash -c \
+    ${DOCKER} exec -it ${ORION_CTR} bash -c \
         "cd /root/${docker_ws} && LD_PRELOAD='/root/orion/src/cuda_capture/libinttemp.so' python3.8 orion_scheduler.py --device-type ${device_name} --duration ${EXPERIMENT_DURATION} ${model_run_params[$@]}"
-    sudo docker cp orion:/tmp/*.pkl ${tmpdir}
 
     # Stop collecting state
     kill -SIGINT ${stats_pid}
-
-    # Stop cpu mem stats process and collect cpu mem stats
     while taskset -c 0 kill -0 ${stats_pid} >/dev/null 2>&1; do sleep 1; done
 
+    # Copy the results
+    ${DOCKER} exec ${ORION_CTR} sh -c "ls /tmp/*.pkl" | while read -r file; do
+        ${DOCKER} cp orion:${file} ${tmpdir}
+    done
+
     # Collect the pickle files
-    tmpdir=$(mktemp -d)
     pkl_files=()
-    for f in $(ls ${tempdir})
+    for f in $(ls ${tmpdir})
     do
-        pkl_files+=($f)
+        pkl_files+=(${tmpdir}/${f})
     done
 }
 
@@ -236,5 +251,4 @@ else
     run_other_expr
 fi
 
-compute_stats
-
+#compute_stats

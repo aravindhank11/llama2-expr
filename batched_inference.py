@@ -10,6 +10,7 @@ import signal
 import time
 import sys
 from abc import ABC, abstractmethod
+from enum import Enum
 import numpy as np
 from PIL import Image
 import torch
@@ -27,9 +28,16 @@ def log(filename, string):
     with open(filename, "w") as h:
         h.write(string)
 
+
 def block(backend_lib, it):
     # block client until request served
     backend_lib.block(it)
+
+
+class DistributionType(Enum):
+    CLOSED = (1, "CLOSED")
+    POINT = (2, "POINT")
+    POISSON = (3, "POISSON")
 
 
 class BatchedInference(ABC):
@@ -190,7 +198,6 @@ class BatchedInferenceExecutor:
     ):
         self.model_obj = model_obj
         self.num_infer = num_infer
-        self.distribution_type = distribution_type
         self.rps = rps
         self.duration = duration
 
@@ -208,10 +215,12 @@ class BatchedInferenceExecutor:
             self._orion_lib = cdll.LoadLibrary(ORION_LIB)
 
         if distribution_type == "closed":
-            self._sleep_time = [0]
+            self.distribution_type = DistributionType.CLOSED
         elif distribution_type == "point":
+            self.distribution_type = DistributionType.POINT
             self._sleep_time = [1/rps]
         elif distribution_type == "poisson":
+            self.distribution_type = DistributionType.POISSON
             self._sleep_time = np.random.exponential(
                 scale=1/rps,
                 size=10000
@@ -222,13 +231,15 @@ class BatchedInferenceExecutor:
             sys.exit(1)
 
     def run_infer_executor(self, num_reqs):
-        # Create a queue to enqueue requests
-        queue = Queue()
-        enqueue_thread = threading.Thread(
-            target=self.enqueue_requests,
-            args=(queue, num_reqs)
-        )
-        enqueue_thread.start()
+        # Create a queue to enqueue requests (for non closed-loop experiment)
+        enqueue_thread = None
+        if self.distribution_type != DistributionType.CLOSED:
+            queue = Queue()
+            enqueue_thread = threading.Thread(
+                target=self.enqueue_requests,
+                args=(queue, num_reqs)
+            )
+            enqueue_thread.start()
 
         completed = 0
         total_time = 0
@@ -239,7 +250,10 @@ class BatchedInferenceExecutor:
                 break
 
             try:
-                queued_time = queue.get(block=True, timeout=1)
+                if self.distribution_type != DistributionType.CLOSED:
+                    queued_time = queue.get(block=True, timeout=1)
+                else:
+                    queued_time = time.time()
             except QueueEmptyException:
                 continue
             start_time = time.time()
@@ -252,7 +266,8 @@ class BatchedInferenceExecutor:
             if self._orion_lib:
                 block(self._orion_lib, i + self._reqs_completed)
 
-        enqueue_thread.join()
+        if enqueue_thread:
+            enqueue_thread.join()
         return [completed / total_time, total_time_arr, queued_time_arr]
 
 
@@ -309,7 +324,7 @@ class BatchedInferenceExecutor:
             retire_exp_thread.start()
 
     def _return_infer_stats(self, infer_stats):
-        infer_stats.insert(0, f"{self.model_obj.get_id()}-{self.distribution_type}-{self.rps}")
+        infer_stats.insert(0, f"{self.model_obj.get_id()}")
         if self.return_queue:
             self.return_queue.put(infer_stats)
         else:
@@ -369,7 +384,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch-size", type=int, default=4)
     parser.add_argument("--num-infer", type=int, default=LARGE_NUM_REQS)
     parser.add_argument("--distribution_type", type=str, default="closed")
-    parser.add_argument("--rps", type=int, default=30)
+    parser.add_argument("--rps", type=float, default=30)
     opt = parser.parse_args()
 
     # Create batched inference object

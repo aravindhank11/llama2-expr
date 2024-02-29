@@ -14,7 +14,7 @@ run_decorated_inference() {
         post=$2
     fi
 
-    command="${pre} ${PYTHON} batched_inference.py --model-type ${model_type} --model ${model} --batch-size ${batch} --num-infer 1 --distribution_type closed --rps -1 ${post}"
+    command="${pre} ${PYTHON} batched_inference.py --model-type ${model_type} --model ${model} --batch-size ${batch} --num-infer 1 --distribution_type closed --rps 0 ${post}"
     eval "$command" &
     ncu_pid=$!
     sleep 1
@@ -75,7 +75,7 @@ profile_model() {
 
     echo "CONVERSION OF RESULT..."
     ${NCU_DIR}/ncu --csv --page raw -i ${result_dir}/output_ncu.ncu-rep > ${result_dir}/raw_ncu.csv
-    sed -i '/^"ID","Process ID"/,$!d' ${result_dir}/output_ncu.csv 
+    sed -i '/^"ID","Process ID"/,$!d' ${result_dir}/output_ncu.csv
 
     echo "CREATING ORION CONSUMABLE INPUT"
     ${PYTHON} ${orion_dir}/profiling/postprocessing/process_ncu.py --results_dir ${result_dir}
@@ -94,5 +94,5 @@ if [[ $# -lt 4 ]]; then
     exit 1
 fi
 
+mv -v /root/orion /root/orion-bkp > /dev/null 2>&1 || :
 profile_model $@
-

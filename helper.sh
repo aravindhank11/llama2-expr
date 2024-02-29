@@ -1,8 +1,15 @@
 #!/bin/bash
 
+DOCKER="docker"
+ORION_CTR="orion"
+ORION_IMG="fotstrt/orion-ae:v1"
+ORION_FORK="orion-fork"
 VENV=tie-breaker-venv/
+
+
 if [[ $USE_SUDO == 1 ]]; then
-    sudo="sudo"
+    SUDO="sudo"
+    DOCKER="sudo docker"
 fi
 
 function is_mig_feature_available() {
@@ -13,13 +20,13 @@ function assert_mig_status()
 {
     mode=$1
     if [[ ${mode} == "mig" ]]; then
-        if [[ $(${sudo} nvidia-smi -i ${DEVICE_ID} --query-gpu=mig.mode.current --format=csv | grep "Enabled" | wc -l) -eq 0 ]]; then
+        if [[ $(${SUDO} nvidia-smi -i ${DEVICE_ID} --query-gpu=mig.mode.current --format=csv | grep "Enabled" | wc -l) -eq 0 ]]; then
             echo "MIG mode not enabled"
             exit 1
         fi
     else
 	mig_gpu=$(is_mig_feature_available)
-        if [[ $mig_gpu -ne 0 && $(${sudo} nvidia-smi -i ${DEVICE_ID} --query-gpu=mig.mode.current --format=csv | grep "Disabled" | wc -l) -eq 0 ]]; then
+        if [[ $mig_gpu -ne 0 && $(${SUDO} nvidia-smi -i ${DEVICE_ID} --query-gpu=mig.mode.current --format=csv | grep "Disabled" | wc -l) -eq 0 ]]; then
             echo "MIG mode is not disabled"
             exit 1
         fi
@@ -31,7 +38,7 @@ function enable_mps_if_needed()
     mode=$1
     if [[ ${mode} == mps-* ]]; then
         echo "Enabling MPS"
-        ${sudo} nvidia-smi -i 0 -c EXCLUSIVE_PROCESS
+        ${SUDO} nvidia-smi -i 0 -c EXCLUSIVE_PROCESS
         nvidia-cuda-mps-control -d
 
         if [[ $(ps -eaf | grep nvidia-cuda-mps-control | grep -v grep | wc -l) -ne 1 ]]; then
@@ -46,7 +53,7 @@ function disable_mps_if_needed()
     mode=$1
     if [[ ${mode} == mps-* ]]; then
         echo quit | nvidia-cuda-mps-control
-        ${sudo} nvidia-smi -i 0 -c DEFAULT
+        ${SUDO} nvidia-smi -i 0 -c DEFAULT
 
         if [[ $(ps -eaf | grep nvidia-cuda-mps-control | grep -v grep | wc -l) -ne 0 ]]; then
             echo "Unable to disable MPS"
@@ -71,17 +78,17 @@ function setup_mig_if_needed()
 
 
     # Create Gpu Instance
-    ${sudo} nvidia-smi mig -i ${DEVICE_ID} -cgi "${gi[${num_procs}]}"
+    ${SUDO} nvidia-smi mig -i ${DEVICE_ID} -cgi "${gi[${num_procs}]}"
 
     # Get GPU Instance ID
-    gi_id_arr=($(${sudo} nvidia-smi mig -i ${DEVICE_ID} -lgi | awk '{print $6}' | grep -P '^\d+$'))
+    gi_id_arr=($(${SUDO} nvidia-smi mig -i ${DEVICE_ID} -lgi | awk '{print $6}' | grep -P '^\d+$'))
 
     # Create Compute Instance
     for gi_id in "${gi_id_arr[@]}"
     do
         # Choose the largest sub-chunk
-        ci=$(${sudo} nvidia-smi mig -i ${DEVICE_ID} -gi ${gi_id} -lcip | grep "\*" | awk '{print $6}' | tr -d "*")
-        ${sudo} nvidia-smi mig -i ${DEVICE_ID} -gi ${gi_id} -cci ${ci}
+        ci=$(${SUDO} nvidia-smi mig -i ${DEVICE_ID} -gi ${gi_id} -lcip | grep "\*" | awk '{print $6}' | tr -d "*")
+        ${SUDO} nvidia-smi mig -i ${DEVICE_ID} -gi ${gi_id} -cci ${ci}
     done
 }
 
@@ -97,24 +104,24 @@ function cleanup_mig_if_needed()
 	while :;
 	do
 		# Cleanup Compute Instances
-		ci_arr=($(${sudo} nvidia-smi mig -lci | awk '{print $2}' | grep -P '^\d+$'))
-		gi_arr=($(${sudo} nvidia-smi mig -lci | awk '{print $3}' | grep -P '^\d+$'))
+		ci_arr=($(${SUDO} nvidia-smi mig -lci | awk '{print $2}' | grep -P '^\d+$'))
+		gi_arr=($(${SUDO} nvidia-smi mig -lci | awk '{print $3}' | grep -P '^\d+$'))
 		i=0
 		while [[ $i -lt ${#gi_arr[*]} ]];
 		do
 			ci=${ci_arr[$i]}
 			gi=${gi_arr[$i]}
-			${sudo} nvidia-smi mig -dci -ci ${ci} -gi ${gi}
+			${SUDO} nvidia-smi mig -dci -ci ${ci} -gi ${gi}
 			i=$(( $i + 1))
 		done
 
 		# Cleanup GPU Instances
-		${sudo} nvidia-smi mig -i ${DEVICE_ID} -dgi
+		${SUDO} nvidia-smi mig -i ${DEVICE_ID} -dgi
 		exit_code=$?
 		if [[ ${exit_code} -eq 0 || ${exit_code} -eq 6 ]]; then
 			break
 		fi
-		print "${sudo} nvidia-smi mig -i ${DEVICE_ID} -dgi failed. Trying in 1s"
+		print "${SUDO} nvidia-smi mig -i ${DEVICE_ID} -dgi failed. Trying in 1s"
 		sleep 1
 	done
 }
@@ -166,6 +173,25 @@ function wait_till_one_process_exits {
     done
 }
 
+function setup_orion_container {
+    WS=$(git rev-parse --show-toplevel)
+    DOCKER_WS=$(basename ${WS})
+
+    # Setup container
+    ${DOCKER} rm -f ${ORION_CTR} || :
+    ${DOCKER} run -v ${WS}:/root/${DOCKER_WS} -it -d \
+        --name ${ORION_CTR} \
+        --gpus=all \
+        ${ORION_IMG} bash > /dev/null
+
+    # Install necessary package
+    ${DOCKER} cp ${ORION_FORK}/setup/nsight-compute.tar ${ORION_CTR}:/usr/local/ > /dev/null 2>&1
+    ${DOCKER} exec -it ${ORION_CTR} bash -c "tar -xf /usr/local/nsight-compute.tar -C /usr/local/ > /dev/null 2>&1"
+    ${DOCKER} exec -it ${ORION_CTR} bash -c "wget https://developer.nvidia.com/downloads/assets/tools/secure/nsight-systems/2024_1/nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb > /dev/null 2>&1"
+    ${DOCKER} exec -it ${ORION_CTR} bash -c "dpkg -i nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb > /dev/null 2>&1"
+    ${DOCKER} exec -it ${ORION_CTR} bash -c "pip install transformers > /dev/null 2>&1"
+}
+
 mps_mig_percentages=("" "100" "57,43" "42,29,29" "29,29,28,14" "29,29,14,14,14" "29,15,14,14,14,14" "15,15,14,14,14,14,14")
 mps_equi_percentages=("" "100" "50,50" "34,33,33" "25,25,25,25" "20,20,20,20,20" "17,17,17,17,16,16" "15,15,14,14,14,14,14")
 mps_chunks_percentages=("" "14" "14,14" "14,14,14" "14,14,14,14" "14,14,14,14,14" "14,14,14,14,14,14" "14,14,14,14,14,14,14")
@@ -173,4 +199,4 @@ attempts=10
 # Command to profile
 # nsys profile --stats=true --force-overwrite true --wait=all -o trial
 DEVICE_ID=0
-${sudo} nvidia-smi -i ${DEVICE_ID} -pm ENABLED
+${SUDO} nvidia-smi -i ${DEVICE_ID} -pm ENABLED
