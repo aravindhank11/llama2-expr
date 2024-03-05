@@ -14,8 +14,17 @@ run_decorated_inference() {
         post=$2
     fi
 
-    command="${pre} ${PYTHON} batched_inference_executor.py --model-type ${model_type} --model ${model} --batch-size ${batch} --num-infer 1 --distribution_type closed --rps 0 --tid 0 ${post}"
-    eval "$command" &
+    command="${pre} \
+        ${PYTHON} src/batched_inference_executor.py \
+        --model-type ${model_type} \
+        --model ${model} \
+        --batch-size ${batch} \
+        --num-infer 1 \
+        --distribution_type closed \
+        --rps 0 \
+        --tid 0 \
+        ${post} &"
+    eval "$command"
     ncu_pid=$!
     sleep 1
 
@@ -57,7 +66,7 @@ profile_model() {
     batch=$3
     model_type=$4
 
-    result_dir=$(pwd)/orion-results/${device_type}/${model}/batchsize-${batch}
+    result_dir=$(pwd)/orion-fork/results/${device_type}/${model}/batchsize-${batch}
     orion_dir=orion-fork
     kernel_file=${result_dir}/orion_input.csv
 

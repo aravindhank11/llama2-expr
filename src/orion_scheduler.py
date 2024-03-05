@@ -50,7 +50,7 @@ class ModelDetails:
 
     def _get_kernel_details(self):
         self.kernel_file = (
-            f"orion-results/{self.device_type}/" +
+            f"orion-fork/results/{self.device_type}/" +
             f"{self.model_name}/batchsize-{self.batch_size}/" +
             "orion_input.csv"
         )

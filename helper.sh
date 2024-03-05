@@ -1,12 +1,18 @@
 #!/bin/bash
 
 DOCKER="docker"
+
+# tie breaker details
+TIE_BREAKER_CTR="tie-breaker"
+TIE_BREAKER_IMG="aravindhank11/tie-breaker"
+
+# orion details
 ORION_CTR="orion"
 ORION_IMG="fotstrt/orion-ae:v1"
 ORION_FORK="orion-fork"
-VENV=tie-breaker-venv/
 
 
+USE_SUDO=1
 if [[ $USE_SUDO == 1 ]]; then
     SUDO="sudo"
     DOCKER="sudo docker"
@@ -178,18 +184,44 @@ function setup_orion_container {
     DOCKER_WS=$(basename ${WS})
 
     # Setup container
-    ${DOCKER} rm -f ${ORION_CTR} || :
+    ${DOCKER} rm -f ${ORION_CTR} >/dev/null 2>&1 || :
     ${DOCKER} run -v ${WS}:/root/${DOCKER_WS} -it -d \
         --name ${ORION_CTR} \
         --gpus=all \
         ${ORION_IMG} bash > /dev/null
 
     # Install necessary package
-    ${DOCKER} cp ${ORION_FORK}/setup/nsight-compute.tar ${ORION_CTR}:/usr/local/ > /dev/null 2>&1
+    NSIGHT_COMPUTE_TAR=nsight-compute.tar
+    if [[ ! -f ${NSIGHT_COMPUTE_TAR} ]]; then
+        # pip install gdown
+        cmd="gdown --id 1_HY1FOIS6KP7dLTKRZ30Wliqc9P_N7hu"
+        eval ${cmd}
+        exit_code=$?
+        if [[ ${exit_code} -ne 0 ]]; then
+            echo "gdown package not found!"
+            echo "Install using: 'pip install gdown'"
+            echo "Or try running command: '${cmd}'"
+            return
+        fi
+    fi
+    ${DOCKER} cp ${NSIGHT_COMPUTE_TAR} ${ORION_CTR}:/usr/local/ > /dev/null 2>&1
     ${DOCKER} exec -it ${ORION_CTR} bash -c "tar -xf /usr/local/nsight-compute.tar -C /usr/local/ > /dev/null 2>&1"
     ${DOCKER} exec -it ${ORION_CTR} bash -c "wget https://developer.nvidia.com/downloads/assets/tools/secure/nsight-systems/2024_1/nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb > /dev/null 2>&1"
     ${DOCKER} exec -it ${ORION_CTR} bash -c "dpkg -i nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb > /dev/null 2>&1"
     ${DOCKER} exec -it ${ORION_CTR} bash -c "pip install transformers > /dev/null 2>&1"
+}
+
+function setup_tie_breaker_container {
+    WS=$(git rev-parse --show-toplevel)
+    DOCKER_WS=$(basename ${WS})
+
+    # Setup container
+    ${DOCKER} rm -f ${TIE_BREAKER_CTR} >/dev/null 2>&1 || :
+    ${DOCKER} run -v ${WS}:/root/${DOCKER_WS} -it -d \
+        --ipc=host -v /tmp/nvidia-mps:/tmp/nvidia-mps \
+        --name ${TIE_BREAKER_CTR} \
+        --gpus=all \
+        ${TIE_BREAKER_IMG} bash > /dev/null
 }
 
 mps_mig_percentages=("" "100" "57,43" "42,29,29" "29,29,28,14" "29,29,14,14,14" "29,15,14,14,14,14" "15,15,14,14,14,14,14")

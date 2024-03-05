@@ -1,45 +1,32 @@
-### Installation
-
-Note: The following script is tested only on ubuntu 22.04 on AWS and on lamda
-
-1) Install base packages
+### Enabling profiling
+* The following steps need to be run on the host to enable profiling
+* This is a 1 time setup activity
 ```
-./install.sh
+sudo bash -c 'echo "options nvidia NVreg_RestrictProfilingToAdminUsers=0" > /etc/modprobe.d/nvidia.conf'
+sudo update-initramfs -u -k all
+sudo sh -c 'echo 1 >/proc/sys/kernel/perf_event_paranoid'
+```
+Ref: [nvidia-developer-forum](https://developer.nvidia.com/nvidia-development-tools-solutions-err_nvgpuctrperm-permission-issue-performance-counters)
+* Follow OS specific instructions to install 'nvidia-container-toolkit'
+
+
+### How to run experiments
+```
+WS=$(git rev-parse --show-toplevel)
+DOCKER_WS=/root/$(basename ${WS})
+export USE_SUDO=1 # If you need sudo privileges to run docker commands (Optional)
+source helper.sh
+setup_tie_breaker_container
+${DOCKER} exec -it ${TIE_BREAKER_CTR} bash -c "cd ${DOCKER_WS} && bash"
+./run_expr.sh --help
 ```
 
-2) Install pip packages
+
+### To build your own docker image (Optional)
 ```
-./pip-install.sh
+# NOTE: Make sure to change the variable `TIE_BREAKER_IMG`
+export USE_SUDO=1 # If you need sudo privileges to run docker commands (Optional)
+source helper.sh
+cd packaging
+./build.sh
 ```
-
-### Running Experiements
-
-* *Input format*:
-    ```
-    ./run_expr.sh <MODE> <MODEL-1>-<BATCHSIZE-1> <MODEL-2>-<BATCHSIZE-2>
-    ```
-
-* *Non MIG Image classification Examples*
-    ```
-    ./run_expr.sh ts vgg11-16
-    ./run_expr.sh mps-uncap vgg11-16 vgg11-16
-    ./run_expr.sh mps-equi vgg11-16 vgg11-16 densenet121-32
-    ./run_expr.sh mps-miglike densenet121-32 mobilenet_v2-1
-    ```
-
-* *MIG Image classification Examples*
-    ```
-    # Enable MIG and reboot if needed
-    sudo nvidia-smi -i 0 -mig ENABLED
-    sudo reboot now
-
-    # Run the experiment
-    ./run_expr.sh mig vgg11-16 vgg11-16
-    ```
-
-* *Llama examples*:
-    ```
-    # Format ./run_expr.sh <MODE> <MODEL-1>-<OUTPUT_TOKEN_SIZE-1> <MODEL-2>-<OUTPUT_TOKEN_SIZE-2>
-    ./run_expr.sh mps-uncap llama-500 llama-500
-    ```
-    NOTE: Llama can be run simultaneously with image classifiers
