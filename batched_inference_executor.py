@@ -235,7 +235,7 @@ if __name__ == "__main__":
     parser.add_argument("--num-infer", type=int, default=LARGE_NUM_REQS)
     parser.add_argument("--distribution_type", type=str, default="closed")
     parser.add_argument("--rps", type=float, default=30)
-    parser.add_argument("--tid", type=float, default=0)
+    parser.add_argument("--tid", type=int, default=0)
     opt = parser.parse_args()
 
     # Create batched inference object

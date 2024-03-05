@@ -14,9 +14,14 @@ import pandas as pd
 
 
 TPUT = "tput"
-TOTAL = "total"
-QUEUED = "queued"
-METRIC_NAMES = [TPUT, TOTAL, QUEUED]
+TOTAL_PREFIX = "total"
+QUEUED_PREFIX = "queued"
+PERCENTILES = [0, 50, 90, 99, 100]
+
+METRIC_NAMES = [TPUT]
+for prefix in [TOTAL_PREFIX, QUEUED_PREFIX]:
+    for percentile in PERCENTILES:
+        METRIC_NAMES.append(f"{prefix}_p{percentile}")
 
 
 def load_pickle_file(file_path):
@@ -26,11 +31,9 @@ def load_pickle_file(file_path):
 
 def populate_stats(id, array, tid, metrics):
     # Calculate percentiles
-    metrics[f"{id}_p0"][tid]   = np.min(array) * 1000
-    metrics[f"{id}_p50"][tid]  = np.percentile(array, 50) * 1000
-    metrics[f"{id}_p90"][tid]  = np.percentile(array, 90) * 1000
-    metrics[f"{id}_p99"][tid]  = np.percentile(array, 99) * 1000
-    metrics[f"{id}_p100"][tid] = np.max(array) * 1000
+    percentile_metrics = np.percentile(array, PERCENTILES)
+    for i, percentile in enumerate(PERCENTILES):
+        metrics[f"{id}_p{percentile}"][tid] = percentile_metrics[i] * 1000
 
 
 def create_dir(directory):
@@ -69,8 +72,8 @@ if __name__ == "__main__":
         # Load arrays from pickle files
         tid, infer_stats = load_pickle_file(pickle_file)
         model, tput, total_times, queued_times = infer_stats
-        populate_stats(TOTAL, total_times, tid, metrics)
-        populate_stats(QUEUED, queued_times, tid, metrics)
+        populate_stats(TOTAL_PREFIX, total_times, tid, metrics)
+        populate_stats(QUEUED_PREFIX, queued_times, tid, metrics)
         metrics[TPUT][tid] = tput
         models[tid] = f"{tid}_{model}"
 
