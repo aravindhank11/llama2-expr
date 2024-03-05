@@ -5,8 +5,8 @@ print_help() {
     echo "Options:"
     echo "  --device-type DEVICE_TYPE                   v100, a100, h100                                   (required)"
     echo "  --device-id   DEVICE_ID                     0, 1, 2, ..                                        (required)"
-    echo "  --duration    DURATION__OF_EXPR_IN_SECONDS  10                                                 (required)"
     echo "  --mode        MODE_OF_EXPR                  orion, ts, mps-uncap, mps-equi, mps-miglike, mig   (required)"
+    echo "  --duration    DURATION_OF_EXPR_IN_SECONDS   10                                                 (default 120)"
     echo "  --load        LOAD_INDICATOR                0.5, 0.2, 1                                        (default 1)"
     echo "  -h, --help                                  Show this help message"
     echo -e "\n"
@@ -29,6 +29,7 @@ print_help() {
 # Parse arguments
 model_run_params=()
 load=1
+duration=180
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --device-type)
@@ -96,6 +97,12 @@ if [[ -z ${load} || ! ${load} =~ ^[+-]?[0-9]*\.?[0-9]+$ ]]; then
     exit 1
 fi
 
+if [[ ${num_procs} -eq 0 ]]; then
+    echo "Need at least 1 model configuration to run"
+    print_help
+    exit 1
+fi
+
 model_types=()
 models=()
 batch_sizes=()
@@ -106,8 +113,8 @@ for (( i=0; i<${num_procs}; i++ ))
 do
     element=${model_run_params[$i]}
     if ! [[ "${element}" =~ $pattern ]]; then
-        echo "Improper input: Unable to get batch size for ${element}"
         echo "Expected: ModelType-Model-BatchSize-DistributionType-RPS"
+        echo "Got: ${element}"
         echo "Example: vision-densenet121-32-point-30"
         exit 1
     fi
@@ -115,6 +122,11 @@ do
     models[$i]=$(echo $element | cut -d'-' -f2)
     batch_sizes[$i]=$(echo $element | cut -d'-' -f3)
     distribution_types[$i]=$(echo $element | cut -d'-' -f4)
+    if [[ ${distribution_types[$i]} != "poisson" && ${distribution_types[$i]} != "point" && ${distribution_types[$i]} != "closed" ]]; then
+        echo "Invalid distribution_type: ${distribution_types[$i]}"
+        print_help
+        exit 1
+    fi
     rps[$i]=$(echo $element | cut -d'-' -f5)
 done
 
@@ -140,7 +152,7 @@ run_orion_expr() {
     tmpdir=$(mktemp -d)
 
     # Setup orion container
-    setup_orion_container
+    setup_orion_container ${device_id}
 
     # Run the experiment
     ws=$(git rev-parse --show-toplevel)
@@ -177,6 +189,8 @@ run_other_expr() {
 
     cci_uuid=($(nvidia-smi -L | grep MIG- | awk '{print $6}' | sed 's/)//g'))
     chunk_id=($(nvidia-smi -L | grep MIG- | awk '{print $2}' | sed 's/)//g'))
+    forked_pids=()
+    cmd_arr=()
 
     for (( c=0; c<${num_procs}; c++ ))
     do
@@ -192,6 +206,7 @@ run_other_expr() {
         fi
 
         cmd="python3 src/batched_inference_executor.py \
+            --device-id ${device_id} \
             --model-type ${model_types[$c]} \
             --model ${models[$c]} \
             --batch-size ${batch_sizes[$c]} \
@@ -199,41 +214,44 @@ run_other_expr() {
             --rps ${rps[$c]} \
             --tid ${c} \
             > /dev/null 2>&1 &"
-        echo $cmd
         eval $cmd
+        echo $cmd
+        forked_pids+=($!)
+        cmd_arr+=("${cmd}")
     done
 
-    # Wait till all processes are up
-    while :
-    do
-        readarray -t forked_pids < <(ps -eaf | grep batched_inference_executor.py | grep -v grep | awk '{print $2}' )
-        if [[ ${#forked_pids[@]} -eq ${num_procs} ]]; then
-            break
-        fi
-        echo "Waiting for ${num_procs} processes to start: ${forked_pids[@]}"
-        echo "${forked_pids[@]}"
-        sleep 1
-    done
 
     # Wait till all pids have loaded their models
     lt=""
     loaded_procs=()
     echo ${forked_pids[@]}
+    i=0
     for pid in "${forked_pids[@]}"
     do
-        while :
+        load_ctr=100
+        while [[ ${load_ctr} -gt 0 ]];
         do
             if [[ -f /tmp/${pid} ]]; then
                 lt="$lt, $(cat /tmp/${pid})"
                 rm -f /tmp/${pid}
                 loaded_procs+=(${pid})
                 break
-            elif [[ -f /tmp/${pid}_oom ]]; then
-                rm -f /tmp/${pid}_oom
-                break
             fi
 
+            if ! kill -0 "${pid}" &> /dev/null; then
+                echo "Process no longer alive"
+                load_ctr=0
+                break
+            fi
+            ((load_ctr--))
+            sleep 1
         done
+
+        if [[ ${load_ctr} -eq 0 ]]; then
+            echo "Inspect execution of '${cmd_arr[$i]}'"
+            exit 1
+        fi
+        ((i++))
     done
 
     # Start inference
@@ -261,7 +279,7 @@ run_other_expr() {
 
 
     if [[ ${RUNNING_IN_DOCKER} -ne 1 ]]; then
-        cleanup ${mode}
+        cleanup ${mode} ${device_id}
     fi
 }
 

@@ -11,8 +11,6 @@ ORION_CTR="orion"
 ORION_IMG="fotstrt/orion-ae:v1"
 ORION_FORK="orion-fork"
 
-
-USE_SUDO=1
 if [[ $USE_SUDO == 1 ]]; then
     SUDO="sudo"
     DOCKER="sudo docker"
@@ -188,6 +186,7 @@ function wait_till_one_process_exits {
 }
 
 function setup_orion_container {
+    device_id=$1
     WS=$(git rev-parse --show-toplevel)
     DOCKER_WS=$(basename ${WS})
 
@@ -195,7 +194,7 @@ function setup_orion_container {
     ${DOCKER} rm -f ${ORION_CTR} >/dev/null 2>&1 || :
     ${DOCKER} run -v ${WS}:/root/${DOCKER_WS} -it -d \
         --name ${ORION_CTR} \
-        --gpus=all \
+        --gpus "device=${device_id}" \
         ${ORION_IMG} bash > /dev/null
 
     # Install necessary package
@@ -220,17 +219,36 @@ function setup_orion_container {
 }
 
 function setup_tie_breaker_container {
+    device_id=$1
     WS=$(git rev-parse --show-toplevel)
-    DOCKER_WS=$(basename ${WS})
+    DOCKER_WS=/home/$USER/$(basename ${WS})
 
     # Setup container
     ${DOCKER} rm -f ${TIE_BREAKER_CTR} >/dev/null 2>&1 || :
-    ${DOCKER} run -v ${WS}:/root/${DOCKER_WS} -it -d \
-        --ipc=host -v /tmp/nvidia-mps:/tmp/nvidia-mps \
+
+    ${DOCKER} run -v ${WS}:${DOCKER_WS} -it -d \
         --name ${TIE_BREAKER_CTR} \
-        --gpus=all \
+        -u $(id -u $USER):$(id -g $USER) \
+        -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro \
+        --ipc=host -v /tmp/nvidia-mps:/tmp/nvidia-mps \
+        --gpus "device=${device_id}" \
         ${TIE_BREAKER_IMG} bash > /dev/null
 }
+
+function multiply_and_round() {
+    local result=$(echo "$1 * $2" | bc)
+    if [[ $# -eq 3 ]]; then
+        printf "%.$3f\n" "$result"
+    else
+        printf "%.2f\n" "$result"
+    fi
+}
+
+function divide_and_round() {
+    local result=$(echo "scale=2; $1 / $2" | bc)
+    printf "%.2f\n" "$result"
+}
+
 
 mps_mig_percentages=("" "100" "57,43" "42,29,29" "29,29,28,14" "29,29,14,14,14" "29,15,14,14,14,14" "15,15,14,14,14,14,14")
 mps_equi_percentages=("" "100" "50,50" "34,33,33" "25,25,25,25" "20,20,20,20,20" "17,17,17,17,16,16" "15,15,14,14,14,14,14")

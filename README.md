@@ -13,7 +13,7 @@ Ref: [nvidia-developer-forum](https://developer.nvidia.com/nvidia-development-to
 ### How to run experiments
 ```
 WS=$(git rev-parse --show-toplevel)
-DOCKER_WS=/root/$(basename ${WS})
+DOCKER_WS=~/$(basename ${WS})
 export USE_SUDO=1 # If you need sudo privileges to run docker commands (Optional)
 source helper.sh
 setup_tie_breaker_container
