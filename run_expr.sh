@@ -143,18 +143,20 @@ run_other_expr() {
             export CUDA_MPS_ENABLE_PER_CTX_DEVICE_MULTIPROCESSOR_PARTITIONING=0
         fi
 
-        python3 batched_inference.py \
+        python3 batched_inference_executor.py \
             --model-type ${model_types[$c]} \
             --model ${models[$c]} \
             --batch-size ${batch_sizes[$c]} \
             --distribution_type ${distribution_types[$c]} \
-            --rps ${rps[$c]} > /dev/null 2>&1 &
+            --rps ${rps[$c]} \
+            --tid ${c} \
+            > /dev/null 2>&1 &
     done
 
     # Wait till all processes are up
     while :
     do
-        readarray -t forked_pids < <(ps -eaf | grep batched_inference.py | grep -v grep | awk '{print $2}' )
+        readarray -t forked_pids < <(ps -eaf | grep batched_inference_executor.py | grep -v grep | awk '{print $2}' )
         if [[ ${#forked_pids[@]} -eq ${num_procs} ]]; then
             break
         fi

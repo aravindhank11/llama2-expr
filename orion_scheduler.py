@@ -8,20 +8,22 @@ from ctypes import (
 )
 import argparse
 import os
-import sys
-import time
 import pickle
 from queue import Queue
 from threading import Barrier, Thread
 
-from batched_inference import (
-    get_batched_inference_object,
+from batched_inference_executor import (
     BatchedInferenceExecutor,
     LARGE_NUM_REQS,
-    WARMUP_REQS,
+    WARMUP_REQS
+)
+from batched_inference import (
+    get_batched_inference_object,
 )
 
+
 ORION_SCHEDULER_LIB_PATH = "/root/orion/src/scheduler/scheduler_eval.so"
+
 
 class ModelDetails:
     def __init__(self, device_type, model_description):
@@ -30,7 +32,9 @@ class ModelDetails:
         self.model_type = self._parse(md_list, "model_type", 0, str)
         self.model_name = self._parse(md_list, "model_name", 1, str)
         self.batch_size = self._parse(md_list, "batch_size", 2, int)
-        self.distribution_type = self._parse(md_list, "distribution_type", 3, str)
+        self.distribution_type = self._parse(
+            md_list, "distribution_type", 3, str
+        )
         self.rps = self._parse(md_list, "rps", 4, float)
         self._get_kernel_details()
 
@@ -45,9 +49,11 @@ class ModelDetails:
             raise ValueError(f"Unable to convert {id_} to '{type_}'")
 
     def _get_kernel_details(self):
-        self.kernel_file = (f"orion-results/{self.device_type}/" +
-                           f"{self.model_name}/batchsize-{self.batch_size}/" +
-                           "orion_input.csv")
+        self.kernel_file = (
+            f"orion-results/{self.device_type}/" +
+            f"{self.model_name}/batchsize-{self.batch_size}/" +
+            "orion_input.csv"
+        )
         if not os.path.exists(self.kernel_file):
             raise ValueError(f"{self.kernel_file} does not exist")
 
@@ -55,8 +61,10 @@ class ModelDetails:
             self.num_kernels = sum(1 for _ in enumerate(file, start=1))
             self.num_kernels -= 1
 
+
 def run_object(obj):
     obj.run()
+
 
 def run_scheduler(barrier, threads, model_names, kernel_files, num_kernels):
     # Get thread ID from thread
@@ -131,7 +139,7 @@ def spin_orion_scheduler(device_name, duration, md_list):
     num_kernels = []
     result_queue = Queue()
 
-    for md in md_list:
+    for tid, md in enumerate(md_list):
         model_obj = get_batched_inference_object(
             md.model_type,
             device_name,
@@ -140,7 +148,7 @@ def spin_orion_scheduler(device_name, duration, md_list):
         )
 
         executor_obj = BatchedInferenceExecutor(
-            model_obj, md.distribution_type, md.rps,
+            model_obj, md.distribution_type, md.rps, tid,
             thread_barrier=barrier, return_queue=result_queue,
             duration=duration
         )
@@ -153,8 +161,8 @@ def spin_orion_scheduler(device_name, duration, md_list):
         num_kernels.append(md.num_kernels)
 
     schedule_thread = Thread(
-        target = run_scheduler,
-        args = (
+        target=run_scheduler,
+        args=(
             barrier, threads, model_names, kernel_files, num_kernels
         )
     )
@@ -163,8 +171,9 @@ def spin_orion_scheduler(device_name, duration, md_list):
 
     for i, t in enumerate(threads):
         t.join()
-        with open(f"/tmp/{os.getpid()}-{i}.pkl", "wb") as h:
-            pickle.dump(result_queue.get(), h)
+        tid, infer_stats = result_queue.get()
+        with open(f"/tmp/{os.getpid()}-{tid}.pkl", "wb") as h:
+            pickle.dump(infer_stats, h)
 
 
 if __name__ == "__main__":

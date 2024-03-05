@@ -1,12 +1,22 @@
-# Sample command: python3 new_stats.py --mode mps-uncap --load 0.1 --result_dir dir1 /tmp/111003.pkl /tmp/111004.pkl /tmp/111005.pkl
+# Sample command:
+# python3 new_stats.py \
+#    --mode mps-uncap \
+#    --load 0.1 \
+#    --result_dir dir1 \
+#    /tmp/111003.pkl /tmp/111004.pkl /tmp/111005.pkl
 
 import argparse
 import os
 import sys
 import pickle
-from collections import defaultdict
 import numpy as np
 import pandas as pd
+
+
+TPUT = "tput"
+TOTAL = "total"
+QUEUED = "queued"
+METRIC_NAMES = [TPUT, TOTAL, QUEUED]
 
 
 def load_pickle_file(file_path):
@@ -14,13 +24,13 @@ def load_pickle_file(file_path):
         return pickle.load(f)
 
 
-def populate_stats(id, array, metrics):
+def populate_stats(id, array, tid, metrics):
     # Calculate percentiles
-    metrics[f"{id}_p0"].append(np.min(array) * 1000)
-    metrics[f"{id}_p50"].append(np.percentile(array, 50) * 1000)
-    metrics[f"{id}_p90"].append(np.percentile(array, 90) * 1000)
-    metrics[f"{id}_p99"].append(np.percentile(array, 99) * 1000)
-    metrics[f"{id}_p100"].append(np.max(array) * 1000)
+    metrics[f"{id}_p0"][tid]   = np.min(array) * 1000
+    metrics[f"{id}_p50"][tid]  = np.percentile(array, 50) * 1000
+    metrics[f"{id}_p90"][tid]  = np.percentile(array, 90) * 1000
+    metrics[f"{id}_p99"][tid]  = np.percentile(array, 99) * 1000
+    metrics[f"{id}_p100"][tid] = np.max(array) * 1000
 
 
 def create_dir(directory):
@@ -28,6 +38,7 @@ def create_dir(directory):
         os.makedirs(directory)
     except:
         pass
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -44,9 +55,11 @@ if __name__ == "__main__":
 
     create_dir(opt.result_dir)
 
-    ctr = 1
-    models = []
-    metrics = defaultdict(list)
+    models = [None] * len(opt.pickle_files)
+    metrics = {}
+    for metric_name in METRIC_NAMES:
+        metrics[metric_name] = [None] * len(opt.pickle_files)
+
     for pickle_file in opt.pickle_files:
         # Validate file paths
         if not os.path.isfile(pickle_file):
@@ -54,12 +67,12 @@ if __name__ == "__main__":
             sys.exit(1)
 
         # Load arrays from pickle files
-        model, tput, total_times, queued_times = load_pickle_file(pickle_file)
-        populate_stats("total", total_times, metrics)
-        populate_stats("queued", queued_times, metrics)
-        metrics["tput"].append(tput)
-        models.append(f"{ctr}_{model}")
-        ctr += 1
+        tid, infer_stats = load_pickle_file(pickle_file)
+        model, tput, total_times, queued_times = infer_stats
+        populate_stats(TOTAL, total_times, tid, metrics)
+        populate_stats(QUEUED, queued_times, tid, metrics)
+        metrics[TPUT][tid] = tput
+        models[tid] = f"{tid}_{model}"
 
     # Create a DataFrame for each metric type
     for metric_type, metrics_list in metrics.items():
@@ -72,7 +85,6 @@ if __name__ == "__main__":
         cols = (["mode", "load"] +
                 [col for col in df.columns if col != "mode" and col != "load"])
         df = df[cols]
-
 
         csv_file = os.path.join(opt.result_dir, f"{metric_type}.csv")
         if os.path.exists(csv_file):

@@ -14,15 +14,15 @@ run_decorated_inference() {
         post=$2
     fi
 
-    command="${pre} ${PYTHON} batched_inference.py --model-type ${model_type} --model ${model} --batch-size ${batch} --num-infer 1 --distribution_type closed --rps 0 ${post}"
+    command="${pre} ${PYTHON} batched_inference_executor.py --model-type ${model_type} --model ${model} --batch-size ${batch} --num-infer 1 --distribution_type closed --rps 0 --tid 0 ${post}"
     eval "$command" &
     ncu_pid=$!
     sleep 1
 
-    readarray -t forked_pids < <(ps -eaf | grep batched_inference.py | grep -v "${NCU_DIR}" | grep -v "nsys" | grep -v grep | awk '{print $2}')
+    readarray -t forked_pids < <(ps -eaf | grep batched_inference_executor.py | grep -v "${NCU_DIR}" | grep -v "nsys" | grep -v grep | awk '{print $2}')
     if [[ ${#forked_pids[@]} > 1 ]]; then
-        echo "Expected 1 batched_inference.py process! Seen != 1..."
-        echo "Inspect using command: ' ps -eaf | grep batched_inference.py | grep -v "${NCU_DIR}" | grep -v "nsys" | grep -v grep'"
+        echo "Expected 1 batched_inference_executor.py process! Seen != 1..."
+        echo "Inspect using command: ' ps -eaf | grep batched_inference_executor.py | grep -v "${NCU_DIR}" | grep -v "nsys" | grep -v grep'"
         exit 1
     fi
 
