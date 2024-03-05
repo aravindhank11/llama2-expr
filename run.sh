@@ -12,9 +12,7 @@ generate_closed_loop_load() {
     do
         params="$params ${model_types[$i]}-${models[$i]}-${batch_sizes[$i]}-closed-0"
     done
-    cmd="${DOCKER} exec -it ${TIE_BREAKER_CTR} bash -c \
-        cd ${DOCKER_WS} && \
-        ./run_expr.sh \
+    cmd="./run_expr.sh \
             --device-type ${device_type} \
             --device-id ${device_id} \
             --duration ${duration} \
@@ -29,18 +27,6 @@ generate_closed_loop_load() {
 generate_distribution_load() {
     for mode in ${MODES[@]}
     do
-        if [[ ${RUNNING_IN_DOCKER} -ne 1 ]]; then
-            assert_mig_status ${mode} ${device_id}
-            enable_mps_if_needed ${mode} ${device_id}
-            setup_mig_if_needed ${mode} ${device_id} ${num_procs}
-        fi
-
-        if [[ ${mode} != "orion" ]]; then
-            docker_prefix="${DOCKER} exec -it ${TIE_BREAKER_CTR} bash -c cd ${DOCKER_WS} && "
-        else
-            docker_prefix=""
-        fi
-
         for ((i = $(multiply_and_round ${load_start} 10 0); i <= $(multiply_and_round ${load_end} 10 0); i++)); do
             ratio=$(echo "$load_start + ($i - 1) * $load_step" | bc)
             params=""
@@ -49,8 +35,7 @@ generate_distribution_load() {
                 mul=$(multiply_and_round ${ratio} ${rps[$j]})
                 params="$params ${model_types[$j]}-${models[$j]}-${batch_sizes[$j]}-${distribution}-${mul}"
             done
-            cmd="${docker_prefix} \
-                ./run_expr.sh \
+            cmd="./run_expr.sh \
                 --device-type ${device_type} \
                 --device-id ${device_id} \
                 --duration ${duration} \
@@ -60,10 +45,6 @@ generate_distribution_load() {
             echo "${mode} ${ratio} ${cmd}"
             #eval ${cmd} >> print_outs.txt 2>&1
         done
-
-        if [[ ${RUNNING_IN_DOCKER} -ne 1 ]]; then
-            cleanup ${mode} ${device_id}
-        fi
     done
 }
 

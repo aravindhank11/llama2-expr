@@ -64,8 +64,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 export USE_SUDO=1
-source helper.sh
 num_procs=${#model_run_params[@]}
+source helper.sh
 
 if [[ -z ${device_type} || (${device_type} != "v100" && ${device_type} != "a100" && ${device_type} != "h100") ]]; then
     echo "Invalid device_type: ${device_type}"
@@ -155,11 +155,13 @@ run_orion_expr() {
     setup_orion_container ${device_id}
 
     # Run the experiment
-    ws=$(git rev-parse --show-toplevel)
-    docker_ws=$(basename ${ws})
     model_defn_string="${model_run_params[*]}"
     ${DOCKER} exec -it ${ORION_CTR} bash -c \
-        "cd /root/${docker_ws} && LD_PRELOAD='/root/orion/src/cuda_capture/libinttemp.so' python3.8 src/orion_scheduler.py --device-type ${device_type} --duration ${duration} ${model_defn_string}"
+        "LD_PRELOAD='/root/orion/src/cuda_capture/libinttemp.so' \
+        python3.8 src/orion_scheduler.py \
+        --device-type ${device_type} \
+        --duration ${duration} \
+        ${model_defn_string}"
 
     # Copy the results
     ${DOCKER} exec ${ORION_CTR} sh -c "ls /tmp/*.pkl" | while read -r file; do
@@ -175,11 +177,9 @@ run_orion_expr() {
 }
 
 run_other_expr() {
-    if [[ ${RUNNING_IN_DOCKER} -ne 1 ]]; then
-        assert_mig_status ${mode} ${device_id}
-        enable_mps_if_needed ${mode} ${device_id}
-        setup_mig_if_needed ${mode} ${device_id} ${num_procs}
-    fi
+    assert_mig_status ${mode} ${device_id}
+    enable_mps_if_needed ${mode} ${device_id}
+    setup_mig_if_needed ${mode} ${device_id} ${num_procs}
 
     if [[ ${mode} == "mps-miglike" ]]; then
         percent=($(echo ${mps_mig_percentages[$num_procs]} | tr "," "\n"))
@@ -189,7 +189,6 @@ run_other_expr() {
 
     cci_uuid=($(nvidia-smi -L | grep MIG- | awk '{print $6}' | sed 's/)//g'))
     chunk_id=($(nvidia-smi -L | grep MIG- | awk '{print $2}' | sed 's/)//g'))
-    forked_pids=()
     cmd_arr=()
 
     for (( c=0; c<${num_procs}; c++ ))
@@ -205,20 +204,31 @@ run_other_expr() {
             export CUDA_MPS_ENABLE_PER_CTX_DEVICE_MULTIPROCESSOR_PARTITIONING=0
         fi
 
-        cmd="python3 src/batched_inference_executor.py \
+        cmd="${DOCKER} exec -d -it ${TIE_BREAKER_CTR} \
+            python3 src/batched_inference_executor.py  \
             --device-id ${device_id} \
             --model-type ${model_types[$c]} \
             --model ${models[$c]} \
             --batch-size ${batch_sizes[$c]} \
             --distribution_type ${distribution_types[$c]} \
             --rps ${rps[$c]} \
-            --tid ${c} \
-            > /dev/null 2>&1 &"
+            --tid ${c}"
         eval $cmd
         echo $cmd
-        forked_pids+=($!)
         cmd_arr+=("${cmd}")
     done
+    sleep 1
+
+    readarray -t forked_pids < <(ps -eaf | grep batched_inference_executor.py | grep -v grep | grep -v docker | awk '{print $2}')
+    if [[ ${#forked_pids[@]} -ne ${num_procs} ]]; then
+        echo "Expected ${num_procs} processes. But found ${#forked_pids[@]}}"
+        echo "Examine commands: "
+        for cmd in "${cmd_arr[@]}"
+        do
+            echo "  ${cmd}"
+        done
+        exit 1
+    fi
 
 
     # Wait till all pids have loaded their models
@@ -277,18 +287,21 @@ run_other_expr() {
         fi
     done
 
-
-    if [[ ${RUNNING_IN_DOCKER} -ne 1 ]]; then
-        cleanup ${mode} ${device_id}
-    fi
+    cleanup ${mode} ${device_id}
 }
 
 compute_stats()
 {
-    python3 src/stats.py --mode ${mode} --load ${load} --result_dir ${result_dir} ${pkl_files[@]}
+    ${DOCKER} exec -it ${TIE_BREAKER_CTR} \
+        bash -c "python3 src/stats.py \
+        --mode ${mode} \
+        --load ${load} \
+        --result_dir ${result_dir} \
+        ${pkl_files[@]}"
 }
 
 ${SUDO} nvidia-smi -i ${device_id} -pm ENABLED
+setup_tie_breaker_container ${device_id}
 if [[ ${mode} == "orion" ]]; then
     run_orion_expr
 else

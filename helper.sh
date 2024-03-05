@@ -40,8 +40,8 @@ function assert_mig_status()
 
 function enable_mps_if_needed()
 {
-    mode=$1
-    device_id=$2
+    local mode=$1
+    local device_id=$2
     if [[ ${mode} == mps-* ]]; then
         echo "Enabling MPS"
         ${SUDO} nvidia-smi -i ${device_id} -c EXCLUSIVE_PROCESS
@@ -57,8 +57,8 @@ function enable_mps_if_needed()
 
 function disable_mps_if_needed()
 {
-    mode=$1
-    device_id=$2
+    local mode=$1
+    local device_id=$2
     if [[ ${mode} == mps-* ]]; then
         echo quit | nvidia-cuda-mps-control
         ${SUDO} nvidia-smi -i ${device_id} -c DEFAULT
@@ -73,9 +73,9 @@ function disable_mps_if_needed()
 
 function setup_mig_if_needed()
 {
-    mode=$1
-    device_id=$2
-    num_procs=$3
+    local mode=$1
+    local device_id=$2
+    local num_procs=$3
     if [[ ${mode} != "mig" ]]; then
         return
     fi
@@ -186,14 +186,17 @@ function wait_till_one_process_exits {
 }
 
 function setup_orion_container {
-    device_id=$1
-    WS=$(git rev-parse --show-toplevel)
-    DOCKER_WS=$(basename ${WS})
+    local device_id=$1
+    local WS=$(git rev-parse --show-toplevel)
+    local DOCKER_WS=/root/$(basename ${WS})
 
     # Setup container
     ${DOCKER} rm -f ${ORION_CTR} >/dev/null 2>&1 || :
-    ${DOCKER} run -v ${WS}:/root/${DOCKER_WS} -it -d \
+    ${DOCKER} run -v ${WS}:${DOCKER_WS} -it -d \
+        -v /tmp:/tmp \
+        -w ${DOCKER_WS} \
         --name ${ORION_CTR} \
+        --ipc=host --pid=host \
         --gpus "device=${device_id}" \
         ${ORION_IMG} bash > /dev/null
 
@@ -219,20 +222,23 @@ function setup_orion_container {
 }
 
 function setup_tie_breaker_container {
-    device_id=$1
-    WS=$(git rev-parse --show-toplevel)
-    DOCKER_WS=/home/$USER/$(basename ${WS})
+    local device_id=$1
+    local WS=$(git rev-parse --show-toplevel)
+    local DOCKER_WS=/home/$USER/$(basename ${WS})
 
     # Setup container
     ${DOCKER} rm -f ${TIE_BREAKER_CTR} >/dev/null 2>&1 || :
-
     ${DOCKER} run -v ${WS}:${DOCKER_WS} -it -d \
-        --name ${TIE_BREAKER_CTR} \
+        -v /etc/passwd:/etc/passwd:ro \
+        -v /etc/group:/etc/group:ro \
+        -v /tmp:/tmp \
+        -w ${DOCKER_WS} \
         -u $(id -u $USER):$(id -g $USER) \
-        -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro \
-        --ipc=host -v /tmp/nvidia-mps:/tmp/nvidia-mps \
+        --name ${TIE_BREAKER_CTR} \
+        --ipc=host --pid=host \
         --gpus "device=${device_id}" \
         ${TIE_BREAKER_IMG} bash > /dev/null
+    sleep 2
 }
 
 function multiply_and_round() {
