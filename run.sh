@@ -31,7 +31,7 @@ generate_closed_loop_load() {
     do
         params="$params ${model_types[$i]}-${models[$i]}-${batch_sizes[$i]}-closed-0"
     done
-    cmd=".${DOCKER} exec -it ${TIE_BREAKER_CTR} bash -c cd ${DOCKER_WS} && ./run_expr.sh ${DURATION} ${device_name} mps-uncap 1 ${params}"
+    cmd=".${DOCKER} exec -it ${TIE_BREAKER_CTR} bash -c cd ${DOCKER_WS} && ./run_expr.sh ${DURATION} ${device_type} mps-uncap 1 ${params}"
     echo "Running closed loop experiment:"
     echo "Command used: ${cmd}"
     eval ${cmd}
@@ -41,9 +41,9 @@ generate_distribution_load() {
     for mode in ${MODES[@]}
     do
         if [[ ${RUNNING_IN_DOCKER} -ne 1 ]]; then
-            assert_mig_status ${mode}
-            enable_mps_if_needed ${mode}
-            setup_mig_if_needed ${mode} ${num_procs}
+            assert_mig_status ${mode} ${device_id}
+            enable_mps_if_needed ${mode} ${device_id}
+            setup_mig_if_needed ${mode} ${device_id} ${num_procs}
         fi
 
         if [[ ${mode} != "orion" ]]; then
@@ -60,13 +60,13 @@ generate_distribution_load() {
                 mul=$(multiply_and_round ${ratio} ${rps[$j]})
                 params="$params ${model_types[$j]}-${models[$j]}-${batch_sizes[$j]}-${DISTRIBUTION}-${mul}"
             done
-            cmd="${docker_predix} ./run_expr.sh ${duration} ${device_name} ${mode} ${ratio} ${params}"
+            cmd="${docker_predix} ./run_expr.sh ${duration} ${device_type} ${mode} ${ratio} ${params}"
             echo "${mode} ${ratio} ${cmd}"
             #eval ${cmd} >> print_outs.txt 2>&1
         done
 
         if [[ ${RUNNING_IN_DOCKER} -ne 1 ]]; then
-            cleanup ${mode}
+            cleanup ${mode} ${device_id}
         fi
     done
 }
@@ -94,13 +94,13 @@ if [[ $# -lt 2 ]]; then
     print_help
 fi
 
-device_name=$1
+device_type=$1
 shift
 model_run_params=( "$@" )
 num_procs=${#model_run_params[@]}
 
-if [[ ${device_name} != "v100" && ${device_name} != "a100" && ${device_name} != "h100" ]]; then
-    echo "Invalid device_name: ${device_name}"
+if [[ ${device_type} != "v100" && ${device_type} != "a100" && ${device_type} != "h100" ]]; then
+    echo "Invalid device_type: ${device_type}"
     exit 1
 fi
 

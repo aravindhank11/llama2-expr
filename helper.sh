@@ -25,14 +25,15 @@ function is_mig_feature_available() {
 function assert_mig_status()
 {
     mode=$1
+    device_id=$2
     if [[ ${mode} == "mig" ]]; then
-        if [[ $(${SUDO} nvidia-smi -i ${DEVICE_ID} --query-gpu=mig.mode.current --format=csv | grep "Enabled" | wc -l) -eq 0 ]]; then
+        if [[ $(${SUDO} nvidia-smi -i ${device_id} --query-gpu=mig.mode.current --format=csv | grep "Enabled" | wc -l) -eq 0 ]]; then
             echo "MIG mode not enabled"
             exit 1
         fi
     else
 	mig_gpu=$(is_mig_feature_available)
-        if [[ $mig_gpu -ne 0 && $(${SUDO} nvidia-smi -i ${DEVICE_ID} --query-gpu=mig.mode.current --format=csv | grep "Disabled" | wc -l) -eq 0 ]]; then
+        if [[ $mig_gpu -ne 0 && $(${SUDO} nvidia-smi -i ${device_id} --query-gpu=mig.mode.current --format=csv | grep "Disabled" | wc -l) -eq 0 ]]; then
             echo "MIG mode is not disabled"
             exit 1
         fi
@@ -42,11 +43,13 @@ function assert_mig_status()
 function enable_mps_if_needed()
 {
     mode=$1
+    device_id=$2
     if [[ ${mode} == mps-* ]]; then
         echo "Enabling MPS"
-        ${SUDO} nvidia-smi -i 0 -c EXCLUSIVE_PROCESS
+        ${SUDO} nvidia-smi -i ${device_id} -c EXCLUSIVE_PROCESS
         nvidia-cuda-mps-control -d
 
+        # TODO: Needs fixing
         if [[ $(ps -eaf | grep nvidia-cuda-mps-control | grep -v grep | wc -l) -ne 1 ]]; then
             echo "Unable to enable MPS"
             exit 1
@@ -57,10 +60,12 @@ function enable_mps_if_needed()
 function disable_mps_if_needed()
 {
     mode=$1
+    device_id=$2
     if [[ ${mode} == mps-* ]]; then
         echo quit | nvidia-cuda-mps-control
-        ${SUDO} nvidia-smi -i 0 -c DEFAULT
+        ${SUDO} nvidia-smi -i ${device_id} -c DEFAULT
 
+        # TODO: Needs fixing
         if [[ $(ps -eaf | grep nvidia-cuda-mps-control | grep -v grep | wc -l) -ne 0 ]]; then
             echo "Unable to disable MPS"
             exit 1
@@ -71,7 +76,8 @@ function disable_mps_if_needed()
 function setup_mig_if_needed()
 {
     mode=$1
-    num_procs=$2
+    device_id=$2
+    num_procs=$3
     if [[ ${mode} != "mig" ]]; then
         return
     fi
@@ -84,23 +90,24 @@ function setup_mig_if_needed()
 
 
     # Create Gpu Instance
-    ${SUDO} nvidia-smi mig -i ${DEVICE_ID} -cgi "${gi[${num_procs}]}"
+    ${SUDO} nvidia-smi mig -i ${device_id} -cgi "${gi[${num_procs}]}"
 
     # Get GPU Instance ID
-    gi_id_arr=($(${SUDO} nvidia-smi mig -i ${DEVICE_ID} -lgi | awk '{print $6}' | grep -P '^\d+$'))
+    gi_id_arr=($(${SUDO} nvidia-smi mig -i ${device_id} -lgi | awk '{print $6}' | grep -P '^\d+$'))
 
     # Create Compute Instance
     for gi_id in "${gi_id_arr[@]}"
     do
         # Choose the largest sub-chunk
-        ci=$(${SUDO} nvidia-smi mig -i ${DEVICE_ID} -gi ${gi_id} -lcip | grep "\*" | awk '{print $6}' | tr -d "*")
-        ${SUDO} nvidia-smi mig -i ${DEVICE_ID} -gi ${gi_id} -cci ${ci}
+        ci=$(${SUDO} nvidia-smi mig -i ${device_id} -gi ${gi_id} -lcip | grep "\*" | awk '{print $6}' | tr -d "*")
+        ${SUDO} nvidia-smi mig -i ${device_id} -gi ${gi_id} -cci ${ci}
     done
 }
 
 function cleanup_mig_if_needed()
 {
     mode=$1
+    device_id=$2
     if [[ ${mode} != "mig" ]]; then
         return
     fi
@@ -122,12 +129,12 @@ function cleanup_mig_if_needed()
 		done
 
 		# Cleanup GPU Instances
-		${SUDO} nvidia-smi mig -i ${DEVICE_ID} -dgi
+		${SUDO} nvidia-smi mig -i ${device_id} -dgi
 		exit_code=$?
 		if [[ ${exit_code} -eq 0 || ${exit_code} -eq 6 ]]; then
 			break
 		fi
-		print "${SUDO} nvidia-smi mig -i ${DEVICE_ID} -dgi failed. Trying in 1s"
+		print "${SUDO} nvidia-smi mig -i ${device_id} -dgi failed. Trying in 1s"
 		sleep 1
 	done
 }
@@ -135,8 +142,9 @@ function cleanup_mig_if_needed()
 function cleanup()
 {
     mode=$1
-    disable_mps_if_needed ${mode}
-    cleanup_mig_if_needed ${mode}
+    device_id=$2
+    disable_mps_if_needed ${mode} ${device_id}
+    cleanup_mig_if_needed ${mode} ${device_id}
 }
 
 function calc_mean_sd() {
@@ -230,5 +238,3 @@ mps_chunks_percentages=("" "14" "14,14" "14,14,14" "14,14,14,14" "14,14,14,14,14
 attempts=10
 # Command to profile
 # nsys profile --stats=true --force-overwrite true --wait=all -o trial
-DEVICE_ID=0
-${SUDO} nvidia-smi -i ${DEVICE_ID} -pm ENABLED

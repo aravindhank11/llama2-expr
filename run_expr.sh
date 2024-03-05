@@ -1,65 +1,98 @@
 #!/bin/bash
 
 print_help() {
-    echo "Expected Syntax:"
-    echo "  $0 <expr_duration_in_seconds> <v100|h100|a100> <orion|ts|mps-uncap|mps-equi|mps-miglike|mig> <load> <model_type1-model1-batch_size1-distribution_type1-rps1> <model_type2-model2-batch_size2-distribution_type2-rps2> ... "
+    echo "Usage: ${0} [OPTIONS] model1-parameter model2-paramete ..."
+    echo "Options:"
+    echo "  --device-type DEVICE_TYPE                   v100, a100, h100                                   (required)"
+    echo "  --device-id   DEVICE_ID                     0, 1, 2, ..                                        (required)"
+    echo "  --duration    DURATION__OF_EXPR_IN_SECONDS  10                                                 (required)"
+    echo "  --mode        MODE_OF_EXPR                  orion, ts, mps-uncap, mps-equi, mps-miglike, mig   (required)"
+    echo "  --load        LOAD_INDICATOR                0.5, 0.2, 1                                        (default 1)"
+    echo "  -h, --help                                  Show this help message"
     echo -e "\n"
 
     echo "NOTE:"
-    echo "  Supported model_types are: 'vision', 'llama'"
-    echo "  Load values are used only for plotting and result generation purposes and not to generate the load"
     echo "  Load generation is done via Distribution Type and RPS"
     echo -e "\n"
 
     echo "Examples:"
-    echo " $0 v100 10 ts 1 vision-vgg19-32-point-10"
-    echo " $0 v100 20 ts 0.8 vision-vgg19-32-poisson-10 vision-mobilenet_v2-1-closed-100"
-    echo " $0 h100 100 mps-equi 0.4 vision-vgg19-32-point-10 vision-mobilenet_v2-1-point-10"
-    echo " $0 a100 120 mps-uncap 0.2 llama-llama-32-poisson-100 vision-inception_v3-32-closed-23"
-    echo " $0 a100 5 mig 0.6 vision-densenet121-32-closed-10 vision-inception_v3-32-poisson-100"
+    echo " $0 --device-type v100 --device-id 0 --duration 10 --mode ts --load 1 vision-vgg19-32-point-10"
+    echo " $0 --device-type v100 --device-id 1 --duration 20 --mode ts --load 0.8 vision-vgg19-32-poisson-10 vision-mobilenet_v2-1-closed-100"
+    echo " $0 --device-type h100 --device-id 0 --duration 100 --mode mps-equi --load 0.4 vision-vgg19-32-point-10 vision-mobilenet_v2-1-point-10"
     echo -e "\n"
 
     echo "NOTE: MIG must be enabled | disabled explicitly followed by a reboot"
     echo "--> nvidia-smi -i 0 -mig ENABLED (OR) nvidia-smi -i 0 -mig DISABLED"
     echo "--> reboot"
-    exit 1
 }
 
-if [[ $# -lt 4 || ($# -eq 1 && ($1 == "--help" || $1 == "-h")) ]]; then
-    print_help
-fi
+# Parse arguments
+model_run_params=()
+load=1
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --device-type)
+            device_type="$2"
+            shift 2
+            ;;
+        --device-id)
+            device_id="$2"
+            shift 2
+            ;;
+        --duration)
+            duration="$2"
+            shift 2
+            ;;
+        --mode)
+            mode="$2"
+            shift 2
+            ;;
+        --load)
+            load="$2"
+            shift 2
+            ;;
+        -h|--help)
+            print_help
+            exit 0
+            ;;
+        *)
+            model_run_params+=("$1")
+            shift
+            ;;
+    esac
+done
 
 export USE_SUDO=1
 source helper.sh
-
-expr_duration=$1
-shift
-device_name=$1
-shift
-mode=$1
-shift
-load=$1
-shift
-model_run_params=( "$@" )
 num_procs=${#model_run_params[@]}
 
-if [[ ! ${expr_duration} =~ ^[+-]?[0-9]*\.?[0-9]+$ ]]; then
-    echo "expr_duration_in_seconds must be a float. Got ${expr_duration}"
+if [[ -z ${device_type} || (${device_type} != "v100" && ${device_type} != "a100" && ${device_type} != "h100") ]]; then
+    echo "Invalid device_type: ${device_type}"
+    print_help
     exit 1
 fi
 
-if [[ ! ${load} =~ ^[+-]?[0-9]*\.?[0-9]+$ ]]; then
-    echo "load must be a float. Got ${load}"
+if [[ -z ${device_id} || ! ${device_id} =~ ^[0-9]+$ ]]; then
+    echo "Invalid device_id: ${device_id}"
+    print_help
+    exit 1
+fi
+
+if [[ -z ${duration} || ! ${duration} =~ ^[+-]?[0-9]*\.?[0-9]+$ ]]; then
+    echo "duration_in_seconds must be a float. Got ${duration}"
+    print_help
     exit 1
 fi
 
 if [[ ${mode} != "mps-uncap" && ${mode} != "mps-equi" && ${mode} != "mps-miglike" && ${mode} != "mig" && ${mode} != "ts" && ${mode} != "orion" ]]; then
     echo "Invalid mode: ${mode}"
+    print_help
     exit 1
 fi
 
-if [[ ${device_name} != "v100" && ${device_name} != "a100" && ${device_name} != "h100" ]]; then
-    echo "Invalid device_name: ${device_name}"
+if [[ -z ${load} || ! ${load} =~ ^[+-]?[0-9]*\.?[0-9]+$ ]]; then
+    echo "load must be a float. Got ${load}"
+    print_help
     exit 1
 fi
 
@@ -114,7 +147,7 @@ run_orion_expr() {
     docker_ws=$(basename ${ws})
     model_defn_string="${model_run_params[*]}"
     ${DOCKER} exec -it ${ORION_CTR} bash -c \
-        "cd /root/${docker_ws} && LD_PRELOAD='/root/orion/src/cuda_capture/libinttemp.so' python3.8 src/orion_scheduler.py --device-type ${device_name} --duration ${expr_duration} ${model_defn_string}"
+        "cd /root/${docker_ws} && LD_PRELOAD='/root/orion/src/cuda_capture/libinttemp.so' python3.8 src/orion_scheduler.py --device-type ${device_type} --duration ${duration} ${model_defn_string}"
 
     # Copy the results
     ${DOCKER} exec ${ORION_CTR} sh -c "ls /tmp/*.pkl" | while read -r file; do
@@ -131,9 +164,9 @@ run_orion_expr() {
 
 run_other_expr() {
     if [[ ${RUNNING_IN_DOCKER} -ne 1 ]]; then
-        assert_mig_status ${mode}
-        enable_mps_if_needed ${mode}
-        setup_mig_if_needed ${mode} ${num_procs}
+        assert_mig_status ${mode} ${device_id}
+        enable_mps_if_needed ${mode} ${device_id}
+        setup_mig_if_needed ${mode} ${device_id} ${num_procs}
     fi
 
     if [[ ${mode} == "mps-miglike" ]]; then
@@ -208,7 +241,7 @@ run_other_expr() {
     kill -SIGUSR1 ${loaded_procs[@]}
 
     # Run experiment for experiment duration
-    sleep ${expr_duration}
+    sleep ${duration}
 
     # Stop inference
     kill -SIGUSR2 ${loaded_procs[@]}
@@ -237,6 +270,7 @@ compute_stats()
     python3 src/stats.py --mode ${mode} --load ${load} --result_dir ${result_dir} ${pkl_files[@]}
 }
 
+${SUDO} nvidia-smi -i ${device_id} -pm ENABLED
 if [[ ${mode} == "orion" ]]; then
     run_orion_expr
 else

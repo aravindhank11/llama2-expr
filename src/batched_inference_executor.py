@@ -68,11 +68,11 @@ class BatchedInferenceExecutor:
             self.distribution_type = DistributionType.CLOSED
         elif distribution_type == "point":
             self.distribution_type = DistributionType.POINT
-            self._sleep_time = [1/rps]
+            self._sleep_time = [1 / rps]
         elif distribution_type == "poisson":
             self.distribution_type = DistributionType.POISSON
             self._sleep_time = np.random.exponential(
-                scale=1/rps,
+                scale=(1 / rps),
                 size=10000
             )
         else:
@@ -228,7 +228,7 @@ class BatchedInferenceExecutor:
 if __name__ == "__main__":
     # Parse argument
     parser = argparse.ArgumentParser()
-    parser.add_argument("--device-name", type=str, default="cuda:0")
+    parser.add_argument("--device-id", type=int, default=0)
     parser.add_argument("--model-type", type=str, default="vision")
     parser.add_argument("--model", type=str, default="resnet50")
     parser.add_argument("--batch-size", type=int, default=4)
@@ -241,7 +241,7 @@ if __name__ == "__main__":
     # Create batched inference object
     model_obj = get_batched_inference_object(
         opt.model_type,
-        opt.device_name,
+        opt.device_id,
         opt.model,
         opt.batch_size
     )

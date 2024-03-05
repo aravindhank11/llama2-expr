@@ -130,7 +130,7 @@ def run_scheduler(barrier, threads, model_names, kernel_files, num_kernels):
     barrier.wait()
 
 
-def spin_orion_scheduler(device_name, duration, md_list):
+def spin_orion_scheduler(device_id, duration, md_list):
     num_clients = len(md_list)
     barrier = Barrier(num_clients + 1)
     threads = []
@@ -142,7 +142,7 @@ def spin_orion_scheduler(device_name, duration, md_list):
     for tid, md in enumerate(md_list):
         model_obj = get_batched_inference_object(
             md.model_type,
-            device_name,
+            device_id,
             md.model_name,
             md.batch_size
         )
@@ -178,8 +178,8 @@ def spin_orion_scheduler(device_name, duration, md_list):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--device-name", type=str, default="cuda:0")
     parser.add_argument("--device-type", type=str, required=True)
+    parser.add_argument("--device-id", type=int, default=0)
     parser.add_argument("--duration", type=int, required=True)
     parser.add_argument(
         "model_details",
@@ -193,4 +193,4 @@ if __name__ == "__main__":
     for model_detail in opt.model_details:
         model_details.append(ModelDetails(opt.device_type, model_detail))
 
-    spin_orion_scheduler(opt.device_name, opt.duration, model_details)
+    spin_orion_scheduler(opt.device_id, opt.duration, model_details)

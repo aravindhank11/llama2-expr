@@ -10,8 +10,8 @@ from transformers import LlamaTokenizer, LlamaForCausalLM
 
 
 class BatchedInference(ABC):
-    def __init__(self, device_name, model_name, batch_size):
-        self._device = torch.device(device_name)
+    def __init__(self, device_id, model_name, batch_size):
+        self._device = torch.device(f"cuda:{device_id}")
         self._model_name = model_name
         self._model = None
         self._batch_size = batch_size
@@ -34,8 +34,8 @@ class BatchedInference(ABC):
 
 
 class VisionBatchedInference(BatchedInference):
-    def __init__(self, device_name, model_name, batch_size):
-        super().__init__(device_name, model_name, batch_size)
+    def __init__(self, device_id, model_name, batch_size):
+        super().__init__(device_id, model_name, batch_size)
         self._imgs = None
 
     def get_id(self):
@@ -118,8 +118,8 @@ class VisionBatchedInference(BatchedInference):
 
 
 class LlamaBatchedInference(BatchedInference):
-    def __init__(self, device_name, model_name, batch_size):
-        super().__init__(device_name, model_name, batch_size)
+    def __init__(self, device_id, model_name, batch_size):
+        super().__init__(device_id, model_name, batch_size)
         self.prompts = [
             "A short summary on the hottest researched topic",
             "What are the implications of AI on society",
@@ -161,11 +161,11 @@ class LlamaBatchedInference(BatchedInference):
         return generation_output.size()[1]
 
 
-def get_batched_inference_object(model_type, device_name, model, batch_size):
+def get_batched_inference_object(model_type, device_id, model, batch_size):
     if model_type == "vision":
-        return VisionBatchedInference(device_name, model, batch_size)
+        return VisionBatchedInference(device_id, model, batch_size)
     elif model_type == "llama":
-        return LlamaBatchedInference(device_name, model, batch_size)
+        return LlamaBatchedInference(device_id, model, batch_size)
     else:
         print("Unknown model-type. Must be one of 'vision', 'llama'")
         sys.exit(1)
