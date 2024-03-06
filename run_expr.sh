@@ -162,14 +162,16 @@ run_orion_expr() {
 
     # Run the experiment
     model_defn_string="${model_run_params[*]}"
-    ${DOCKER} exec -it ${ORION_CTR} bash -c \
-        "LD_PRELOAD='/root/orion/src/cuda_capture/libinttemp.so' \
+    cmd="${DOCKER} exec -it ${ORION_CTR} bash -c \
+        \"LD_PRELOAD='/root/orion/src/cuda_capture/libinttemp.so' \
         python3.8 src/orion_scheduler.py \
         --device-type ${device_type} \
         --duration ${duration} \
-        ${model_defn_string}"
+        ${model_defn_string}\""
+    eval ${cmd}
 
     # Copy the results
+    rm -f ${tmpdir}/*
     ${DOCKER} exec ${ORION_CTR} sh -c "ls /tmp/*.pkl" | while read -r file; do
         ${DOCKER} cp orion:${file} ${tmpdir}
     done
@@ -178,7 +180,7 @@ run_orion_expr() {
     pkl_files=()
     for f in $(ls ${tmpdir})
     do
-        pkl_files+=(${tmpdir}/${f})
+        pkl_files+=("${tmpdir}/${f}")
     done
 }
 

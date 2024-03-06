@@ -171,9 +171,9 @@ def spin_orion_scheduler(device_id, duration, md_list):
 
     for i, t in enumerate(threads):
         t.join()
-        tid, infer_stats = result_queue.get()
-        with open(f"/tmp/{os.getpid()}-{tid}.pkl", "wb") as h:
-            pickle.dump(infer_stats, h)
+        result = result_queue.get()
+        with open(f"/tmp/{os.getpid()}-{i}.pkl", "wb") as h:
+            pickle.dump(result, h)
 
 
 if __name__ == "__main__":

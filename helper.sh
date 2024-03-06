@@ -193,7 +193,6 @@ function setup_orion_container {
     # Setup container
     ${DOCKER} rm -f ${ORION_CTR} >/dev/null 2>&1 || :
     ${DOCKER} run -v ${WS}:${DOCKER_WS} -it -d \
-        -v /tmp:/tmp \
         -w ${DOCKER_WS} \
         --name ${ORION_CTR} \
         --ipc=host --pid=host \
@@ -217,7 +216,7 @@ function setup_orion_container {
     ${DOCKER} cp ${NSIGHT_COMPUTE_TAR} ${ORION_CTR}:/usr/local/ > /dev/null 2>&1
     ${DOCKER} exec -it ${ORION_CTR} bash -c "tar -xf /usr/local/nsight-compute.tar -C /usr/local/ > /dev/null 2>&1"
     ${DOCKER} exec -it ${ORION_CTR} bash -c "wget https://developer.nvidia.com/downloads/assets/tools/secure/nsight-systems/2024_1/nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb > /dev/null 2>&1"
-    ${DOCKER} exec -it ${ORION_CTR} bash -c "dpkg -i nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb > /dev/null 2>&1"
+    ${DOCKER} exec -it ${ORION_CTR} bash -c "dpkg -i nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb > /dev/null 2>&1 && rm -f nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb"
     ${DOCKER} exec -it ${ORION_CTR} bash -c "pip install transformers > /dev/null 2>&1"
 }
 
