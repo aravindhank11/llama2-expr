@@ -1,15 +1,25 @@
-import sys
 import os
+import argparse
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# Parse argument
+parser = argparse.ArgumentParser()
+parser.add_argument("--csv-file-path", type=str, required=True)
+parser.add_argument("--png-file-path", type=str, required=True)
+opt = parser.parse_args()
+
 # Read data from CSV
-filename = sys.argv[1]
-metricname = os.path.basename(filename).split('.')[0]
-data = pd.read_csv(sys.argv[1], skipinitialspace=True)
+results_dir, filename = os.path.split(opt.csv_file_path)
+metricname = filename.split('.')[0]
+data = pd.read_csv(opt.csv_file_path, skipinitialspace=True)
 data = data.sort_values(by="load")
 
-# Define modes for each mode
+# Figure the place to save
+plots_dir, plot_filename = os.path.split(opt.png_file_path)
+os.makedirs(plots_dir, exist_ok=True)
+
+# Define colors for each mode
 colors = ["blue", "green", "orange", "red", "brown", "yellow", "black"]
 modes = {}
 for i, mode in enumerate(data["mode"].unique()):
@@ -22,10 +32,10 @@ models = {}
 for i, model_name in enumerate(model_cols):
     models[model_name] = hatch_styles[i]
 
+# Few more constants
 bar_width = 5
 transparency = 0.6
 num_loads = len(data["load"].unique())
-
 
 # Plot
 fig, ax = plt.subplots(figsize=(100, 12))
@@ -78,4 +88,6 @@ ax.set_xticklabels(data["load"].unique())
 ax.legend()
 plt.xticks(rotation=45)
 plt.tight_layout()
+plt.savefig(opt.png_file_path, dpi=400)
+plt.close()
 plt.show()

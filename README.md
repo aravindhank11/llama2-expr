@@ -12,6 +12,8 @@ Ref: [nvidia-developer-forum](https://developer.nvidia.com/nvidia-development-to
 
 ### How to run experiments
 ```
+export USE_SUDO=1
+
 # Given a model mix runs experiment for 100% load using closed loop
 # Using the obtained results runs for various load mixes
 ./run.sh --help

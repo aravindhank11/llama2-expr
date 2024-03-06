@@ -19,7 +19,3 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
 # install pip packages
 COPY requirements.txt /tmp/
 RUN pip install -r /tmp/requirements.txt
-
-# Setup docker image
-RUN git clone --recursive https://github.com/aravindhank11/dotfiles.git && \
-    cd dotfiles && ./install.sh

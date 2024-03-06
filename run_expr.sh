@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 print_help() {
     echo "Usage: ${0} [OPTIONS] model1-parameter model2-paramete ..."
@@ -162,13 +162,12 @@ run_orion_expr() {
 
     # Run the experiment
     model_defn_string="${model_run_params[*]}"
-    cmd="${DOCKER} exec -it ${ORION_CTR} bash -c \
-        \"LD_PRELOAD='/root/orion/src/cuda_capture/libinttemp.so' \
+    ${DOCKER} exec -it ${ORION_CTR} bash -c \
+        "LD_PRELOAD='/root/orion/src/cuda_capture/libinttemp.so' \
         python3.8 src/orion_scheduler.py \
         --device-type ${device_type} \
         --duration ${duration} \
-        ${model_defn_string}\""
-    eval ${cmd}
+        ${model_defn_string}"
 
     # Copy the results
     rm -f ${tmpdir}/*
@@ -180,7 +179,7 @@ run_orion_expr() {
     pkl_files=()
     for f in $(ls ${tmpdir})
     do
-        pkl_files+=("${tmpdir}/${f}")
+        pkl_files+=(${tmpdir}/${f})
     done
 }
 
@@ -242,7 +241,6 @@ run_other_expr() {
     lt=""
     loaded_procs=()
     echo ${forked_pids[@]}
-    i=0
     for pid in "${forked_pids[@]}"
     do
         load_ctr=100
@@ -265,10 +263,14 @@ run_other_expr() {
         done
 
         if [[ ${load_ctr} -eq 0 ]]; then
-            echo "Inspect execution of '${cmd_arr[$i]}'"
+            echo "Some of the models did not load!"
+            echo "Examine commands: "
+            for cmd in "${cmd_arr[@]}"
+            do
+                echo "  ${cmd}"
+            done
             exit 1
         fi
-        ((i++))
     done
 
     # Start inference
@@ -289,8 +291,6 @@ run_other_expr() {
         pkl_file="/tmp/${pid}.pkl"
         if [[ -f ${pkl_file} ]]; then
             pkl_files+=(${pkl_file})
-        elif [[ -f /tmp/${pid}_oom ]]; then
-            rm -f /tmp/${pid}_oom
         fi
     done
 
