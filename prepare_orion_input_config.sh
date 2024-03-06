@@ -63,9 +63,27 @@ run_decorated_inference() {
 
 profile_model() {
     device_type=$1
-    model=$2
-    batch=$3
-    model_type=$4
+    device_id=$2
+    model=$3
+    batch=$4
+    model_type=$5
+
+    if [[ (${device_type} != "v100" && ${device_type} != "a100" && ${device_type} != "h100") ]]; then
+        echo "Invalid device_type: ${device_type}"
+        print_help
+        exit 1
+    fi
+
+    if [[ -z ${device_id} || ! ${device_id} =~ ^[0-9]+$ ]]; then
+        echo "Invalid device_id: ${device_id}"
+        print_help
+        exit 1
+    fi
+
+    if [[ ${model_type} != "llama" && ${model_type} != "vision" ]]; then
+        echo "Allowed model types: llama and vision. Got: ${model_type}"
+        exit 1
+    fi
 
     result_dir=$(pwd)/orion-fork/results/${device_type}/${model}/batchsize-${batch}
     orion_dir=orion-fork
@@ -97,10 +115,10 @@ profile_model() {
         --model_type ${model_type}
 }
 
-if [[ $# -lt 4 ]]; then
-    echo "Expected Syntax: '$0 <v100 | a100 | h100> model batchsize <vision | bert | transformer>"
+if [[ $# -lt 5 ]]; then
+    echo "Expected Syntax: '$0 <v100 | a100 | h100> <device_id> model batchsize <vision | bert | transformer>"
     echo "Examples:"
-    echo " $0 v100 vgg11 16 vision"
+    echo " $0 v100 0 vgg11 16 vision"
     exit 1
 fi
 

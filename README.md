@@ -12,12 +12,11 @@ Ref: [nvidia-developer-forum](https://developer.nvidia.com/nvidia-development-to
 
 ### How to run experiments
 ```
-WS=$(git rev-parse --show-toplevel)
-DOCKER_WS=~/$(basename ${WS})
-export USE_SUDO=1 # If you need sudo privileges to run docker commands (Optional)
-source helper.sh
-setup_tie_breaker_container
-${DOCKER} exec -it ${TIE_BREAKER_CTR} bash -c "cd ${DOCKER_WS} && bash"
+# Given a model mix runs experiment for 100% load using closed loop
+# Using the obtained results runs for various load mixes
+./run.sh --help
+
+# Runs a job mix for a particular configuration (Used by run.sh -- but is standalone as well)
 ./run_expr.sh --help
 ```
 
@@ -29,4 +28,14 @@ export USE_SUDO=1 # If you need sudo privileges to run docker commands (Optional
 source helper.sh
 cd packaging
 ./build.sh
+```
+
+
+### To generate new configuration file for orion
+```
+export USE_SUDO=1
+source helper.sh
+setup_orion_container <GPU_DEVICE_ID>
+[sudo] docker exec -it orion bash
+./prepare_orion_input_config.sh <v100 | a100 | h100> <device_id> <model> <batchsize> <vision | bert | transformer>
 ```

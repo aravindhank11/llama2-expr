@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 MODES=("mps-uncap" "orion" "ts")
 
@@ -42,8 +42,8 @@ generate_distribution_load() {
                 --mode ${mode} \
                 --load ${ratio} \
                 ${params}"
-            echo "${mode} ${ratio} ${cmd}"
-            #eval ${cmd} >> print_outs.txt 2>&1
+            echo "${mode} ${ratio}"
+            eval ${cmd} >> print_outs.txt 2>&1
         done
     done
 }
@@ -183,8 +183,8 @@ echo "TPUT: ${tput_metrics[@]}"
 rps=()
 for ((i=0; i<${num_procs}; i++))
 do
-    met=$(divide_and_round ${tput_metrics[$i]} ${batch_sizes[$i]})
-    rps+=(${met})
+   met=$(divide_and_round ${tput_metrics[$i]} ${batch_sizes[$i]})
+   rps+=(${met})
 done
 echo "RPS: ${rps[@]}"
 

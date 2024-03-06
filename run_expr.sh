@@ -67,7 +67,7 @@ export USE_SUDO=1
 num_procs=${#model_run_params[@]}
 source helper.sh
 
-if [[ -z ${device_type} || (${device_type} != "v100" && ${device_type} != "a100" && ${device_type} != "h100") ]]; then
+if [[ (${device_type} != "v100" && ${device_type} != "a100" && ${device_type} != "h100") ]]; then
     echo "Invalid device_type: ${device_type}"
     print_help
     exit 1
@@ -127,6 +127,12 @@ do
         print_help
         exit 1
     fi
+
+    if [[ ${model_types[$i]} != "llama" && ${model_types[$i]} != "vision" ]]; then
+        echo "Allowed model types: llama and vision. Got: ${model_types[$i]} from ${element}"
+        exit 1
+    fi
+
     rps[$i]=$(echo $element | cut -d'-' -f5)
 done
 
@@ -214,7 +220,6 @@ run_other_expr() {
             --rps ${rps[$c]} \
             --tid ${c}"
         eval $cmd
-        echo $cmd
         cmd_arr+=("${cmd}")
     done
     sleep 1
@@ -292,12 +297,13 @@ run_other_expr() {
 
 compute_stats()
 {
-    ${DOCKER} exec -it ${TIE_BREAKER_CTR} \
-        bash -c "python3 src/stats.py \
+    cmd="${DOCKER} exec -it ${TIE_BREAKER_CTR} \
+        python3 src/stats.py \
         --mode ${mode} \
         --load ${load} \
         --result_dir ${result_dir} \
         ${pkl_files[@]}"
+    eval ${cmd}
 }
 
 ${SUDO} nvidia-smi -i ${device_id} -pm ENABLED
