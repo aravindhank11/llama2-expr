@@ -26,7 +26,7 @@ for i, mode in enumerate(data["mode"].unique()):
     modes[mode] = colors[i]
 
 # Define hatch for each model
-hatch_styles = ["....", "////", "++", "xx", "\\\\\\\\", "----", "||||"]
+hatch_styles = ["////", "----", "\\\\\\\\", "....", "++", "xx", "----"]
 model_cols = [col for col in data.columns if col not in ["load", "mode"]]
 models = {}
 for i, model_name in enumerate(model_cols):
@@ -38,7 +38,7 @@ transparency = 0.6
 num_loads = len(data["load"].unique())
 
 # Plot
-fig, ax = plt.subplots(figsize=(100, 12))
+fig, ax = plt.subplots(figsize=(25, 10))
 
 mode_ctr = -1
 for mode, color in modes.items():
@@ -58,7 +58,7 @@ for mode, color in modes.items():
             bottom=bottom,
             color=color,
             hatch=hatch,
-            alpha=0.6,
+            alpha=0.5,
             label=f"{mode} / {model}"
         )
 
@@ -70,7 +70,7 @@ for mode, color in modes.items():
                 x_loc, y_loc,
                 "%d" % int(height),
                 ha="center", va="center", color="black",
-                weight="bold", fontsize=15
+                weight="bold", fontsize=12
             )
         bottom += col
 
@@ -81,13 +81,12 @@ x_ticks = [
 ]
 
 ax.set_xlabel("Load Values")
-ax.set_ylabel(f"{metricname} Metric", labelpad=300)
+ax.set_ylabel(f"{metricname} Metric", labelpad=10)
 ax.set_title(f"{metricname}")
 ax.set_xticks(x_ticks)
 ax.set_xticklabels(data["load"].unique())
 ax.legend()
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig(opt.png_file_path, dpi=400)
+plt.savefig(opt.png_file_path)
 plt.close()
-plt.show()
