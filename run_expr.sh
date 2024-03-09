@@ -211,7 +211,7 @@ run_other_expr() {
             export CUDA_MPS_ENABLE_PER_CTX_DEVICE_MULTIPROCESSOR_PARTITIONING=0
         fi
 
-        if [[ ${USE_DOCKER} == 1 ]]; then
+        if [[ ${USE_DOCKER} -eq 1 ]]; then
             docker_prefix="${DOCKER} exec -d -it ${TIE_BREAKER_CTR}"
         fi
 
@@ -223,6 +223,11 @@ run_other_expr() {
             --distribution_type ${distribution_types[$c]} \
             --rps ${rps[$c]} \
             --tid ${c}"
+
+        if [[ ${USE_DOCKER} -ne 1 ]]; then
+            cmd+=" > /dev/null 2>&1 &"
+        fi
+
         eval $cmd
         cmd_arr+=("${cmd}")
     done
@@ -311,6 +316,8 @@ compute_stats()
         --result_dir ${result_dir} \
         ${pkl_files[@]}"
     eval ${cmd}
+
+    echo "Results stored in: ${result_dir}"
 }
 
 ${SUDO} nvidia-smi -i ${device_id} -pm ENABLED

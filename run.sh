@@ -9,7 +9,8 @@ DOCKER_WS=~/$(basename ${WS})
 generate_closed_loop_load() {
     get_closed_loop_tput_csv
 
-    if [[ -f ${tput_csv_string} ]]; then
+    if [[ -f ${tput_csv} ]]; then
+        echo "Not running closed loop test as result is already available in ${tput_csv}"
         return
     fi
 
@@ -197,10 +198,6 @@ do
     models[$i]=$(echo $element | cut -d'-' -f2)
     batch_sizes[$i]=$(echo $element | cut -d'-' -f3)
 done
-
-
-# Setup docker for tie-breaker
-setup_tie_breaker_container ${device_id}
 
 # Generate closed loop load
 generate_closed_loop_load
