@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-MODES=("mps-uncap" "orion" "ts")
+MODES=("mig" "mps-uncap" "orion" "ts")
 
 source helper.sh
 WS=$(git rev-parse --show-toplevel)

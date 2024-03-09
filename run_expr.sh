@@ -181,6 +181,8 @@ run_orion_expr() {
     do
         pkl_files+=(${tmpdir}/${f})
     done
+
+    cleanup_orion_container
 }
 
 run_other_expr() {
@@ -198,25 +200,40 @@ run_other_expr() {
     chunk_id=($(nvidia-smi -L | grep MIG- | awk '{print $2}' | sed 's/)//g'))
     cmd_arr=()
 
+    if [[ ${USE_DOCKER} == 1 ]]; then
+        if [[ ${mode} == "mig" ]]; then
+            printf -v devices "%s," "${cci_uuid[@]}"
+            devices=${devices%,}
+            setup_tie_breaker_container ${devices}
+        else
+            setup_tie_breaker_container ${device_id}
+        fi
+    fi
+
+    cmd_device_id=${device_id}
+
     for (( c=0; c<${num_procs}; c++ ))
     do
         if [[ ${mode} == "mig" ]]; then
             echo "Setting ${chunk_id[$c]} for ${models[$c]}"
-            export CUDA_VISIBLE_DEVICES=${cci_uuid[$c]}
+            export_prefix="export CUDA_VISIBLE_DEVICES=${cci_uuid[$c]}"
         elif [[ ${mode} == "mps-miglike" || ${mode} == "mps-equi" ]]; then
             echo "Setting ${percent[$c]}% for ${models[$c]}"
-            export CUDA_MPS_ENABLE_PER_CTX_DEVICE_MULTIPROCESSOR_PARTITIONING=1
-            export CUDA_MPS_ACTIVE_THREAD_PERCENTAGE=${percent[$c]}
+            export_prefix="export CUDA_MPS_ENABLE_PER_CTX_DEVICE_MULTIPROCESSOR_PARTITIONING=1 && \
+            export CUDA_MPS_ACTIVE_THREAD_PERCENTAGE=${percent[$c]}"
         else
-            export CUDA_MPS_ENABLE_PER_CTX_DEVICE_MULTIPROCESSOR_PARTITIONING=0
+            export_prefix="export CUDA_MPS_ENABLE_PER_CTX_DEVICE_MULTIPROCESSOR_PARTITIONING=0"
         fi
 
         if [[ ${USE_DOCKER} -eq 1 ]]; then
-            docker_prefix="${DOCKER} exec -d -it ${TIE_BREAKER_CTR}"
+            # Assume only 1 device per container
+            docker_prefix="${DOCKER} exec -d -it ${TIE_BREAKER_CTR} bash -c '"
+            cmd_device_id=0
         fi
 
-        cmd="${docker_prefix} python3 src/batched_inference_executor.py  \
-            --device-id ${device_id} \
+        cmd="${docker_prefix} ${export_prefix} && \
+            python3 src/batched_inference_executor.py \
+            --device-id ${cmd_device_id} \
             --model-type ${model_types[$c]} \
             --model ${models[$c]} \
             --batch-size ${batch_sizes[$c]} \
@@ -224,7 +241,9 @@ run_other_expr() {
             --rps ${rps[$c]} \
             --tid ${c}"
 
-        if [[ ${USE_DOCKER} -ne 1 ]]; then
+        if [[ ${USE_DOCKER} -eq 1 ]]; then
+            cmd+="'"
+        else
             cmd+=" > /dev/null 2>&1 &"
         fi
 
@@ -303,13 +322,16 @@ run_other_expr() {
     done
 
     cleanup ${mode} ${device_id}
+    cleanup_tie_breaker_container
 }
 
 compute_stats()
 {
     if [[ ${USE_DOCKER} -eq 1 ]]; then
+        setup_tie_breaker_container ${device_id}
         docker_prefix="${DOCKER} exec -it ${TIE_BREAKER_CTR}"
     fi
+
     cmd="${docker_prefix} python3 src/stats.py \
         --mode ${mode} \
         --load ${load} \
@@ -321,10 +343,6 @@ compute_stats()
 }
 
 ${SUDO} nvidia-smi -i ${device_id} -pm ENABLED
-
-if [[ ${USE_DOCKER} == 1 ]]; then
-    setup_tie_breaker_container ${device_id}
-fi
 
 if [[ ${mode} == "orion" ]]; then
     run_orion_expr

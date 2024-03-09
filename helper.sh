@@ -54,6 +54,7 @@ function enable_mps_if_needed()
     local device_id=$2
     if [[ ${mode} == mps-* ]]; then
         echo "Enabling MPS"
+        export CUDA_VISIBLE_DEVICES=${device_id}
         ${SUDO} nvidia-smi -i ${device_id} -c EXCLUSIVE_PROCESS
         nvidia-cuda-mps-control -d
 
@@ -124,27 +125,27 @@ function cleanup_mig_if_needed()
 	exit_code=0
 	while :;
 	do
-		# Cleanup Compute Instances
-		ci_arr=($(${SUDO} nvidia-smi mig -lci | awk '{print $2}' | grep -P '^\d+$'))
-		gi_arr=($(${SUDO} nvidia-smi mig -lci | awk '{print $3}' | grep -P '^\d+$'))
-		i=0
-		while [[ $i -lt ${#gi_arr[*]} ]];
-		do
-			ci=${ci_arr[$i]}
-			gi=${gi_arr[$i]}
-			${SUDO} nvidia-smi mig -dci -ci ${ci} -gi ${gi}
-			i=$(( $i + 1))
-		done
+        # Cleanup Compute Instances
+        ci_arr=($(${SUDO} nvidia-smi mig -i ${device_id} -lci | awk '{print $7}' | grep -P '^\d+$'))
+        gi_arr=($(${SUDO} nvidia-smi mig -i ${device_id} -lci | awk '{print $3}' | grep -P '^\d+$'))
+        i=0
+        while [[ $i -lt ${#gi_arr[*]} ]];
+        do
+            ci=${ci_arr[$i]}
+            gi=${gi_arr[$i]}
+            ${SUDO} nvidia-smi mig -i ${device_id} -dci -ci ${ci} -gi ${gi}
+            i=$(( $i + 1))
+        done
 
-		# Cleanup GPU Instances
-		${SUDO} nvidia-smi mig -i ${device_id} -dgi
-		exit_code=$?
-		if [[ ${exit_code} -eq 0 || ${exit_code} -eq 6 ]]; then
-			break
-		fi
-		print "${SUDO} nvidia-smi mig -i ${device_id} -dgi failed. Trying in 1s"
-		sleep 1
-	done
+        # Cleanup GPU Instances
+        ${SUDO} nvidia-smi mig -i ${device_id} -dgi
+        exit_code=$?
+        if [[ ${exit_code} -eq 0 || ${exit_code} -eq 6 ]]; then
+            break
+        fi
+        echo "${SUDO} nvidia-smi mig -i ${device_id} -dgi failed. Trying in 1s"
+        sleep 1
+    done
 }
 
 function cleanup()
@@ -201,7 +202,7 @@ function setup_orion_container {
     local DOCKER_WS=/root/$(basename ${WS})
 
     # Setup container
-    ${DOCKER} rm -f ${ORION_CTR} >/dev/null 2>&1 || :
+    cleanup_orion_container
     ${DOCKER} run -v ${WS}:${DOCKER_WS} -it -d \
         -w ${DOCKER_WS} \
         --name ${ORION_CTR} \
@@ -231,13 +232,13 @@ function setup_orion_container {
 }
 
 function setup_tie_breaker_container {
-    local device_id=$1
+    local devices=$1
     local WS=$(git rev-parse --show-toplevel)
     local DOCKER_WS=/home/$USER/$(basename ${WS})
 
     # Setup container
-    ${DOCKER} rm -f ${TIE_BREAKER_CTR} >/dev/null 2>&1 || :
-    ${DOCKER} run -v ${WS}:${DOCKER_WS} -it -d \
+    cleanup_tie_breaker_container
+    cmd="${DOCKER} run -v ${WS}:${DOCKER_WS} -it -d \
         -v /etc/passwd:/etc/passwd:ro \
         -v /etc/group:/etc/group:ro \
         -v /tmp:/tmp \
@@ -245,9 +246,18 @@ function setup_tie_breaker_container {
         -u $(id -u $USER):$(id -g $USER) \
         --name ${TIE_BREAKER_CTR} \
         --ipc=host --pid=host \
-        --gpus "device=${device_id}" \
-        ${TIE_BREAKER_IMG} bash > /dev/null
-    sleep 2
+        --gpus '\"device=${devices}\"' \
+        ${TIE_BREAKER_IMG} bash > /dev/null"
+    echo ${cmd}
+    eval ${cmd}
+}
+
+function cleanup_tie_breaker_container {
+    ${DOCKER} rm -f ${TIE_BREAKER_CTR} >/dev/null 2>&1 || :
+}
+
+function cleanup_orion_container {
+    ${DOCKER} rm -f ${ORION_CTR} >/dev/null 2>&1 || :
 }
 
 function multiply_and_round() {
