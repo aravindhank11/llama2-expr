@@ -61,10 +61,12 @@ function enable_mps_if_needed()
     if [[ ${mode} == mps-* ]]; then
         echo "Enabling MPS"
         export CUDA_VISIBLE_DEVICES=${device_id}
+        export CUDA_MPS_PIPE_DIRECTORY=/tmp/mps_${device_id}
+        export CUDA_MPS_LOG_DIRECTORY=/tmp/mps_log_${device_id}
         ${SUDO} nvidia-smi -i ${device_id} -c EXCLUSIVE_PROCESS
         nvidia-cuda-mps-control -d
+        unset CUDA_VISIBLE_DEVICES CUDA_MPS_PIPE_DIRECTORY CUDA_MPS_LOG_DIRECTORY
 
-        # TODO: Needs fixing
         if [[ $(ps -eaf | grep nvidia-cuda-mps-control | grep -v grep | wc -l) -ne 1 ]]; then
             echo "Unable to enable MPS"
             exit 1
@@ -77,10 +79,12 @@ function disable_mps_if_needed()
     local mode=$1
     local device_id=$2
     if [[ ${mode} == mps-* ]]; then
+        export CUDA_MPS_PIPE_DIRECTORY=/tmp/mps_${device_id}
         echo quit | nvidia-cuda-mps-control
         ${SUDO} nvidia-smi -i ${device_id} -c DEFAULT
+        ${SUDO} rm -fr /tmp/mps_${device_id} || :
+        ${SUDO} rm -fr /tmp/mps_log_$i || :
 
-        # TODO: Needs fixing
         if [[ $(ps -eaf | grep nvidia-cuda-mps-control | grep -v grep | wc -l) -ne 0 ]]; then
             echo "Unable to disable MPS"
             exit 1

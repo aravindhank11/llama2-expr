@@ -213,8 +213,22 @@ run_other_expr() {
         fi
     fi
 
-    cmd_device_id=${device_id}
+    if [[ ${USE_DOCKER} -eq 1 ]]; then
+        # Assume only 1 device per container
+        docker_prefix="${DOCKER} exec -d -it ${TIE_BREAKER_CTR} bash -c '"
+    fi
 
+    # In MPS mode, we knowingly set CUDA_VISIBLE_DEVICES to 0 (not a code bug)
+    # Reasoning:
+    # * When CUDA_VISIBLE_DEVICES is set before launching the control daemon,
+    #   the devices will be remapped by the MPS server.
+    # * This means that if your system has devices 0, 1 and 2,
+    #   and if CUDA_VISIBLE_DEVICES is set to "0,2", then when a client
+    #   connects to the server it will see the remapped devices: device 0
+    #   and a device 1.
+    # * Therefore, keeping CUDA_VISIBLE_DEVICES set to "0,2"
+    #   when launching the client would lead to an error.
+    # Ref: https://docs.nvidia.com/deploy/mps/index.html#topic_5_2
     for (( c=0; c<${num_procs}; c++ ))
     do
         if [[ ${mode} == "mig" ]]; then
@@ -223,20 +237,20 @@ run_other_expr() {
         elif [[ ${mode} == "mps-miglike" || ${mode} == "mps-equi" ]]; then
             echo "Setting ${percent[$c]}% for ${models[$c]}"
             export_prefix="export CUDA_MPS_ENABLE_PER_CTX_DEVICE_MULTIPROCESSOR_PARTITIONING=1 && \
-            export CUDA_MPS_ACTIVE_THREAD_PERCENTAGE=${percent[$c]}"
+                           export CUDA_MPS_ACTIVE_THREAD_PERCENTAGE=${percent[$c]} && \
+                           export CUDA_MPS_PIPE_DIRECTORY=/tmp/mps_${device_id} && \
+                           export CUDA_VISIBLE_DEVICES=0"
+        elif [[ ${mode} == "mps-uncap" ]]; then
+            export_prefix="export CUDA_MPS_ENABLE_PER_CTX_DEVICE_MULTIPROCESSOR_PARTITIONING=0 && \
+                           export CUDA_MPS_PIPE_DIRECTORY=/tmp/mps_${device_id} && \
+                           export CUDA_VISIBLE_DEVICES=0"
         else
-            export_prefix="export CUDA_MPS_ENABLE_PER_CTX_DEVICE_MULTIPROCESSOR_PARTITIONING=0"
+            export_prefix="export CUDA_VISIBLE_DEVICES=${device_id}"
         fi
 
-        if [[ ${USE_DOCKER} -eq 1 ]]; then
-            # Assume only 1 device per container
-            docker_prefix="${DOCKER} exec -d -it ${TIE_BREAKER_CTR} bash -c '"
-            cmd_device_id=0
-        fi
 
         cmd="${docker_prefix} ${export_prefix} && \
             python3 src/batched_inference_executor.py \
-            --device-id ${cmd_device_id} \
             --model-type ${model_types[$c]} \
             --model ${models[$c]} \
             --batch-size ${batch_sizes[$c]} \
@@ -247,7 +261,7 @@ run_other_expr() {
         if [[ ${USE_DOCKER} -eq 1 ]]; then
             cmd+="'"
         else
-            cmd+=" > /dev/null 2>&1 &"
+            cmd+=" > /dev/null &"
         fi
 
         eval $cmd
