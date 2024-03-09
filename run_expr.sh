@@ -307,8 +307,8 @@ run_other_expr() {
 
 compute_stats()
 {
-    if [[ ${USE_DOCKER} == 1 ]]; then
-        docker_prefix="${DOCKER} exec -d -it ${TIE_BREAKER_CTR}"
+    if [[ ${USE_DOCKER} -eq 1 ]]; then
+        docker_prefix="${DOCKER} exec -it ${TIE_BREAKER_CTR}"
     fi
     cmd="${docker_prefix} python3 src/stats.py \
         --mode ${mode} \

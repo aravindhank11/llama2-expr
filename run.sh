@@ -5,6 +5,7 @@ MODES=("mps-uncap" "orion" "ts")
 source helper.sh
 WS=$(git rev-parse --show-toplevel)
 DOCKER_WS=~/$(basename ${WS})
+PRINT_OUTS=print_outs.txt
 
 generate_closed_loop_load() {
     get_closed_loop_tput_csv
@@ -26,9 +27,9 @@ generate_closed_loop_load() {
             --mode mps-uncap \
             --load 1 \
             ${params}"
+
     echo "Running closed loop experiment:"
-    echo "Command used: ${cmd}"
-    eval ${cmd}
+    eval ${cmd} >> ${PRINT_OUTS} 2>&1
 }
 
 generate_distribution_load() {
@@ -50,7 +51,7 @@ generate_distribution_load() {
                 --load ${ratio} \
                 ${params}"
             echo "${mode} ${ratio}"
-            eval ${cmd} >> print_outs.txt 2>&1
+            eval ${cmd} >> ${PRINT_OUTS} 2>&1
         done
     done
 }
@@ -200,6 +201,7 @@ do
 done
 
 # Generate closed loop load
+rm -f ${PRINT_OUTS}
 generate_closed_loop_load
 get_closed_loop_rps
 

@@ -55,7 +55,7 @@ function enable_mps_if_needed()
     if [[ ${mode} == mps-* ]]; then
         echo "Enabling MPS"
         ${SUDO} nvidia-smi -i ${device_id} -c EXCLUSIVE_PROCESS
-        ${SUDO} nvidia-cuda-mps-control -d
+        nvidia-cuda-mps-control -d
 
         # TODO: Needs fixing
         if [[ $(ps -eaf | grep nvidia-cuda-mps-control | grep -v grep | wc -l) -ne 1 ]]; then
