@@ -16,15 +16,21 @@ if [[ $USE_SUDO == 1 ]]; then
     DOCKER="sudo docker"
 fi
 
-if [[ ${USE_DOCKER} == 1 && ! -z ${VENV} ]]; then
-    echo "Set ONLY one of USE_DOCKER or VENV env variables and not both"
-    exit 1
-fi
+function helper_setup() {
+    if [[ ${USE_DOCKER} == 1 && ! -z ${VENV} ]]; then
+        echo "Set ONLY one of USE_DOCKER or VENV env variables and not both"
+        exit 1
+    fi
 
-if [[ ! -z ${VENV} ]]; then
-    source ${VENV}/bin/activate
-fi
+    if [[ ${USE_DOCKER} -ne 1 && -z ${VENV} ]]; then
+        echo "Set EXACTLY one of USE_DOCKER or VENV env variables"
+        exit 1
+    fi
 
+    if [[ ! -z ${VENV} ]]; then
+        source ${VENV}/bin/activate
+    fi
+}
 
 function is_mig_feature_available() {
     echo $(nvidia-smi --query-gpu=name --format=csv,noheader | egrep -i "a100|h100" | wc -l)
@@ -154,6 +160,8 @@ function cleanup()
     device_id=$2
     disable_mps_if_needed ${mode} ${device_id}
     cleanup_mig_if_needed ${mode} ${device_id}
+    cleanup_orion_container
+    cleanup_tie_breaker_container
 }
 
 function calc_mean_sd() {
@@ -215,13 +223,13 @@ function setup_orion_container {
     if [[ ! -f ${NSIGHT_COMPUTE_TAR} ]]; then
         # pip install gdown
         cmd="gdown --id 1_HY1FOIS6KP7dLTKRZ30Wliqc9P_N7hu"
-        eval ${cmd}
-        exit_code=$?
+        exit_code=0
+        eval ${cmd} || exit_code=1
         if [[ ${exit_code} -ne 0 ]]; then
             echo "gdown package not found!"
             echo "Install using: 'pip install gdown'"
-            echo "Or try running command: '${cmd}'"
-            return
+            echo "Or try running command: '${cmd}', fix it and re-call the script"
+            exit 1
         fi
     fi
     ${DOCKER} cp ${NSIGHT_COMPUTE_TAR} ${ORION_CTR}:/usr/local/ > /dev/null 2>&1
@@ -277,7 +285,5 @@ function divide_and_round() {
 
 mps_mig_percentages=("" "100" "57,43" "42,29,29" "29,29,28,14" "29,29,14,14,14" "29,15,14,14,14,14" "15,15,14,14,14,14,14")
 mps_equi_percentages=("" "100" "50,50" "34,33,33" "25,25,25,25" "20,20,20,20,20" "17,17,17,17,16,16" "15,15,14,14,14,14,14")
-mps_chunks_percentages=("" "14" "14,14" "14,14,14" "14,14,14,14" "14,14,14,14,14" "14,14,14,14,14,14" "14,14,14,14,14,14,14")
-attempts=10
 # Command to profile
 # nsys profile --stats=true --force-overwrite true --wait=all -o trial

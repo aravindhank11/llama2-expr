@@ -1,11 +1,16 @@
 #!/bin/bash -e
 
-MODES=("mig" "mps-uncap" "orion" "ts")
-
-source helper.sh
+source helper.sh && helper_setup
 WS=$(git rev-parse --show-toplevel)
 DOCKER_WS=~/$(basename ${WS})
 PRINT_OUTS=print_outs.txt
+
+print_log_location() {
+    echo "Exiting with error_code=$? (0 is clean exit)"
+    echo "Examine ${PRINT_OUTS} for logs"
+}
+
+trap print_log_location EXIT
 
 generate_closed_loop_load() {
     get_closed_loop_tput_csv
@@ -29,11 +34,14 @@ generate_closed_loop_load() {
             ${params}"
 
     echo "Running closed loop experiment:"
+    echo "Running closed loop experiment:" >> ${PRINT_OUTS}
+    echo "Running: ${cmd}" >> ${PRINT_OUTS}
     eval ${cmd} >> ${PRINT_OUTS} 2>&1
+    echo -e "===============================\n\n" >> ${PRINT_OUTS}
 }
 
 generate_distribution_load() {
-    for mode in ${MODES[@]}
+    for mode in ${modes[@]}
     do
         for ((i = $(multiply_and_round ${load_start} 10 0); i <= $(multiply_and_round ${load_end} 10 0); i++)); do
             ratio=$(echo "$load_start + ($i - 1) * $load_step" | bc)
@@ -51,7 +59,10 @@ generate_distribution_load() {
                 --load ${ratio} \
                 ${params}"
             echo "${mode} ${ratio}"
+            echo "${mode} ${ratio}" >> ${PRINT_OUTS}
+            echo "Running: ${cmd}" >> ${PRINT_OUTS}
             eval ${cmd} >> ${PRINT_OUTS} 2>&1
+            echo -e "===============================\n\n" >> ${PRINT_OUTS}
         done
     done
 }
@@ -89,6 +100,7 @@ print_help() {
     echo "Options:"
     echo "  --device-type   DEVICE_TYPE                   v100, a100, h100                                   (required)"
     echo "  --device-id     DEVICE_ID                     0, 1, 2, ..                                        (required)"
+    echo "  --modes         MODE1,MODE2,MODE3             mps-uncap,orion,ts,mig                             (default mps-uncap,ts)"
     echo "  --duration      DURATION_OF_EXPR_IN_SECONDS   10                                                 (default 120)"
     echo "  --distribution  DISTRIBUTION_TYPE             poisson, closed, point                             (default poisson)"
     echo "  --load-start    LOAD_START                    0.1                                                (default 0.1)"
@@ -115,6 +127,7 @@ distribution=poisson
 load_start=0.1
 load_end=1.5
 load_step=0.1
+modes=("mps-uncap" "ts")
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --device-type)
@@ -143,6 +156,11 @@ while [[ $# -gt 0 ]]; do
             ;;
         --load-step)
             load_step=$2
+            shift 2
+            ;;
+        --modes)
+            unset modes
+            IFS=',' read -r -a modes <<< "$2"
             shift 2
             ;;
         -h|--help)
@@ -181,6 +199,16 @@ if [[ ${distribution} != "poisson" && ${distribution} != "point" && ${distributi
     print_help
     exit 1
 fi
+
+for mode in ${modes[@]}
+do
+    if [[ ${mode} != "mps-uncap" && ${mode} != "mps-equi" && ${mode} != "mps-miglike" && ${mode} != "mig" && ${mode} != "ts" && ${mode} != "orion" ]]; then
+        echo "Invalid mode: ${mode}"
+        echo "Must be one of: mps-uncap, mps-equi, mps-miglike, mig, ts, orion"
+        print_help
+        exit 1
+    fi
+done
 
 pattern="^[^-]+-[^-]+-[^-]+$"
 model_types=()

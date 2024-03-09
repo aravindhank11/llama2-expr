@@ -63,9 +63,14 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+cleanup_handler() {
+    cleanup ${mode} ${device_id}
+}
+
 export USE_SUDO=1
 num_procs=${#model_run_params[@]}
-source helper.sh
+source helper.sh && helper_setup
+trap cleanup_handler EXIT
 
 if [[ (${device_type} != "v100" && ${device_type} != "a100" && ${device_type} != "h100") ]]; then
     echo "Invalid device_type: ${device_type}"
@@ -181,8 +186,6 @@ run_orion_expr() {
     do
         pkl_files+=(${tmpdir}/${f})
     done
-
-    cleanup_orion_container
 }
 
 run_other_expr() {
@@ -320,9 +323,6 @@ run_other_expr() {
             pkl_files+=(${pkl_file})
         fi
     done
-
-    cleanup ${mode} ${device_id}
-    cleanup_tie_breaker_container
 }
 
 compute_stats()

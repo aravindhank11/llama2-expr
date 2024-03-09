@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-source helper.sh
+source helper.sh && helper_setup
 
 print_help() {
     echo "Usage: ${0} [OPTIONS]"
