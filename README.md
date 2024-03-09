@@ -1,21 +1,34 @@
-### Enabling profiling
-* The following steps need to be run on the host to enable profiling
-* This is a 1 time setup activity
-```
-sudo bash -c 'echo "options nvidia NVreg_RestrictProfilingToAdminUsers=0" > /etc/modprobe.d/nvidia.conf'
-sudo update-initramfs -u -k all
-sudo sh -c 'echo 1 >/proc/sys/kernel/perf_event_paranoid'
-```
-Ref: [nvidia-developer-forum](https://developer.nvidia.com/nvidia-development-tools-solutions-err_nvgpuctrperm-permission-issue-performance-counters)
-* Follow OS specific instructions to install 'nvidia-container-toolkit'
+### Setup Environment
+* Follow one of the 2 methods below
+    * **Setup using Docker**
+        * Follow OS specific instructions to install `nvidia-container-toolkit`
+        * Install `docker`
+    * Setup using python virtual environment:
+        * `[sudo] apt install python3-venv`
+        * `python3 -m venv tie-breaker-venv`
+        * `source tie-breaker-venv/bin/activate`
+        * `pip install -r packaging/requirements.txt`
+* Follow the below steps if Benchmarking against Orion (Optional):
+    * Perform the following to enable benchmarking for Orion on the host:
+    ```
+    sudo bash -c 'echo "options nvidia NVreg_RestrictProfilingToAdminUsers=0" > /etc/modprobe.d/nvidia.conf'
+    sudo update-initramfs -u -k all
+    sudo sh -c 'echo 1 >/proc/sys/kernel/perf_event_paranoid'
+    ```
+    * Ref: [nvidia-developer-forum](https://developer.nvidia.com/nvidia-development-tools-solutions-err_nvgpuctrperm-permission-issue-performance-counters)
 
 
 ### How to run experiments
 ```
-export USE_SUDO=1
+export USE_SUDO=1  # If you want sudo to enable MPS, MIG, and use docker
+
+# Either use virtual environment
+export VENV=tie-breaker-venv
+# or docker (not both)
+export USE_DOCKER=1
 
 # Given a model mix runs experiment for 100% load using closed loop
-# Using the obtained results runs for various load mixes
+# Using the obtained results of closed runs for various loads of the model mixes
 ./run.sh --help
 
 # Runs a job mix for a particular configuration (Used by run.sh -- but is standalone as well)
@@ -26,14 +39,14 @@ export USE_SUDO=1
 ### To build your own docker image (Optional)
 ```
 # NOTE: Make sure to change the variable `TIE_BREAKER_IMG`
-export USE_SUDO=1 # If you need sudo privileges to run docker commands (Optional)
+export USE_SUDO=1 # If you want sudo to run docker commands
 source helper.sh
 cd packaging
 ./build.sh
 ```
 
 
-### To generate new configuration file for orion
+### To generate new configuration file for [Orion](Orion)
 ```
 export USE_SUDO=1
 source helper.sh

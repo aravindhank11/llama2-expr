@@ -211,8 +211,11 @@ run_other_expr() {
             export CUDA_MPS_ENABLE_PER_CTX_DEVICE_MULTIPROCESSOR_PARTITIONING=0
         fi
 
-        cmd="${DOCKER} exec -d -it ${TIE_BREAKER_CTR} \
-            python3 src/batched_inference_executor.py  \
+        if [[ ${USE_DOCKER} == 1 ]]; then
+            docker_prefix="${DOCKER} exec -d -it ${TIE_BREAKER_CTR}"
+        fi
+
+        cmd="${docker_prefix} python3 src/batched_inference_executor.py  \
             --device-id ${device_id} \
             --model-type ${model_types[$c]} \
             --model ${models[$c]} \
@@ -299,8 +302,10 @@ run_other_expr() {
 
 compute_stats()
 {
-    cmd="${DOCKER} exec -it ${TIE_BREAKER_CTR} \
-        python3 src/stats.py \
+    if [[ ${USE_DOCKER} == 1 ]]; then
+        docker_prefix="${DOCKER} exec -d -it ${TIE_BREAKER_CTR}"
+    fi
+    cmd="${docker_prefix} python3 src/stats.py \
         --mode ${mode} \
         --load ${load} \
         --result_dir ${result_dir} \
@@ -309,7 +314,11 @@ compute_stats()
 }
 
 ${SUDO} nvidia-smi -i ${device_id} -pm ENABLED
-setup_tie_breaker_container ${device_id}
+
+if [[ ${USE_DOCKER} == 1 ]]; then
+    setup_tie_breaker_container ${device_id}
+fi
+
 if [[ ${mode} == "orion" ]]; then
     run_orion_expr
 else

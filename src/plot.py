@@ -68,7 +68,7 @@ for mode, color in modes.items():
             y_loc = bottom[i] + height / 2.
             ax.text(
                 x_loc, y_loc,
-                "%d" % int(height),
+                "%.2f" % (height),
                 ha="center", va="center", color="black",
                 weight="bold", fontsize=12
             )

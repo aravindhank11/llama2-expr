@@ -7,6 +7,12 @@ WS=$(git rev-parse --show-toplevel)
 DOCKER_WS=~/$(basename ${WS})
 
 generate_closed_loop_load() {
+    get_closed_loop_tput_csv
+
+    if [[ -f ${tput_csv_string} ]]; then
+        return
+    fi
+
     params=""
     for (( i=0; i<${num_procs}; i++ ))
     do
@@ -48,6 +54,34 @@ generate_distribution_load() {
     done
 }
 
+
+get_closed_loop_tput_csv() {
+    # Gather metrics and generate RPS values
+    result_base=$(IFS=- ; echo "${models[*]}")
+    for i in "${!models[@]}"; do
+        concatenated_string="${concatenated_string}${models[$i]}-${batch_sizes[$i]}-closed_"
+    done
+    result_id=${concatenated_string%_}
+    tput_csv=results/hetro/${result_base}/${result_id}/tput.csv
+}
+
+
+get_closed_loop_rps() {
+    read -r -a tput_csv_string <<< "$(tail -n 1 $tput_csv | \
+        awk -v n=${num_procs} -F ',' \
+        '{split($0, a); for(i=NF-n+1; i<=NF; i++) printf "%s%s", a[i], (i==NF) ? "" : FS}')"
+    IFS=',' read -r -a tput_metrics <<< "$tput_csv_string"
+    echo "TPUT: ${tput_metrics[@]}"
+    rps=()
+    for ((i=0; i<${num_procs}; i++))
+    do
+       met=$(divide_and_round ${tput_metrics[$i]} ${batch_sizes[$i]})
+       rps+=(${met})
+    done
+    echo "RPS: ${rps[@]}"
+}
+
+
 print_help() {
     echo "Usage: ${0} [OPTIONS] model1-parameter model2-paramete ..."
     echo "Options:"
@@ -71,6 +105,7 @@ print_help() {
     echo "--> nvidia-smi -i 0 -mig ENABLED (OR) nvidia-smi -i 0 -mig DISABLED"
     echo "--> reboot"
 }
+
 
 model_run_params=()
 duration=120
@@ -169,24 +204,7 @@ setup_tie_breaker_container ${device_id}
 
 # Generate closed loop load
 generate_closed_loop_load
-
-# Gather metrics and generate RPS values
-result_base=$(IFS=- ; echo "${models[*]}")
-for i in "${!models[@]}"; do
-    concatenated_string="${concatenated_string}${models[$i]}-${batch_sizes[$i]}-closed_"
-done
-result_id=${concatenated_string%_}
-tput_csv=results/hetro/${result_base}/${result_id}/tput.csv
-read -r -a tput_csv_string <<< "$(tail -n 1 $tput_csv | awk -v n=${num_procs} -F ',' '{split($0, a); for(i=NF-n+1; i<=NF; i++) printf "%s%s", a[i], (i==NF) ? "" : FS}')"
-IFS=',' read -r -a tput_metrics <<< "$tput_csv_string"
-echo "TPUT: ${tput_metrics[@]}"
-rps=()
-for ((i=0; i<${num_procs}; i++))
-do
-   met=$(divide_and_round ${tput_metrics[$i]} ${batch_sizes[$i]})
-   rps+=(${met})
-done
-echo "RPS: ${rps[@]}"
+get_closed_loop_rps
 
 # Generate distribution load
 generate_distribution_load

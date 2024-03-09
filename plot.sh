@@ -38,7 +38,9 @@ if [[ -z ${plot_dir} ]]; then
     plot_dir=$(echo "${result_dir}" | sed 's|results|plots|')
 fi
 
-setup_tie_breaker_container
+if [[ ${USE_DOCKER} -eq 1 ]]; then
+    setup_tie_breaker_container
+fi
 
 for csv_path in $(ls ${result_dir}/*.csv)
 do
@@ -46,8 +48,11 @@ do
     basename_plot_path=$(echo "${basename_csv_path}" | sed 's|csv|png|')
     png_path=${plot_dir}/${basename_plot_path}
 
-    cmd="${DOCKER} exec -it ${TIE_BREAKER_CTR} \
-        python3 src/plot.py \
+    if [[ ${USE_DOCKER} -eq 1 ]]; then
+        docker_prefix="${DOCKER} exec -it ${TIE_BREAKER_CTR}"
+    fi
+
+    cmd="${docker_prefix} python3 src/plot.py \
         --csv-file-path ${csv_path} \
         --png-file-path ${png_path}"
     echo ${cmd}

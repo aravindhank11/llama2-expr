@@ -16,6 +16,16 @@ if [[ $USE_SUDO == 1 ]]; then
     DOCKER="sudo docker"
 fi
 
+if [[ ${USE_DOCKER} == 1 && ! -z ${VENV} ]]; then
+    echo "Set ONLY one of USE_DOCKER or VENV env variables and not both"
+    exit 1
+fi
+
+if [[ ! -z ${VENV} ]]; then
+    source ${VENV}/bin/activate
+fi
+
+
 function is_mig_feature_available() {
     echo $(nvidia-smi --query-gpu=name --format=csv,noheader | egrep -i "a100|h100" | wc -l)
 }
@@ -45,7 +55,7 @@ function enable_mps_if_needed()
     if [[ ${mode} == mps-* ]]; then
         echo "Enabling MPS"
         ${SUDO} nvidia-smi -i ${device_id} -c EXCLUSIVE_PROCESS
-        nvidia-cuda-mps-control -d
+        ${SUDO} nvidia-cuda-mps-control -d
 
         # TODO: Needs fixing
         if [[ $(ps -eaf | grep nvidia-cuda-mps-control | grep -v grep | wc -l) -ne 1 ]]; then
