@@ -17,7 +17,6 @@ from batched_inference import get_batched_inference_object
 
 WARMUP_REQS = 10
 LARGE_NUM_REQS = 100000
-MAX_QUEUE_SIZE = 1000
 ORION_LIB = "/root/orion/src/cuda_capture/libinttemp.so"
 
 
@@ -141,11 +140,7 @@ class BatchedInferenceExecutor:
         sleep_array_len = len(self._sleep_time)
         for i in range(num_reqs):
             queued_time = time.time()
-            if queue.qsize() < MAX_QUEUE_SIZE:
-                queue.put(queued_time)
-            else:
-                print("ALERT! Queue overflow!!!")
-
+            queue.put(queued_time)
             if self.finish:
                 break
             time.sleep(self._sleep_time[i % sleep_array_len])

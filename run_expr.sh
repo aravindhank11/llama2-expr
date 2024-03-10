@@ -64,7 +64,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 cleanup_handler() {
+    exit_code=$?
     cleanup ${mode} ${device_id}
+    exit ${exit_code}
 }
 
 export USE_SUDO=1
