@@ -286,6 +286,21 @@ function divide_and_round() {
     printf "%.2f\n" "$result"
 }
 
+function get_result_dir() {
+    declare -a models_arr=("${!1}")
+    declare -a batch_sizes_arr=("${!2}")
+    declare -a distribution_types_arr=("${!3}")
+    local device_type_arg=$4
+
+
+    local result_base=$(IFS=- ; echo "${models_arr[*]}")
+    for i in "${!models_arr[@]}"; do
+        concatenated_string="${concatenated_string}${models_arr[$i]}-${batch_sizes_arr[$i]}-${distribution_types_arr[$i]}_"
+    done
+    local result_id=${concatenated_string%_}
+    result_dir=results/${device_type_arg}/${result_base}/${result_id}
+}
+
 
 mps_mig_percentages=("" "100" "57,43" "42,29,29" "29,29,28,14" "29,29,14,14,14" "29,15,14,14,14,14" "15,15,14,14,14,14,14")
 mps_equi_percentages=("" "100" "50,50" "34,33,33" "25,25,25,25" "20,20,20,20,20" "17,17,17,17,16,16" "15,15,14,14,14,14,14")

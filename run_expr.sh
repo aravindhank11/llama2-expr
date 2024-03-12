@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 print_help() {
-    echo "Usage: ${0} [OPTIONS] model1-parameter model2-paramete ..."
+    echo "Usage: ${0} [OPTIONS] model1-parameter model2-parameter ..."
     echo "Options:"
     echo "  --device-type DEVICE_TYPE                   v100, a100, h100                                   (required)"
     echo "  --device-id   DEVICE_ID                     0, 1, 2, ..                                        (required)"
@@ -26,42 +26,45 @@ print_help() {
     echo "--> reboot"
 }
 
-# Parse arguments
-model_run_params=()
-load=1
-duration=180
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-        --device-type)
-            device_type="$2"
-            shift 2
-            ;;
-        --device-id)
-            device_id="$2"
-            shift 2
-            ;;
-        --duration)
-            duration="$2"
-            shift 2
-            ;;
-        --mode)
-            mode="$2"
-            shift 2
-            ;;
-        --load)
-            load="$2"
-            shift 2
-            ;;
-        -h|--help)
-            print_help
-            exit 0
-            ;;
-        *)
-            model_run_params+=("$1")
-            shift
-            ;;
-    esac
-done
+get_input() {
+    # Parse arguments
+    model_run_params=()
+    load=1
+    duration=180
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --device-type)
+                device_type="$2"
+                shift 2
+                ;;
+            --device-id)
+                device_id="$2"
+                shift 2
+                ;;
+            --duration)
+                duration="$2"
+                shift 2
+                ;;
+            --mode)
+                mode="$2"
+                shift 2
+                ;;
+            --load)
+                load="$2"
+                shift 2
+                ;;
+            -h|--help)
+                print_help
+                exit 0
+                ;;
+            *)
+                model_run_params+=("$1")
+                shift
+                ;;
+        esac
+    done
+    num_procs=${#model_run_params[@]}
+}
 
 cleanup_handler() {
     exit_code=$?
@@ -69,96 +72,88 @@ cleanup_handler() {
     exit ${exit_code}
 }
 
-export USE_SUDO=1
-num_procs=${#model_run_params[@]}
-source helper.sh && helper_setup
-trap cleanup_handler EXIT
 
-if [[ (${device_type} != "v100" && ${device_type} != "a100" && ${device_type} != "h100") ]]; then
-    echo "Invalid device_type: ${device_type}"
-    print_help
-    exit 1
-fi
-
-if [[ -z ${device_id} || ! ${device_id} =~ ^[0-9]+$ ]]; then
-    echo "Invalid device_id: ${device_id}"
-    print_help
-    exit 1
-fi
-
-if [[ -z ${duration} || ! ${duration} =~ ^[+-]?[0-9]*\.?[0-9]+$ ]]; then
-    echo "duration_in_seconds must be a float. Got ${duration}"
-    print_help
-    exit 1
-fi
-
-if [[ ${mode} != "mps-uncap" && ${mode} != "mps-equi" && ${mode} != "mps-miglike" && ${mode} != "mig" && ${mode} != "ts" && ${mode} != "orion" ]]; then
-    echo "Invalid mode: ${mode}"
-    print_help
-    exit 1
-fi
-
-if [[ -z ${load} || ! ${load} =~ ^[+-]?[0-9]*\.?[0-9]+$ ]]; then
-    echo "load must be a float. Got ${load}"
-    print_help
-    exit 1
-fi
-
-if [[ ${num_procs} -eq 0 ]]; then
-    echo "Need at least 1 model configuration to run"
-    print_help
-    exit 1
-fi
-
-model_types=()
-models=()
-batch_sizes=()
-distribution_types=()
-rps=()
-pattern="^[^-]+-[^-]+-[^-]+-[^-]+-[^-]+$"
-for (( i=0; i<${num_procs}; i++ ))
-do
-    element=${model_run_params[$i]}
-    if ! [[ "${element}" =~ $pattern ]]; then
-        echo "Expected: ModelType-Model-BatchSize-DistributionType-RPS"
-        echo "Got: ${element}"
-        echo "Example: vision-densenet121-32-point-30"
-        exit 1
-    fi
-    model_types[$i]=$(echo $element | cut -d'-' -f1)
-    models[$i]=$(echo $element | cut -d'-' -f2)
-    batch_sizes[$i]=$(echo $element | cut -d'-' -f3)
-    distribution_types[$i]=$(echo $element | cut -d'-' -f4)
-    if [[ ${distribution_types[$i]} != "poisson" && ${distribution_types[$i]} != "point" && ${distribution_types[$i]} != "closed" ]]; then
-        echo "Invalid distribution_type: ${distribution_types[$i]}"
+validate_input() {
+    if [[ (${device_type} != "v100" && ${device_type} != "a100" && ${device_type} != "h100") ]]; then
+        echo "Invalid device_type: ${device_type}"
         print_help
         exit 1
     fi
 
-    if [[ ${model_types[$i]} != "llama" && ${model_types[$i]} != "vision" ]]; then
-        echo "Allowed model types: llama and vision. Got: ${model_types[$i]} from ${element}"
+    if [[ -z ${device_id} || ! ${device_id} =~ ^[0-9]+$ ]]; then
+        echo "Invalid device_id: ${device_id}"
+        print_help
         exit 1
     fi
 
-    rps[$i]=$(echo $element | cut -d'-' -f5)
-done
+    if [[ -z ${duration} || ! ${duration} =~ ^[+-]?[0-9]*\.?[0-9]+$ ]]; then
+        echo "duration_in_seconds must be a float. Got ${duration}"
+        print_help
+        exit 1
+    fi
+
+    if [[ ${mode} != "mps-uncap" && ${mode} != "mps-equi" && ${mode} != "mps-miglike" && ${mode} != "mig" && ${mode} != "ts" && ${mode} != "orion" ]]; then
+        echo "Invalid mode: ${mode}"
+        print_help
+        exit 1
+    fi
+
+    if [[ -z ${load} || ! ${load} =~ ^[+-]?[0-9]*\.?[0-9]+$ ]]; then
+        echo "load must be a float. Got ${load}"
+        print_help
+        exit 1
+    fi
+
+    if [[ ${num_procs} -eq 0 ]]; then
+        echo "Need at least 1 model configuration to run"
+        print_help
+        exit 1
+    fi
+}
 
 
-echo "mode=${mode} num_procs=${num_procs}"
-echo "model_types=${model_types[@]}"
-echo "models=${models[@]}"
-echo "batch_sizes=${batch_sizes[@]}"
-echo "distribution_types=${distribution_types[@]}"
-echo "rps=${rps[@]}"
+parse_input() {
+    model_types=()
+    models=()
+    batch_sizes=()
+    distribution_types=()
+    rps=()
+    pattern="^[^-]+-[^-]+-[^-]+-[^-]+-[^-]+$"
+    for (( i=0; i<${num_procs}; i++ ))
+    do
+        element=${model_run_params[$i]}
+        if ! [[ "${element}" =~ $pattern ]]; then
+            echo "Expected: ModelType-Model-BatchSize-DistributionType-RPS"
+            echo "Got: ${element}"
+            echo "Example: vision-densenet121-32-point-30"
+            exit 1
+        fi
+        model_types[$i]=$(echo $element | cut -d'-' -f1)
+        models[$i]=$(echo $element | cut -d'-' -f2)
+        batch_sizes[$i]=$(echo $element | cut -d'-' -f3)
+        distribution_types[$i]=$(echo $element | cut -d'-' -f4)
+        if [[ ${distribution_types[$i]} != "poisson" && ${distribution_types[$i]} != "point" && ${distribution_types[$i]} != "closed" ]]; then
+            echo "Invalid distribution_type: ${distribution_types[$i]}"
+            print_help
+            exit 1
+        fi
 
-result_base=$(IFS=- ; echo "${models[*]}")
-for i in "${!models[@]}"; do
-    concatenated_string="${concatenated_string}${models[$i]}-${batch_sizes[$i]}-${distribution_types[$i]}_"
-done
-result_id=${concatenated_string%_}
-result_dir=results/hetro/${result_base}/${result_id}
-mkdir -p ${result_dir}
-cpu_mem_stats_file=${result_dir}/cpu_mem_stats_file
+        if [[ ${model_types[$i]} != "llama" && ${model_types[$i]} != "vision" ]]; then
+            echo "Allowed model types: llama and vision. Got: ${model_types[$i]} from ${element}"
+            exit 1
+        fi
+
+        rps[$i]=$(echo $element | cut -d'-' -f5)
+    done
+
+
+    echo "mode=${mode} num_procs=${num_procs}"
+    echo "model_types=${model_types[@]}"
+    echo "models=${models[@]}"
+    echo "batch_sizes=${batch_sizes[@]}"
+    echo "distribution_types=${distribution_types[@]}"
+    echo "rps=${rps[@]}"
+}
 
 run_orion_expr() {
     # Setup directory to collect stats
@@ -358,12 +353,26 @@ compute_stats()
     echo "Results stored in: ${result_dir}"
 }
 
-${SUDO} nvidia-smi -i ${device_id} -pm ENABLED
+setup_expr()
+{
+    source helper.sh && helper_setup
+    trap cleanup_handler EXIT
 
+    get_result_dir models[@] batch_sizes[@] distribution_types[@] ${device_type}
+    mkdir -p ${result_dir}
+    cpu_mem_stats_file=${result_dir}/cpu_mem_stats_file
+
+    ${SUDO} nvidia-smi -i ${device_id} -pm ENABLED
+}
+
+
+get_input $@
+validate_input
+parse_input
+setup_expr
 if [[ ${mode} == "orion" ]]; then
     run_orion_expr
 else
     run_other_expr
 fi
-
 compute_stats
