@@ -204,15 +204,15 @@ run_other_expr() {
         if [[ ${mode} == "mig" ]]; then
             printf -v devices "%s," "${cci_uuid[@]}"
             devices=${devices%,}
-            setup_tie_breaker_container ${devices}
+            setup_tie_breaker_container ${devices} ${run_uuid}
         else
-            setup_tie_breaker_container ${device_id}
+            setup_tie_breaker_container ${device_id} ${run_uuid}
         fi
     fi
 
     if [[ ${USE_DOCKER} -eq 1 ]]; then
         # Assume only 1 device per container
-        docker_prefix="${DOCKER} exec -d -it ${TIE_BREAKER_CTR} bash -c '"
+        docker_prefix="${DOCKER} exec -d -it ${tie_breaker_ctr} bash -c '"
     fi
 
     # In MPS mode, we knowingly set CUDA_VISIBLE_DEVICES to 0 (not a code bug)
@@ -253,7 +253,8 @@ run_other_expr() {
             --batch-size ${batch_sizes[$c]} \
             --distribution_type ${distribution_types[$c]} \
             --rps ${rps[$c]} \
-            --tid ${c}"
+            --tid ${c}
+            --uid ${run_uuid}"
 
         if [[ ${USE_DOCKER} -eq 1 ]]; then
             cmd+="'"
@@ -266,7 +267,9 @@ run_other_expr() {
     done
     sleep 1
 
-    readarray -t forked_pids < <(ps -eaf | grep batched_inference_executor.py | grep -v grep | grep -v docker | awk '{print $2}')
+    readarray -t forked_pids < <(ps -eaf | grep batched_inference_executor.py |
+                                 grep ${run_uuid} | grep -v grep |
+                                 grep -v docker | awk '{print $2}')
     if [[ ${#forked_pids[@]} -ne ${num_procs} ]]; then
         echo "Expected ${num_procs} processes. But found ${#forked_pids[@]}}"
         echo "Examine commands: "
@@ -339,8 +342,8 @@ run_other_expr() {
 compute_stats()
 {
     if [[ ${USE_DOCKER} -eq 1 ]]; then
-        setup_tie_breaker_container ${device_id}
-        docker_prefix="${DOCKER} exec -it ${TIE_BREAKER_CTR}"
+        setup_tie_breaker_container ${device_id} ${run_uuid}
+        docker_prefix="${DOCKER} exec -it ${tie_breaker_ctr}"
     fi
 
     cmd="${docker_prefix} python3 src/stats.py \
@@ -355,16 +358,24 @@ compute_stats()
 
 setup_expr()
 {
+    # Source helper
     source helper.sh && helper_setup
     trap cleanup_handler EXIT
 
+    # Find where to store results
     get_result_dir models[@] batch_sizes[@] distribution_types[@] ${device_type}
     mkdir -p ${result_dir}
     cpu_mem_stats_file=${result_dir}/cpu_mem_stats_file
 
+    # Enable PM in GPU
     ${SUDO} nvidia-smi -i ${device_id} -pm ENABLED
-}
 
+    # acquire lock on the GPU
+    lock_gpu ${device_id}
+
+    # Get unique id for the run
+    run_uuid=$(uuidgen)
+}
 
 get_input $@
 validate_input

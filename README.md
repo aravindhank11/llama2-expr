@@ -27,8 +27,8 @@ export VENV=tie-breaker-venv
 # or docker (not both)
 export USE_DOCKER=1
 
-# Given a model mix runs experiment for 100% load using closed loop
-# Using the obtained results of closed runs for various loads of the model mixes
+# Use it to run closed loop experiment
+# Once results for closed loop is obtained, use it to run for various loads of other distribution types
 ./run.sh --help
 
 # Runs a job mix for a particular configuration (Used by run.sh -- but is standalone as well)

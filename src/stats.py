@@ -9,6 +9,8 @@ import argparse
 import os
 import sys
 import pickle
+import atexit
+import fcntl
 import numpy as np
 import pandas as pd
 
@@ -22,6 +24,19 @@ METRIC_NAMES = [TPUT]
 for prefix in [TOTAL_PREFIX, QUEUED_PREFIX]:
     for percentile in PERCENTILES:
         METRIC_NAMES.append(f"{prefix}_p{percentile}")
+
+
+def acquire_lock():
+    print("Attempting to acquire stat lock")
+    global lock_fd
+    lock_fd = open(sys.argv[0], 'r+')
+    fcntl.flock(lock_fd, fcntl.LOCK_EX)  # Acquire an exclusive lock
+    print("Acquired stat lock")
+
+
+def release_lock():
+    fcntl.flock(lock_fd, fcntl.LOCK_UN)  # Release the lock
+    lock_fd.close()
 
 
 def load_pickle_file(file_path):
@@ -44,6 +59,9 @@ def create_dir(directory):
 
 
 if __name__ == "__main__":
+    acquire_lock()
+    atexit.register(release_lock)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", type=str, required=True)
     parser.add_argument("--load", type=float, required=True)

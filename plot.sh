@@ -49,7 +49,7 @@ do
     png_path=${plot_dir}/${basename_plot_path}
 
     if [[ ${USE_DOCKER} -eq 1 ]]; then
-        docker_prefix="${DOCKER} exec -it ${TIE_BREAKER_CTR}"
+        docker_prefix="${DOCKER} exec -it ${tie_breaker_ctr}"
     fi
 
     cmd="${docker_prefix} python3 src/plot.py \

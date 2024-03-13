@@ -3,7 +3,7 @@
 DOCKER="docker"
 
 # tie breaker details
-TIE_BREAKER_CTR="tie-breaker"
+TIE_BREAKER_CTR_PREFIX="tie-breaker"
 TIE_BREAKER_IMG="aravindhank11/tie-breaker"
 
 # orion details
@@ -158,6 +158,19 @@ function cleanup_mig_if_needed()
     done
 }
 
+function lock_gpu() {
+    local device_id=$1
+    echo "Attempting to acquire exclusive lock for GPU: ${device_id}"
+    exec 9>/tmp/gpu_${device_id}.lock
+    flock -x 9
+    echo "Acquired exclusive lock for GPU: ${device_id}"
+}
+
+function unlock_gpu() {
+    local device_id=$1
+    exec 9>&-
+}
+
 function cleanup()
 {
     mode=$1
@@ -165,7 +178,8 @@ function cleanup()
     disable_mps_if_needed ${mode} ${device_id}
     cleanup_mig_if_needed ${mode} ${device_id}
     cleanup_orion_container
-    cleanup_tie_breaker_container
+    cleanup_tie_breaker_containers
+    unlock_gpu ${device_id}
 }
 
 function calc_mean_sd() {
@@ -245,18 +259,28 @@ function setup_orion_container {
 
 function setup_tie_breaker_container {
     local devices=$1
+    local uuid=$2
     local WS=$(git rev-parse --show-toplevel)
     local DOCKER_WS=/home/$USER/$(basename ${WS})
 
+    if [[ -z ${devices} ]]; then
+        devices="all"
+    fi
+
+    if [[ -z ${uuid} ]]; then
+        uuid=$(uuidgen)
+    fi
+
     # Setup container
-    cleanup_tie_breaker_container
+    cleanup_tie_breaker_containers
+    tie_breaker_ctr=${TIE_BREAKER_CTR_PREFIX}"-"${uuid}
     cmd="${DOCKER} run -v ${WS}:${DOCKER_WS} -it -d \
         -v /etc/passwd:/etc/passwd:ro \
         -v /etc/group:/etc/group:ro \
         -v /tmp:/tmp \
         -w ${DOCKER_WS} \
         -u $(id -u $USER):$(id -g $USER) \
-        --name ${TIE_BREAKER_CTR} \
+        --name ${tie_breaker_ctr} \
         --ipc=host --pid=host \
         --gpus '\"device=${devices}\"' \
         ${TIE_BREAKER_IMG} bash > /dev/null"
@@ -264,12 +288,13 @@ function setup_tie_breaker_container {
     eval ${cmd}
 }
 
-function cleanup_tie_breaker_container {
-    ${DOCKER} rm -f ${TIE_BREAKER_CTR} >/dev/null 2>&1 || :
-}
-
 function cleanup_orion_container {
     ${DOCKER} rm -f ${ORION_CTR} >/dev/null 2>&1 || :
+}
+
+function cleanup_tie_breaker_containers {
+    ${DOCKER} ps -a | grep ${TIE_BREAKER_CTR_PREFIX} | awk '{print $NF}' | \
+        xargs -I{} ${DOCKER} rm -f {} >/dev/null 2>&1 || :
 }
 
 function multiply_and_round() {
