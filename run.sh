@@ -13,6 +13,37 @@ print_log_location() {
     exit ${exit_code}
 }
 
+run_cmd() {
+    local cmd_arg="$1"
+    local device_id_arg=$2
+    local mode_arg=$3
+    local duration_arg=$4
+
+    echo "Running: ${cmd_arg}" >> ${PRINT_OUTS}
+    eval "${cmd_arg} >> ${PRINT_OUTS} 2>&1 &"
+    run_expr_pid=$!
+
+    # Wait for the pipe to be created
+    pipe=/tmp/${run_expr_pid}
+    while [[ ! -p ${pipe} ]];
+    do
+        sleep 0.01
+    done
+
+    # Start the experiment
+    echo "{\"device_id\": ${device_id_arg}, \"mode\": \"${mode_arg}\"}" > ${pipe}
+
+    # Wait for duration_arg + delta
+    sleep $((duration_arg+5))
+
+    # Stop the experiment
+    echo "{\"mode\": \"stop\"}" > ${pipe}
+
+    # Wait for the process to exit
+    wait ${run_expr_pid}
+    echo -e "===============================\n\n" >> ${PRINT_OUTS}
+}
+
 generate_closed_loop_load() {
     for (( i=0; i<${num_procs}; i++ ))
     do
@@ -21,18 +52,11 @@ generate_closed_loop_load() {
 
     for mode in ${modes[@]}
     do
-        cmd="./run_expr.sh \
-                --device-type ${device_type} \
-                --device-id ${device_id} \
-                --duration ${duration} \
-                --mode ${mode} \
-                --load 1 \
-                ${params}"
+        cmd="./run_expr.sh --device-type ${device_type} --load 1 ${params}"
 
         log "Running closed loop experiment for ${mode}:"
-        echo "Running: ${cmd}" >> ${PRINT_OUTS}
-        eval ${cmd} >> ${PRINT_OUTS} 2>&1
-        echo -e "===============================\n\n" >> ${PRINT_OUTS}
+
+        run_cmd "${cmd}" ${device_id} ${mode} ${duration}
     done
 }
 
@@ -49,17 +73,15 @@ generate_distribution_load() {
                 mul=$(multiply_and_round ${ratio} ${rps[$j]})
                 params="$params ${model_types[$j]}-${models[$j]}-${batch_sizes[$j]}-${distribution}-${mul}"
             done
+
             cmd="./run_expr.sh \
                 --device-type ${device_type} \
-                --device-id ${device_id} \
-                --duration ${duration} \
-                --mode ${mode} \
                 --load ${ratio} \
                 ${params}"
+
             log "${mode} ${ratio}"
-            echo "Running: ${cmd}" >> ${PRINT_OUTS}
-            eval ${cmd} >> ${PRINT_OUTS} 2>&1
-            echo -e "===============================\n\n" >> ${PRINT_OUTS}
+
+            run_cmd "${cmd}" ${device_id} ${mode} ${duration}
         done
     done
 }

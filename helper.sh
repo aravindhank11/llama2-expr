@@ -7,7 +7,7 @@ TIE_BREAKER_CTR_PREFIX="tie-breaker"
 TIE_BREAKER_IMG="aravindhank11/tie-breaker"
 
 # orion details
-ORION_CTR="orion"
+ORION_CTR_PREFIX="orion"
 ORION_IMG="fotstrt/orion-ae:v1"
 ORION_FORK="orion-fork"
 
@@ -224,14 +224,20 @@ function wait_till_one_process_exits {
 
 function setup_orion_container {
     local device_id=$1
+    local uuid=$2
     local WS=$(git rev-parse --show-toplevel)
     local DOCKER_WS=/root/$(basename ${WS})
 
+    if [[ -z ${uuid} ]]; then
+        uuid=$(uuidgen)
+    fi
+
     # Setup container
     cleanup_orion_container
+    orion_ctr=${ORION_PREFIX}"-"${uuid}
     ${DOCKER} run -v ${WS}:${DOCKER_WS} -it -d \
         -w ${DOCKER_WS} \
-        --name ${ORION_CTR} \
+        --name ${orion_ctr} \
         --ipc=host --pid=host \
         --gpus "device=${device_id}" \
         ${ORION_IMG} bash > /dev/null
@@ -250,11 +256,11 @@ function setup_orion_container {
             exit 1
         fi
     fi
-    ${DOCKER} cp ${NSIGHT_COMPUTE_TAR} ${ORION_CTR}:/usr/local/ > /dev/null 2>&1
-    ${DOCKER} exec -it ${ORION_CTR} bash -c "tar -xf /usr/local/nsight-compute.tar -C /usr/local/ > /dev/null 2>&1"
-    ${DOCKER} exec -it ${ORION_CTR} bash -c "wget https://developer.nvidia.com/downloads/assets/tools/secure/nsight-systems/2024_1/nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb > /dev/null 2>&1"
-    ${DOCKER} exec -it ${ORION_CTR} bash -c "dpkg -i nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb > /dev/null 2>&1 && rm -f nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb"
-    ${DOCKER} exec -it ${ORION_CTR} bash -c "pip install transformers > /dev/null 2>&1"
+    ${DOCKER} cp ${NSIGHT_COMPUTE_TAR} ${orion_ctr}:/usr/local/ > /dev/null 2>&1
+    ${DOCKER} exec -it ${orion_ctr} bash -c "tar -xf /usr/local/nsight-compute.tar -C /usr/local/ > /dev/null 2>&1"
+    ${DOCKER} exec -it ${orion_ctr} bash -c "wget https://developer.nvidia.com/downloads/assets/tools/secure/nsight-systems/2024_1/nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb > /dev/null 2>&1"
+    ${DOCKER} exec -it ${orion_ctr} bash -c "dpkg -i nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb > /dev/null 2>&1 && rm -f nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb"
+    ${DOCKER} exec -it ${orion_ctr} bash -c "pip install transformers > /dev/null 2>&1"
 }
 
 function setup_tie_breaker_container {
@@ -289,7 +295,8 @@ function setup_tie_breaker_container {
 }
 
 function cleanup_orion_container {
-    ${DOCKER} rm -f ${ORION_CTR} >/dev/null 2>&1 || :
+    ${DOCKER} ps -a | grep ${ORION_CTR_PREFIX} | awk '{print $NF}' | \
+        xargs -I{} ${DOCKER} rm -f {} >/dev/null 2>&1 || :
 }
 
 function cleanup_tie_breaker_containers {
