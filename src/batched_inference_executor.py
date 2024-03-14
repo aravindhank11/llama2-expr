@@ -1,4 +1,3 @@
-import bisect
 import os
 import threading
 import pickle
@@ -9,11 +8,19 @@ import time
 import random
 import torch
 from ctypes import cdll
-from enum import Enum
 from queue import Queue
 from queue import Empty as QueueEmptyException
 import numpy as np
 from batched_inference import get_batched_inference_object
+from utils import (
+    OnlinePercentile,
+    AtomicBoolean,
+    DistributionType,
+    WatermarkType,
+    SysVQueue,
+    log,
+    orion_block,
+)
 
 
 WARMUP_REQS = 10
@@ -22,85 +29,23 @@ ORION_LIB = "/root/orion/src/cuda_capture/libinttemp.so"
 SLO_HISTORY_BUFFER_SIZE = 1000
 
 
-def log(filename, string):
-    with open(filename, "w") as h:
-        h.write(string)
-
-
-class DistributionType(Enum):
-    CLOSED = (1, "CLOSED")
-    POINT = (2, "POINT")
-    POISSON = (3, "POISSON")
-
-
-class WatermarkType(Enum):
-    HIGH = (1, "HIGH")
-    LOW = (2, "LOW")
-
-
-def block(backend_lib, it):
-    # block client until request served
-    backend_lib.block(it)
-
-
-class OnlinePercentile:
-    def __init__(self, p, buffer_size):
-        self._buffer_size = buffer_size
-        self._sorted_data = []
-        self._inorder_data = []
-        self._p = p
-        self._count = 0
-        self._prev_p = 0
-
-    def add_data(self, element):
-        if self._count < self._buffer_size:
-            bisect.insort(self._sorted_data, element)
-            self._count += 1
-        else:
-            # Remove the oldest element
-            remove_elm = self._inorder_data.pop(0)
-            remove_idx = bisect.bisect_left(self._sorted_data, remove_elm)
-            self._sorted_data.pop(remove_idx)
-
-            # Insert the new element
-            bisect.insort(self._sorted_data, element)
-
-        self._inorder_data.append(element)
-        prev_p = self._prev_p
-        index = int(self._count * self._p)
-        self._prev_p = self._sorted_data[index]
-        return prev_p, self._prev_p
-
-
-class AtomicBoolean:
-    def __init__(self, initial_value=False):
-        self._lock = threading.Lock()
-        self._value = initial_value
-
-    def flip(self):
-        with self._lock:
-            self._value = not self._value
-
-    def get(self):
-        with self._lock:
-            return self._value
-
-
 class BatchedInferenceExecutor:
     def __init__(
         self, model_obj, distribution_type, rps, tid,
-        num_infer=LARGE_NUM_REQS,
+        num_infer=sys.maxsize,
         thread_barrier=None,
         return_queue=None,
         duration=-1,
+        qid=-1,
         slo_percentile=0.9,
         slo_lw=float("inf"),
         slo_hw=float("inf"),
-        ctrl_grpc_channel=None
+        ctrl_grpc_channel=None,
     ):
         self.model_obj = model_obj
         self.num_infer = num_infer
         self.rps = rps
+        self.qid = qid
         self.duration = duration
         self.slo_low_wm = slo_lw
         self.slo_high_wm = slo_hw
@@ -122,6 +67,7 @@ class BatchedInferenceExecutor:
         # Process synchronization mechanism
         self.start = False
         self.finish = False
+        self.job_completed = False
 
         self._orion_lib = None
         self._reqs_completed = 0
@@ -168,7 +114,6 @@ class BatchedInferenceExecutor:
            (SLO Unbreached)
         """
         prev_p, p = self.opc.add_data(queueing_delay)
-        print(prev_p, p, self.slo_low_wm, self.slo_high_wm)
 
         # If we were earlier under SLO High Watermark, but just breached it
         # Let Controller know => MPS to MIG might take place
@@ -192,27 +137,42 @@ class BatchedInferenceExecutor:
                 slo_thread.daemon = True
                 slo_thread.start()
 
-    def run_infer_executor(self, num_reqs, is_warmup=False):
+    def dequeue_deferred_thread(self, queue):
+        sysvq = SysVQueue(self.qid, create_new_queue=False)
+        rcvd_items = sysvq.read_queue(queue)
+        print(f"Received {rcvd_items} from queue-{self.qid} (tid={self.tid})",
+              file=sys.stderr)
+
+    def run_infer_executor(self, num_reqs, i=0, is_warmup=False):
         # Create a queue to enqueue requests (for non closed-loop experiment)
         enqueue_thread = None
         if self.distribution_type != DistributionType.CLOSED:
             queue = Queue()
             enqueue_thread = threading.Thread(
                 target=self.enqueue_requests,
-                args=(queue, num_reqs)
+                args=(queue, num_reqs, is_warmup)
             )
             enqueue_thread.start()
+
+        # Enqueue any deferred request to the process
+        print(f"Before Starting Dequeue Thread {self.qid}")
+        if not is_warmup and self.qid != -1:
+            print("Starting Dequeue Thread")
+            deferred_dequeue_thread = threading.Thread(
+                target=self.dequeue_deferred_thread,
+                args=(queue,)
+            )
+            deferred_dequeue_thread.daemon = True
+            deferred_dequeue_thread.start()
 
         completed = 0
         total_time_arr = []
         queued_time_arr = []
-        i = 0
 
         process_start_time = time.time()
         while i < num_reqs:
-            if self.finish:
+            if self.job_completed:
                 break
-
             try:
                 if self.distribution_type != DistributionType.CLOSED:
                     queued_time = queue.get(block=True, timeout=1)
@@ -232,7 +192,7 @@ class BatchedInferenceExecutor:
                 self._slo_check(queueing_delay)
 
             if self._orion_lib:
-                block(self._orion_lib, i + self._reqs_completed)
+                orion_block(self._orion_lib, i + self._reqs_completed)
             i += 1
         process_end_time = time.time()
 
@@ -250,11 +210,13 @@ class BatchedInferenceExecutor:
 
     def _catch_to_end(self, signum, frame):
         self.finish = True
+        if self.distribution_type == DistributionType.CLOSED:
+            self.job_completed = True
 
     def _catch_to_start(self, signum, frame):
         self.start = True
 
-    def enqueue_requests(self, queue, num_reqs):
+    def enqueue_requests(self, queue, num_reqs, is_warmup):
         sleep_array_len = len(self._sleep_time)
         for i in range(num_reqs):
             queued_time = time.time()
@@ -262,6 +224,17 @@ class BatchedInferenceExecutor:
             if self.finish:
                 break
             time.sleep(self._sleep_time[i % sleep_array_len])
+
+        # Before exiting, dump all items of the queue
+        if not is_warmup:
+            pid = os.getpid()
+            sysvq = SysVQueue(pid, create_new_queue=True)
+            successful_sends = sysvq.dump_queue(queue)
+            print(
+                f"Sent {successful_sends} items on queue-{pid} (tid={self.tid})",
+                file=sys.stderr
+            )
+            self.job_completed = True
 
     def _retire_experiment(self):
         time.sleep(self.duration)
@@ -329,7 +302,8 @@ class BatchedInferenceExecutor:
         torch.cuda.cudart().cudaProfilerStart()
         torch.cuda.nvtx.range_push("start")
         infer_stats = self.run_infer_executor(
-            max(1, self.num_infer - self._reqs_completed),
+            self.num_infer + self._reqs_completed,
+            i=self._reqs_completed,
             is_warmup=False
         )
         torch.cuda.nvtx.range_pop()
@@ -346,10 +320,11 @@ if __name__ == "__main__":
     parser.add_argument("--model-type", type=str, default="vision")
     parser.add_argument("--model", type=str, default="resnet50")
     parser.add_argument("--batch-size", type=int, default=4)
-    parser.add_argument("--num-infer", type=int, default=LARGE_NUM_REQS)
+    parser.add_argument("--num-infer", type=int, default=sys.maxsize)
     parser.add_argument("--distribution_type", type=str, default="closed")
     parser.add_argument("--rps", type=float, default=30)
     parser.add_argument("--tid", type=int, default=0)
+    parser.add_argument("--qid", type=int, default=-1)
     parser.add_argument("--slo-percentile", type=float, default=0.9)
     parser.add_argument("--slo-lw", type=float, default=float("inf"))
     parser.add_argument("--slo-hw", type=float, default=float("inf"))
@@ -370,11 +345,12 @@ if __name__ == "__main__":
         opt.distribution_type,
         opt.rps,
         opt.tid,
+        qid=opt.qid,
         num_infer=opt.num_infer,
         slo_percentile=opt.slo_percentile,
         slo_lw=opt.slo_lw,
         slo_hw=opt.slo_hw,
-        ctrl_grpc_channel=opt.ctrl_grpc
+        ctrl_grpc_channel=opt.ctrl_grpc,
     )
 
     # Run experiment
