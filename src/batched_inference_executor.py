@@ -1,3 +1,4 @@
+import bisect
 import os
 import threading
 import pickle
@@ -18,6 +19,7 @@ from batched_inference import get_batched_inference_object
 WARMUP_REQS = 10
 LARGE_NUM_REQS = 100000
 ORION_LIB = "/root/orion/src/cuda_capture/libinttemp.so"
+SLO_HISTORY_BUFFER_SIZE = 1000
 
 
 def log(filename, string):
@@ -31,9 +33,57 @@ class DistributionType(Enum):
     POISSON = (3, "POISSON")
 
 
+class WatermarkType(Enum):
+    HIGH = (1, "HIGH")
+    LOW = (2, "LOW")
+
+
 def block(backend_lib, it):
     # block client until request served
     backend_lib.block(it)
+
+
+class OnlinePercentile:
+    def __init__(self, p, buffer_size):
+        self._buffer_size = buffer_size
+        self._sorted_data = []
+        self._inorder_data = []
+        self._p = p
+        self._count = 0
+        self._prev_p = 0
+
+    def add_data(self, element):
+        if self._count < self._buffer_size:
+            bisect.insort(self._sorted_data, element)
+            self._count += 1
+        else:
+            # Remove the oldest element
+            remove_elm = self._inorder_data.pop(0)
+            remove_idx = bisect.bisect_left(self._sorted_data, remove_elm)
+            self._sorted_data.pop(remove_idx)
+
+            # Insert the new element
+            bisect.insort(self._sorted_data, element)
+
+        self._inorder_data.append(element)
+        prev_p = self._prev_p
+        index = int(self._count * self._p)
+        self._prev_p = self._sorted_data[index]
+        return prev_p, self._prev_p
+
+
+class AtomicBoolean:
+    def __init__(self, initial_value=False):
+        self._lock = threading.Lock()
+        self._value = initial_value
+
+    def flip(self):
+        with self._lock:
+            self._value = not self._value
+
+    def get(self):
+        with self._lock:
+            return self._value
 
 
 class BatchedInferenceExecutor:
@@ -42,12 +92,27 @@ class BatchedInferenceExecutor:
         num_infer=LARGE_NUM_REQS,
         thread_barrier=None,
         return_queue=None,
-        duration=-1
+        duration=-1,
+        slo_percentile=0.9,
+        slo_lw=float("inf"),
+        slo_hw=float("inf"),
+        ctrl_grpc_channel=None
     ):
         self.model_obj = model_obj
         self.num_infer = num_infer
         self.rps = rps
         self.duration = duration
+        self.slo_low_wm = slo_lw
+        self.slo_high_wm = slo_hw
+        if slo_percentile < 0 or slo_percentile > 1:
+            print(f"slo percentile must be float between 0 and 1.")
+            print(f"Got: {slo_percentile}")
+            sys.exit(1)
+        self.opc = OnlinePercentile(slo_percentile, SLO_HISTORY_BUFFER_SIZE)
+        self.ctrl_slo_comm_running = AtomicBoolean(False)
+
+        if ctrl_grpc_channel:
+            self._setup_ctrl_grpc_channel()
 
         # Thread synchronization mechanism
         self.tid = tid
@@ -79,7 +144,55 @@ class BatchedInferenceExecutor:
             print("Allowed values: closed, point, poisson")
             sys.exit(1)
 
-    def run_infer_executor(self, num_reqs):
+    def _setup_ctrl_grpc_channel(self):
+        # TODO: @Prasoon to implement gRPC setup
+        pass
+
+    def _convey_slo_breach(self, watermark_type):
+        # TODO: @Prasoon to implement gRPC caller
+        # watermark_type: HIGH => We violated the SLO
+        #                 LOW  => We had earlier reported an SLO violation, but
+        #                         no longer have it
+        print(f"Reporting SLO VIOLATION {watermark_type}")
+
+        # Once communicated flip the atomic variable
+        self.ctrl_slo_comm_running.flip()
+
+    def _slo_check(self, queueing_delay):
+        """
+           (SLO Breached)
+        ---------------------- High water mark
+
+
+        ---------------------- Low water mark
+           (SLO Unbreached)
+        """
+        prev_p, p = self.opc.add_data(queueing_delay)
+        print(prev_p, p, self.slo_low_wm, self.slo_high_wm)
+
+        # If we were earlier under SLO High Watermark, but just breached it
+        # Let Controller know => MPS to MIG might take place
+        if prev_p <= self.slo_high_wm and p >= self.slo_high_wm:
+            if not self.ctrl_slo_comm_running.get():
+                self.ctrl_slo_comm_running.flip()
+                slo_thread = threading.Thread(
+                    target=self._convey_slo_breach, args=(WatermarkType.HIGH,)
+                )
+                slo_thread.daemon = True
+                slo_thread.start()
+
+        # If we were earlier above SLO Low Watermark, but fell below
+        # Let Controller know => MIG to MPS might take place
+        elif prev_p >= self.slo_low_wm and p <= self.slo_low_wm:
+            if not self.ctrl_slo_comm_running.get():
+                self.ctrl_slo_comm_running.flip()
+                slo_thread = threading.Thread(
+                    target=self._convey_slo_breach, args=(WatermarkType.LOW,)
+                )
+                slo_thread.daemon = True
+                slo_thread.start()
+
+    def run_infer_executor(self, num_reqs, is_warmup=False):
         # Create a queue to enqueue requests (for non closed-loop experiment)
         enqueue_thread = None
         if self.distribution_type != DistributionType.CLOSED:
@@ -112,7 +225,12 @@ class BatchedInferenceExecutor:
             end_time = time.time()
 
             total_time_arr.append(end_time - queued_time)
-            queued_time_arr.append(start_time - queued_time)
+            queueing_delay = start_time - queued_time
+            queued_time_arr.append(queueing_delay)
+
+            if not is_warmup:
+                self._slo_check(queueing_delay)
+
             if self._orion_lib:
                 block(self._orion_lib, i + self._reqs_completed)
             i += 1
@@ -202,7 +320,7 @@ class BatchedInferenceExecutor:
         self.model_obj.load_data()
 
         # Warm up the model
-        self.run_infer_executor(WARMUP_REQS)
+        self.run_infer_executor(WARMUP_REQS, is_warmup=True)
         self._reqs_completed += WARMUP_REQS
 
         # Ready for experiment
@@ -211,7 +329,8 @@ class BatchedInferenceExecutor:
         torch.cuda.cudart().cudaProfilerStart()
         torch.cuda.nvtx.range_push("start")
         infer_stats = self.run_infer_executor(
-            max(1, self.num_infer - self._reqs_completed)
+            max(1, self.num_infer - self._reqs_completed),
+            is_warmup=False
         )
         torch.cuda.nvtx.range_pop()
         torch.cuda.cudart().cudaProfilerStop()
@@ -231,6 +350,10 @@ if __name__ == "__main__":
     parser.add_argument("--distribution_type", type=str, default="closed")
     parser.add_argument("--rps", type=float, default=30)
     parser.add_argument("--tid", type=int, default=0)
+    parser.add_argument("--slo-percentile", type=float, default=0.9)
+    parser.add_argument("--slo-lw", type=float, default=float("inf"))
+    parser.add_argument("--slo-hw", type=float, default=float("inf"))
+    parser.add_argument("--ctrl-grpc", type=str, default=None)
     opt, unused_args = parser.parse_known_args()
 
     # Create batched inference object
@@ -247,7 +370,11 @@ if __name__ == "__main__":
         opt.distribution_type,
         opt.rps,
         opt.tid,
-        opt.num_infer
+        num_infer=opt.num_infer,
+        slo_percentile=opt.slo_percentile,
+        slo_lw=opt.slo_lw,
+        slo_hw=opt.slo_hw,
+        ctrl_grpc_channel=opt.ctrl_grpc
     )
 
     # Run experiment
