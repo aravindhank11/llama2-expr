@@ -93,13 +93,18 @@ if __name__ == "__main__":
         populate_stats(TOTAL_PREFIX, total_times, tid, metrics)
         populate_stats(QUEUED_PREFIX, queued_times, tid, metrics)
         metrics[TPUT][tid] = tput
-        models[tid] = f"{tid}_{model}"
+        if models[tid] == None:
+            models[tid] = f"{tid}_{model}"
+        else:
+            assert models[tid] == f"{tid}_{model}"
 
     # Create a DataFrame for each metric type
+    models = [x for x in models if x is not None]
     for metric_type, metrics_list in metrics.items():
         df_data = {
             model_name: metrics_list[i] for i, model_name in enumerate(models)
         }
+        print(df_data)
         df_data["mode"] = opt.mode
         df_data["load"] = opt.load
         df = pd.DataFrame(df_data, index=[metric_type])
