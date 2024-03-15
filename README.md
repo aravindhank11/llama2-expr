@@ -32,7 +32,7 @@ export USE_DOCKER=1
 ./run.sh --help
 
 # Runs a job mix for a particular configuration (Used by run.sh -- but is standalone as well)
-./run_expr.sh --help
+./run_job_mix.sh --help
 ```
 
 

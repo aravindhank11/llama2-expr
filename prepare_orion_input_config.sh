@@ -21,7 +21,7 @@ run_decorated_inference() {
         --model ${model} \
         --batch-size ${batch} \
         --num-infer 1 \
-        --distribution_type closed \
+        --distribution-type closed \
         --rps 0 \
         --tid 0 \
         ${post} &"

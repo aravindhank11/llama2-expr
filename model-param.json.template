@@ -1,0 +1,11 @@
+{
+    "model-type": ${model_type},
+    "model": ${model},
+    "batch-size": ${batch_size},
+    "distribution-type": ${distribution_type},
+    "rps": ${images_per_second},
+    "slo-percentile": ${slo_percentile},
+    "slo-lw": ${slo_lw},
+    "slo-hw": ${slo_hw},
+    "ctrl-grpc": ${ctrl_grpc}
+}
