@@ -90,6 +90,7 @@ get_rps() {
     closed_loop_result_dir=$(echo "${result_dir}" | sed "s|${distribution}|closed|g")
     tput_csv=${closed_loop_result_dir}/tput.csv
 
+    : '
     tput=()
     for ((i = 3; i <= 3 + ${num_procs}; i++));
     do
@@ -97,6 +98,20 @@ get_rps() {
         max_value=$(tail -n+2 ${tput_csv} | cut -d ',' -f${i} | sort -n | tail -1)
         tput+=(${max_value})
     done
+    '
+
+    max_sum=0
+	while IFS=, read -r mode load rest; do
+		IFS=, read -ra cols <<< "$rest"
+		sum=0
+		for col in "${cols[@]}"; do
+			sum=$(echo "$sum + $col" | bc)
+		done
+		if (( $(echo "$sum > $max_sum" | bc -l) )); then
+			max_sum=$sum
+			tput=("${cols[@]}")
+		fi
+	done < <(tail -n +2 "${tput_csv}")
 
     if [[ ${#tput[@]} -ne ${num_procs} ]]; then
         log "Unable to get throughput metrics for all models"

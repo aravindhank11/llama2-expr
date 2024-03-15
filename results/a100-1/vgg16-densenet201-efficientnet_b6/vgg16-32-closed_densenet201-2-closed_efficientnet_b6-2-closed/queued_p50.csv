@@ -1,0 +1,4 @@
+mode,load,0_vgg16-32,1_densenet201-2,2_efficientnet_b6-2
+mps-uncap,1.0,0.0,0.0,0.0
+ts,1.0,0.0,0.0,0.0
+mig,1.0,0.0,0.0,0.0

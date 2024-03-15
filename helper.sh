@@ -330,7 +330,7 @@ function get_result_dir() {
         concatenated_string="${concatenated_string}${models_arr[$i]}-${batch_sizes_arr[$i]}-${distribution_types_arr[$i]}_"
     done
     local result_id=${concatenated_string%_}
-    result_dir=results/${device_type_arg}/${result_base}/${result_id}
+    result_dir=results/${device_type_arg}-1/${result_base}/${result_id}
 }
 
 
