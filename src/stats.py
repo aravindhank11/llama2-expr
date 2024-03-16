@@ -104,7 +104,6 @@ if __name__ == "__main__":
         df_data = {
             model_name: metrics_list[i] for i, model_name in enumerate(models)
         }
-        print(df_data)
         df_data["mode"] = opt.mode
         df_data["load"] = opt.load
         df = pd.DataFrame(df_data, index=[metric_type])

@@ -375,6 +375,29 @@ function parse_model_parameters()
     done < <(echo "$@" | jq -c '.[]')
 }
 
+function safe_clean_gpu() {
+    declare -a procs_arg=("${!1}")
+    local mode_arg=$2
+    local device_id_arg=$3
+
+    if [[ ${#procs_arg[@]} -eq 0 ]]; then
+        return
+    fi
+
+    kill -SIGUSR2 ${procs_arg[@]}
+
+    # Wait for the process to clean up
+    for pid in "${procs_arg[@]}"
+    do
+        while taskset -c 0 kill -0 ${pid} >/dev/null 2>&1; do sleep 1; done
+    done
+
+    # Clean up the GPU for future use
+    disable_mps_if_needed ${mode_arg} ${device_id_arg}
+    cleanup_mig_if_needed ${mode_arg} ${device_id_arg}
+    unlock_gpu ${device_id_arg}
+}
+
 
 mps_mig_percentages=("" "100" "57,43" "42,29,29" "29,29,28,14" "29,29,14,14,14" "29,15,14,14,14,14" "15,15,14,14,14,14,14")
 mps_equi_percentages=("" "100" "50,50" "34,33,33" "25,25,25,25" "20,20,20,20,20" "17,17,17,17,16,16" "15,15,14,14,14,14,14")

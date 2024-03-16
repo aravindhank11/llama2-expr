@@ -3,9 +3,10 @@
 print_help() {
     echo "Usage: ${0} [OPTIONS] model1-parameter model2-parameter ..."
     echo "Options:"
-    echo "  --device-type DEVICE_TYPE                   v100, a100, h100                                   (required)"
-    echo "  --load        LOAD_INDICATOR                0.5, 0.2, 1                                        (default 1)"
-    echo "  -h, --help                                  Show this help message"
+    echo "  --device-type   DEVICE_TYPE                   v100, a100, h100                                   (required)"
+    echo "  --load          LOAD_INDICATOR                0.5, 0.2, 1                                        (default 1)"
+    echo "  --tie-breaker                                                                                    (pass flag for enabling tie-breaker)"
+    echo "  -h, --help                                    Show this help message"
     echo -e "\n"
 
     echo "NOTE:"
@@ -13,7 +14,9 @@ print_help() {
     echo -e "\n"
 
     echo "Example:"
-    echo " $0 --device-type v100 --load 1 '[{\"model-type\": \"vision\", \"model\": \"vgg19\", \"batch-size\": 32, \"distribution-type\": \"poisson\", \"rps\": 40}, {\"model-type\": \"vision\", \"model\": \"mobilenet_v2\", \"batch-size\": 4, \"distribution-type\": \"closed\", \"rps\": 0}]'"
+    echo " $0 --device-type a100 --load 1 '[{\"model-type\": \"vision\", \"model\": \"vgg19\", \"batch-size\": 32, \"distribution-type\": \"poisson\", \"rps\": 40}, {\"model-type\": \"vision\", \"model\": \"mobilenet_v2\", \"batch-size\": 4, \"distribution-type\": \"closed\", \"rps\": 0}]'"
+    echo ""
+    echo " $0 --device-type a100 --load 0.2 --tie-breaker '[{\"model-type\": \"vision\", \"model\": \"vgg19\", \"batch-size\": 32, \"distribution-type\": \"poisson\", \"rps\": 40}, {\"model-type\": \"vision\", \"model\": \"mobilenet_v2\", \"batch-size\": 4, \"distribution-type\": \"point\", \"rps\": 220}]'"
     echo -e "\n"
 
     echo "NOTE: MIG must be enabled | disabled explicitly followed by a reboot"
@@ -24,6 +27,7 @@ print_help() {
 get_input() {
     # Parse arguments
     load=1
+    is_tie_breaker=false
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --device-type)
@@ -33,6 +37,10 @@ get_input() {
             --load)
                 load="$2"
                 shift 2
+                ;;
+            --tie-breaker)
+                is_tie_breaker=true
+                shift 1
                 ;;
             -h|--help)
                 print_help
@@ -64,7 +72,7 @@ cleanup_handler() {
     # Clean the modes ran
     for ((i=0; i<${#modes_ran[@]}; i++))
     do
-        cleanup ${modes_ran[$i]} ${device_ids_ran[$i]}
+        cleanup ${modes_ran[$i]} ${device_ids_ran[$i]} || :
     done
 
     # Clean up the fifo pipe created
@@ -311,9 +319,6 @@ run_expr()
     local procs=()
     local prev=()
 
-    # Number of modes run
-    num_modes_run=0
-
     read_fifo ${fifo_pipe}
     while [[ ${mode_to_run} != "stop" ]];
     do
@@ -335,39 +340,29 @@ run_expr()
         fi
 
         # Make the previously started processes to stop
-        if [[ ${#prev[@]} -gt 0 ]]; then
-            kill -SIGUSR2 ${prev[@]}
-        fi
-
-        # increment the number of runs
-        num_modes_run=$((num_modes_run+1))
-        mode_run=${mode_to_run}
+        safe_clean_gpu prev[@] ${prev_mode_run} ${prev_device_id_run}
 
         # Make current => previous
         prev=("${loaded_procs[@]}")
         procs+=( "${loaded_procs[@]}" )
 
+        # Keep track of previous state
+        prev_mode_run=${mode_to_run}
         prev_device_id_run=${device_id_to_run}
         read_fifo ${fifo_pipe}
-        unlock_gpu ${prev_device_id_run}
+    done
+
+    # Read the queue that is being dumped by the last procs
+    for prev_pid in ${prev[@]}
+    do
+        read_queue ${prev_pid}
     done
 
     # Make sure to stop all inferences
-    if [[ ${#prev[@]} -gt 0 ]]; then
-        kill -SIGUSR2 ${prev[@]}
-        for prev_pid in ${prev[@]}
-        do
-            read_queue ${prev_pid}
-        done
-    fi
+    safe_clean_gpu prev[@] ${prev_mode_run} ${prev_device_id_run}
 
     # Clean the created pipe
     rm -f ${mode_arg_pipe}
-
-    # Update the mode_run
-    if [[ ${num_modes_run} -gt 1 ]]; then
-        mode_run="tie-breaker"
-    fi
 
     # Get stats
     pkl_files=()
@@ -375,11 +370,13 @@ run_expr()
     do
         while taskset -c 0 kill -0 ${pid} >/dev/null 2>&1; do sleep 1; done
         pkl_file="/tmp/${pid}.pkl"
-        if [[ -f ${pkl_file} ]]; then
-            pkl_files+=(${pkl_file})
-        fi
+        pkl_files+=(${pkl_file})
     done
 
+    mode_run=${prev_mode_run}
+    if [[ ${is_tie_breaker} == true ]]; then
+        mode_run="tie-breaker"
+    fi
     if [[ ${#pkl_files[@]} -gt 0 ]]; then
         compute_stats pkl_files[@] ${mode_run} ${load} ${result_dir}
     else
