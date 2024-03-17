@@ -219,7 +219,7 @@ function setup_orion_container {
         unset gpu_filter
     fi
 
-    orion_ctr=${ORION_CTR_PREFIX}"-"${uuid}
+    orion_ctr=${ORION_CTR_PREFIX}"-"${uuid_arg}
     cmd="${DOCKER} run -v ${WS}:${DOCKER_WS} -it -d \
         -w ${DOCKER_WS} \
         --name ${orion_ctr} \
@@ -252,7 +252,7 @@ function setup_orion_container {
     ${DOCKER} exec -it ${orion_ctr} bash -c "tar -xf /usr/local/nsight-compute.tar -C /usr/local/ > /dev/null 2>&1"
     ${DOCKER} exec -it ${orion_ctr} bash -c "wget https://developer.nvidia.com/downloads/assets/tools/secure/nsight-systems/2024_1/nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb > /dev/null 2>&1"
     ${DOCKER} exec -it ${orion_ctr} bash -c "dpkg -i nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb > /dev/null 2>&1 && rm -f nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb"
-    ${DOCKER} exec -it ${orion_ctr} bash -c "pip install transformers > /dev/null 2>&1"
+    ${DOCKER} exec -it ${orion_ctr} bash -c "pip install transformers sysv_ipc psutil > /dev/null 2>&1"
 }
 
 function cleanup_orion_containers {
@@ -334,6 +334,8 @@ function parse_model_parameters()
         distribution_types+=(${dt})
 
     done < <(echo "$@" | jq -c '.[]')
+
+    model_run_params_raw="$@"
 }
 
 function safe_clean_gpu() {

@@ -138,19 +138,18 @@ run_orion_expr() {
     setup_orion_container ${device_id_arg} ${run_uuid_arg}
 
     # Run the experiment
-    # TODO: Fix duration
-    model_defn_string="${model_run_params[*]}"
-    ${DOCKER} exec -it ${ORION_CTR} bash -c \
+    duration=120
+    ${DOCKER} exec -it ${orion_ctr} bash -c \
         "LD_PRELOAD='/root/orion/src/cuda_capture/libinttemp.so' \
         python3.8 src/orion_scheduler.py \
         --device-type ${device_type} \
         --duration ${duration} \
-        ${model_defn_string}"
+        --model-details '${model_run_params_raw}'"
 
     # Copy the results
     rm -f ${tmpdir}/*
-    ${DOCKER} exec ${ORION_CTR} sh -c "ls /tmp/*.pkl" | while read -r file; do
-        ${DOCKER} cp orion:${file} ${tmpdir}
+    ${DOCKER} exec ${orion_ctr} sh -c "ls /tmp/*.pkl" | while read -r file; do
+        ${DOCKER} cp ${orion_ctr}:${file} ${tmpdir}
     done
 
     # Collect the pickle files
@@ -323,6 +322,7 @@ run_expr()
         # Start the experiment
         if [[ ${mode_to_run} == "orion" ]]; then
             run_orion_expr ${mode_to_run} ${device_id_to_run} ${run_uuid}
+            return
         else
             run_other_expr ${mode_to_run} ${device_id_to_run} ${run_uuid} prev[@]
         fi
@@ -338,6 +338,12 @@ run_expr()
         prev_mode_run=${mode_to_run}
         prev_device_id_run=${device_id_to_run}
         read_fifo ${fifo_pipe}
+
+        # Break if not tie-breaker
+        if [[ ${is_tie_breaker} != true ]]; then
+            echo "Not run with --tie-breaker flag! Force breaking"
+            break
+        fi
     done
 
     # Read the queue that is being dumped by the last procs

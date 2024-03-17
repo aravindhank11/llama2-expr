@@ -46,11 +46,12 @@ class BatchedInferenceExecutor:
         self.num_infer = num_infer
         self.rps = rps
         self.qid = qid
+        self.tid = tid
         self.duration = duration
         self.slo_low_wm = slo_lw
         self.slo_high_wm = slo_hw
         if slo_percentile < 0 or slo_percentile > 1:
-            print(f"slo percentile must be float between 0 and 1.")
+            print("slo percentile must be float between 0 and 1.")
             print(f"Got: {slo_percentile}")
             sys.exit(1)
         self.opc = OnlinePercentile(slo_percentile, SLO_HISTORY_BUFFER_SIZE)
@@ -60,7 +61,6 @@ class BatchedInferenceExecutor:
             self._setup_ctrl_grpc_channel()
 
         # Thread synchronization mechanism
-        self.tid = tid
         self.thread_barrier = thread_barrier
         self.return_queue = return_queue
 
@@ -70,7 +70,6 @@ class BatchedInferenceExecutor:
         self.job_completed = False
 
         self._orion_lib = None
-        self._reqs_completed = 0
         if os.path.exists(ORION_LIB):
             self._orion_lib = cdll.LoadLibrary(ORION_LIB)
 
@@ -155,11 +154,9 @@ class BatchedInferenceExecutor:
             enqueue_thread.start()
 
         # Enqueue any deferred request to the process
-        print(f"Before Starting Dequeue Thread {self.qid}")
         if (not is_warmup and self.qid != -1 and
             self.distribution_type != DistributionType.CLOSED
         ):
-            print("Starting Dequeue Thread")
             deferred_dequeue_thread = threading.Thread(
                 target=self.dequeue_deferred_thread,
                 args=(queue,)
@@ -194,7 +191,7 @@ class BatchedInferenceExecutor:
                 self._slo_check(queueing_delay)
 
             if self._orion_lib:
-                orion_block(self._orion_lib, i + self._reqs_completed)
+                orion_block(self._orion_lib, i)
             i += 1
         process_end_time = time.time()
 
@@ -229,13 +226,17 @@ class BatchedInferenceExecutor:
 
         # Before exiting, dump all items of the queue
         if not is_warmup:
-            pid = os.getpid()
-            sysvq = SysVQueue(pid, create_new_queue=True)
-            successful_sends = sysvq.dump_queue(queue)
-            print(
-                f"Sent {successful_sends} items on queue-{pid} (tid={self.tid})",
-                file=sys.stderr
-            )
+            if self.thread_barrier:
+                while not queue.empty():
+                    queue.get()
+            else:
+                pid = os.getpid()
+                sysvq = SysVQueue(pid, create_new_queue=True)
+                successful_sends = sysvq.dump_queue(queue)
+                print(
+                    f"Sent {successful_sends} items on queue-{pid} (tid={self.tid})",
+                    file=sys.stderr
+                )
             self.job_completed = True
 
     def _retire_experiment(self):
@@ -296,7 +297,7 @@ class BatchedInferenceExecutor:
 
         # Warm up the model
         self.run_infer_executor(WARMUP_REQS, is_warmup=True)
-        self._reqs_completed += WARMUP_REQS
+        reqs_completed = WARMUP_REQS
 
         # Ready for experiment
         self._indicate_ready()
@@ -304,8 +305,8 @@ class BatchedInferenceExecutor:
         torch.cuda.cudart().cudaProfilerStart()
         torch.cuda.nvtx.range_push("start")
         infer_stats = self.run_infer_executor(
-            self.num_infer + self._reqs_completed,
-            i=self._reqs_completed,
+            self.num_infer + reqs_completed,
+            i=reqs_completed,
             is_warmup=False
         )
         torch.cuda.nvtx.range_pop()

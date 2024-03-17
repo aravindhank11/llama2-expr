@@ -8,6 +8,7 @@ from ctypes import (
 )
 import argparse
 import os
+import json
 import pickle
 from queue import Queue
 from threading import Barrier, Thread
@@ -27,26 +28,13 @@ ORION_SCHEDULER_LIB_PATH = "/root/orion/src/scheduler/scheduler_eval.so"
 
 class ModelDetails:
     def __init__(self, device_type, model_description):
-        md_list = model_description.split("-")
         self.device_type = device_type
-        self.model_type = self._parse(md_list, "model_type", 0, str)
-        self.model_name = self._parse(md_list, "model_name", 1, str)
-        self.batch_size = self._parse(md_list, "batch_size", 2, int)
-        self.distribution_type = self._parse(
-            md_list, "distribution_type", 3, str
-        )
-        self.rps = self._parse(md_list, "rps", 4, float)
+        self.model_type = model_description["model-type"]
+        self.model_name = model_description["model"]
+        self.batch_size = model_description["batch-size"]
+        self.distribution_type = model_description["distribution-type"]
+        self.rps = model_description["rps"]
         self._get_kernel_details()
-
-    def _parse(self, md_list, id_, pos, type_):
-        if len(md_list) < pos + 1:
-            raise ValueError(f"Unable to parse '{id_}'")
-        val = md_list[pos]
-
-        try:
-            return type_(val)
-        except:
-            raise ValueError(f"Unable to convert {id_} to '{type_}'")
 
     def _get_kernel_details(self):
         self.kernel_file = (
@@ -181,16 +169,11 @@ if __name__ == "__main__":
     parser.add_argument("--device-type", type=str, required=True)
     parser.add_argument("--device-id", type=int, default=0)
     parser.add_argument("--duration", type=int, required=True)
-    parser.add_argument(
-        "model_details",
-        metavar="<model_type>-<model_name>-<batch_size>-<distribution_type>-<rps>",
-        nargs="+",
-        help="List of model and details"
-    )
+    parser.add_argument("--model-details", type=str, required=True)
     opt = parser.parse_args()
 
     model_details = []
-    for model_detail in opt.model_details:
+    for model_detail in json.loads(opt.model_details):
         model_details.append(ModelDetails(opt.device_type, model_detail))
 
     spin_orion_scheduler(opt.device_id, opt.duration, model_details)
