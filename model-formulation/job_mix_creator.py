@@ -1,4 +1,4 @@
-from random import choices
+from random import choices, shuffle
 import sqlite3
 import ast
 
@@ -191,6 +191,9 @@ def filter_tested_combos(num_models):
 
     filtered_combos_set = valid_combos_set - tested_combos_set
     filtered_combos = list([list(tuple_combo) for tuple_combo in filtered_combos_set])
+    print(filtered_combos[0])
+    shuffle(filtered_combos)
+    print(filtered_combos[0])
 
     # Save the combinations to a file -- this is done because we can't reproduce the same combination orders do to sets being used
     with open('./job_mixes/combos_{}.txt'.format(num_models), 'w') as fp:
