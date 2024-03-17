@@ -260,8 +260,6 @@ def extract_nsys_data(profile_dir, model, batch_size):
     return load_time, image_load_time, model_size
 
         
-
-
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type=str, default='vgg11', 
