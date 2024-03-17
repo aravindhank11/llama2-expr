@@ -7,3 +7,4 @@ torchaudio
 pandas
 gdown
 matplotlib
+sysv_ipc
