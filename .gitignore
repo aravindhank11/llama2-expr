@@ -5,3 +5,6 @@
 *output_ncu_sms_roofline.csv
 *output_nsys.nsys-rep
 *raw_ncu.csv
+*nsys_gputrace.csv
+*output_nsys.sqlite
+model-formulation/catboost_info/*
