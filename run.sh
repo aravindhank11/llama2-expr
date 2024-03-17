@@ -1,6 +1,5 @@
 #!/bin/bash -e
 
-PRINT_OUTS=print_outs.txt
 log() {
     echo -e "$@"
     echo -e "$@" >> ${PRINT_OUTS}
@@ -13,26 +12,99 @@ print_log_location() {
     exit ${exit_code}
 }
 
-generate_closed_loop_load() {
-    for (( i=0; i<${num_procs}; i++ ))
+run_cmd() {
+    local cmd_arg="$1"
+    local device_id_arg=$2
+    local mode_arg=$3
+    local duration_arg=$4
+
+    echo "Running: ${cmd_arg}" >> ${PRINT_OUTS}
+    eval "${cmd_arg} >> ${PRINT_OUTS} 2>&1 &"
+    run_expr_pid=$!
+
+    # Wait for the pipe to be created
+    pipe=/tmp/${run_expr_pid}
+    local ctr=0
+    while [[ ! -p ${pipe} && $ctr -lt 100 ]];
     do
-        params="$params ${model_types[$i]}-${models[$i]}-${batch_sizes[$i]}-closed-0"
+        sleep 0.01
+        ctr=$((ctr+1))
     done
 
+    # Start the experiment
+    timeout 1 bash -c "echo '{\"device-id\": ${device_id_arg}, \"mode\": \"${mode_arg}\"}' > ${pipe}"
+
+    # Wait for duration_arg + delta
+    duration_arg_with_delta=$((duration_arg+5))
+    local ctr=0
+    while :
+    do
+        sleep 1
+        ctr=$((ctr+1))
+
+        # Waiting for sleep duration
+        if [[ ${ctr} -eq ${duration_arg_with_delta} ]]; then
+            break
+        fi
+
+        # If the experiment dies before that => then error
+        if ! taskset -c 0 kill -0 ${run_expr_pid} 2>/dev/null; then
+            exit 1
+        fi
+    done
+
+    # Stop the experiment
+    timeout 1 bash -c "echo '{\"mode\": \"stop\"}' > ${pipe}"
+
+    # Wait for the process to exit
+    wait ${run_expr_pid}
+    run_expr_exit_code=$?
+    if [[ ${run_expr_exit_code} -ne 0 ]]; then
+        exit ${run_expt_exit_code}
+    fi
+    echo -e "===============================\n\n" >> ${PRINT_OUTS}
+}
+
+generate_json_input() {
+    export model_type="\"$1\""
+    export model="\"$2\""
+    export batch_size=$3
+    export distribution_type="\"$4"\"
+    export images_per_second=$5
+    export slo_percentile=0
+    export slo_hw=1000000000
+    export slo_lw=1000000000
+    export ctrl_grpc=null
+
+    template=$(cat model-param.json.template)
+    json_input=$(echo $template | envsubst)
+
+    unset model_type model batch_size distribution_type images_per_second
+    unset slo_percentile slo_hw slo_lw ctrl_grpc
+}
+
+generate_model_params() {
+    declare -a json_arr=("${!1}")
+    model_params='[]'
+    for json_str in "${json_arr[@]}"; do
+        model_params=$(jq ". += [$json_str]" <<< "$model_params")
+    done
+}
+
+generate_closed_loop_load() {
+    json_array=()
+    for (( i=0; i<${num_procs}; i++ ))
+    do
+        generate_json_input ${model_types[$i]} ${models[$i]} ${batch_sizes[$i]} "closed" 0
+        json_array+=("${json_input}")
+    done
+
+    generate_model_params json_array[@]
     for mode in ${modes[@]}
     do
-        cmd="./run_expr.sh \
-                --device-type ${device_type} \
-                --device-id ${device_id} \
-                --duration ${duration} \
-                --mode ${mode} \
-                --load 1 \
-                ${params}"
-
-        log "Running closed loop experiment for ${mode}:"
-        echo "Running: ${cmd}" >> ${PRINT_OUTS}
-        eval ${cmd} >> ${PRINT_OUTS} 2>&1
-        echo -e "===============================\n\n" >> ${PRINT_OUTS}
+        cmd="./run_job_mix.sh --device-type ${device_type} --load 1 '${model_params}'"
+        log "Running closed loop experiment for ${mode}"
+        run_cmd "${cmd}" ${device_id} ${mode} ${duration}
     done
 }
 
@@ -43,23 +115,24 @@ generate_distribution_load() {
     do
         for ((i = $(multiply_and_round ${load_start} 10 0); i <= $(multiply_and_round ${load_end} 10 0); i++)); do
             ratio=$(echo "$load_start + ($i - 1) * $load_step" | bc)
-            params=""
+            json_array=()
             for ((j=0; j<${num_procs}; j++))
             do
                 mul=$(multiply_and_round ${ratio} ${rps[$j]})
-                params="$params ${model_types[$j]}-${models[$j]}-${batch_sizes[$j]}-${distribution}-${mul}"
+                echo ${mul}
+                generate_json_input ${model_types[$i]} ${models[$i]} ${batch_sizes[$i]} ${distribution} ${mul}
+                json_array+=("${json_input}")
             done
-            cmd="./run_expr.sh \
+
+            generate_model_params json_array[@]
+            cmd="./run_job_mix.sh \
                 --device-type ${device_type} \
-                --device-id ${device_id} \
-                --duration ${duration} \
-                --mode ${mode} \
                 --load ${ratio} \
-                ${params}"
+                '${model_params}'"
+
             log "${mode} ${ratio}"
-            echo "Running: ${cmd}" >> ${PRINT_OUTS}
-            eval ${cmd} >> ${PRINT_OUTS} 2>&1
-            echo -e "===============================\n\n" >> ${PRINT_OUTS}
+
+            run_cmd "${cmd}" ${device_id} ${mode} ${duration}
         done
     done
 }
@@ -68,13 +141,24 @@ get_rps() {
     closed_loop_result_dir=$(echo "${result_dir}" | sed "s|${distribution}|closed|g")
     tput_csv=${closed_loop_result_dir}/tput.csv
 
-    tput=()
-    for ((i = 3; i <= 3 + ${num_procs}; i++));
-    do
-        echo "tail -n+2 ${tput_csv} | cut -d ',' -f${i} | sort -n | tail -1"
-        max_value=$(tail -n+2 ${tput_csv} | cut -d ',' -f${i} | sort -n | tail -1)
-        tput+=(${max_value})
-    done
+    max_sum=0
+    while IFS=, read -r mode load rest; do
+        IFS=, read -ra cols <<< "$rest"
+        sum=0
+        for col in "${cols[@]}"; do
+            sum=$(echo "$sum + $col" | bc)
+        done
+        if (( $(echo "$sum > $max_sum" | bc -l) )); then
+            max_sum=$sum
+            tput=("${cols[@]}")
+        fi
+    done < <(tail -n +2 "${tput_csv}")
+
+    if [[ ${#tput[@]} -ne ${num_procs} ]]; then
+        log "Unable to get throughput metrics for all models"
+        exit 1
+    fi
+    log "TPUTS: ${tput[@]}"
 
     if [[ ${#tput[@]} -ne ${num_procs} ]]; then
         log "Unable to get throughput metrics for all models"
@@ -243,7 +327,9 @@ setup_expr() {
     done
     get_result_dir models[@] batch_sizes[@] distribution_types[@] ${device_type}
     trap print_log_location EXIT
+    PRINT_OUTS=/tmp/print_outs-$(uuidgen | cut -c 1-8).txt
     rm -f ${PRINT_OUTS}
+    echo "Logs at ${PRINT_OUTS}"
 }
 
 

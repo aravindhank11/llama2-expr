@@ -22,17 +22,15 @@
 ```
 export USE_SUDO=1  # If you want sudo to enable MPS, MIG, and use docker
 
-# Either use virtual environment
+# Use python virtual environment
 export VENV=tie-breaker-venv
-# or docker (not both)
-export USE_DOCKER=1
 
 # Use it to run closed loop experiment
 # Once results for closed loop is obtained, use it to run for various loads of other distribution types
 ./run.sh --help
 
 # Runs a job mix for a particular configuration (Used by run.sh -- but is standalone as well)
-./run_expr.sh --help
+./run_job_mix.sh --help
 ```
 
 

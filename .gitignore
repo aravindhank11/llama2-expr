@@ -8,3 +8,4 @@
 *nsys_gputrace.csv
 *output_nsys.sqlite
 model-formulation/catboost_info/*
+print_outs.txt
