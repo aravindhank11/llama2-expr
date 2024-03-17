@@ -26,12 +26,12 @@ while IFS= read -r line && [ $counter -lt 50 ]; do
         result_line="$result_line vision-$concatenated"
     done
     model_mixes+=("$result_line")
-done < <(sed -n "${start_line},+1p" "$input_file")
+done < <(sed -n "${start_line},+50p" "$input_file")
 
 for model_mix in "${model_mixes[@]}"
 do
     # ./run.sh --device-type a100 --device-id 0 --modes mps-uncap --distribution closed ${model_mix}
-    cmd="./run.sh --device-type a100 --device-id ${device_id} --modes mps-uncap --duration 10 --distribution closed ${model_mix}"
+    cmd="./run.sh --device-type a100 --device-id ${device_id} --modes mps-uncap --duration 60 --distribution closed ${model_mix}"
     echo "${model_mix}"
-    eval $cmd
+    # eval $cmd
 done
