@@ -59,6 +59,8 @@ modes_ran=()
 device_ids_ran=()
 uuids_ran=()
 cleanup_handler() {
+    original_x=$(set +o | grep xtrace)
+    set -x
     local job_mix_exit_code=$?
 
     # Kill any pending procs
@@ -66,7 +68,7 @@ cleanup_handler() {
         IFS="|"
         uuid_grep="${uuids_ran[*]}"
         unset IFS
-        ps -eaf | grep batched_inference_executor.py | grep "${uuid_grep}" |
+        ps -eaf | grep batched_inference_executor.py | egrep "${uuid_grep}" |
             grep -v grep | awk '{print $2}' |
             xargs -I{} kill -9 {} || :
     fi
@@ -77,6 +79,7 @@ cleanup_handler() {
     # Clean the modes ran
     for ((y=0; y<${#modes_ran[@]}; y++))
     do
+        echo "Cleaning up for ${modes_ran[$y]} on ${device_ids_ran[$y]}"
         cleanup ${modes_ran[$y]} ${device_ids_ran[$y]} || :
     done
 
@@ -88,6 +91,7 @@ cleanup_handler() {
 
     # Exit with the exit code with which the handler was called
     echo "Exiting with Error code: ${job_mix_exit_code} (0 is clean exit)"
+    eval "$original_x"
     exit ${job_mix_exit_code}
 }
 
@@ -115,14 +119,11 @@ validate_input() {
 read_queue() {
     local qid=$1
 
-    cmd="python3 -c \
-        \"from src.utils import SysVQueue; \
+    (timeout 5 python3 -c \
+        "from src.utils import SysVQueue; \
         from queue import Queue; \
-        SysVQueue(${qid}, create_new_queue=False).read_queue(Queue())\""
-
-    echo "Runnning: '${cmd}'"
-
-    eval ${cmd} &
+        SysVQueue(${qid}, create_new_queue=False).read_queue(Queue())" || :) &
+    read_queue_pids+=($!)
 }
 
 run_orion_expr() {
@@ -216,8 +217,11 @@ run_other_expr() {
         fi
 
 
+        # Assumes: we can run 7 models in parallel in a device
+        cpu=$(((device_id_arg * 7) + (c+1)))
+
         cmd="${export_prefix} && \
-            python3 src/batched_inference_executor.py \
+            taskset -c ${cpu} python3 src/batched_inference_executor.py \
             ${model_run_params[$c]} \
             --tid ${c}
             --uid ${run_uuid_arg}"
@@ -290,6 +294,7 @@ read_fifo()
 {
     pipe_name=$1
     read json_data < ${pipe_name}
+    echo "Got: ${json_data}"
     mode_to_run=$(echo "$json_data" | jq -r '.mode')
     device_id_to_run=$(echo "$json_data" | jq -r '.["device-id"]')
     modes_ran+=(${mode_to_run})
@@ -336,6 +341,7 @@ run_expr()
     done
 
     # Read the queue that is being dumped by the last procs
+    read_queue_pids=()
     for prev_pid in ${prev[@]}
     do
         read_queue ${prev_pid}
@@ -346,6 +352,13 @@ run_expr()
 
     # Clean the created pipe
     rm -f ${mode_arg_pipe}
+
+    # Wait for the read queue_pid to exit
+    for read_queue_pid in ${read_queue_pids[@]}
+    do
+        echo "Waiting for read-pid ${read_queue_pid} to exit..."
+        wait ${read_queue_pid}
+    done
 
     # Get stats
     pkl_files=()
@@ -385,7 +398,7 @@ compute_stats()
 
 setup_expr()
 {
-    #trap cleanup_handler EXIT
+    trap cleanup_handler EXIT
 
     # Find where to store results
     get_result_dir models[@] batch_sizes[@] distribution_types[@] ${device_type}

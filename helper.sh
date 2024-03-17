@@ -15,7 +15,7 @@ fi
 function helper_setup() {
     if [[ -z ${VENV} ]]; then
         echo "Set VENV env variables"
-        exit 1
+        return 1
     fi
 
     if [[ ! -z ${VENV} ]]; then
@@ -34,13 +34,13 @@ function assert_mig_status()
     if [[ ${mode} == "mig" ]]; then
         if [[ $(${SUDO} nvidia-smi -i ${device_id} --query-gpu=mig.mode.current --format=csv | grep "Enabled" | wc -l) -eq 0 ]]; then
             echo "MIG mode not enabled"
-            exit 1
+            return 1
         fi
     else
 	mig_gpu=$(is_mig_feature_available)
         if [[ $mig_gpu -ne 0 && $(${SUDO} nvidia-smi -i ${device_id} --query-gpu=mig.mode.current --format=csv | grep "Disabled" | wc -l) -eq 0 ]]; then
             echo "MIG mode is not disabled"
-            exit 1
+            return 1
         fi
     fi
 }
@@ -57,11 +57,6 @@ function enable_mps_if_needed()
         ${SUDO} nvidia-smi -i ${device_id} -c EXCLUSIVE_PROCESS
         nvidia-cuda-mps-control -d
         unset CUDA_VISIBLE_DEVICES CUDA_MPS_PIPE_DIRECTORY CUDA_MPS_LOG_DIRECTORY
-
-        if [[ $(ps -eaf | grep nvidia-cuda-mps-control | grep -v grep | wc -l) -ne 1 ]]; then
-            echo "Unable to enable MPS"
-            exit 1
-        fi
     fi
 }
 
@@ -75,11 +70,6 @@ function disable_mps_if_needed()
         ${SUDO} nvidia-smi -i ${device_id} -c DEFAULT
         ${SUDO} rm -fr /tmp/mps_${device_id} || :
         ${SUDO} rm -fr /tmp/mps_log_$i || :
-
-        if [[ $(ps -eaf | grep nvidia-cuda-mps-control | grep -v grep | wc -l) -ne 0 ]]; then
-            echo "Unable to disable MPS"
-            exit 1
-        fi
     fi
 }
 
@@ -336,7 +326,7 @@ function parse_model_parameters()
             echo "Required key missing."
             echo "One of 'model', 'batch-size', 'model-type' or 'distribution-type'"
             echo "Check: '${element}'"
-            exit 1
+            return 1
         fi
 
         models+=(${model})

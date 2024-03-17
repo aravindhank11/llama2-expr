@@ -156,7 +156,9 @@ class BatchedInferenceExecutor:
 
         # Enqueue any deferred request to the process
         print(f"Before Starting Dequeue Thread {self.qid}")
-        if not is_warmup and self.qid != -1:
+        if (not is_warmup and self.qid != -1 and
+            self.distribution_type != DistributionType.CLOSED
+        ):
             print("Starting Dequeue Thread")
             deferred_dequeue_thread = threading.Thread(
                 target=self.dequeue_deferred_thread,

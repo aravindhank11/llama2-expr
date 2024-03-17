@@ -1,6 +1,5 @@
 #!/bin/bash -e
 
-PRINT_OUTS=print_outs.txt
 log() {
     echo -e "$@"
     echo -e "$@" >> ${PRINT_OUTS}
@@ -25,7 +24,7 @@ run_cmd() {
 
     # Wait for the pipe to be created
     pipe=/tmp/${run_expr_pid}
-    ctr=0
+    local ctr=0
     while [[ ! -p ${pipe} && $ctr -lt 100 ]];
     do
         sleep 0.01
@@ -36,7 +35,23 @@ run_cmd() {
     timeout 1 bash -c "echo '{\"device-id\": ${device_id_arg}, \"mode\": \"${mode_arg}\"}' > ${pipe}"
 
     # Wait for duration_arg + delta
-    sleep $((duration_arg+5))
+    duration_arg_with_delta=$((duration_arg+5))
+    local ctr=0
+    while :
+    do
+        sleep 1
+        ctr=$((ctr+1))
+
+        # Waiting for sleep duration
+        if [[ ${ctr} -eq ${duration_arg_with_delta} ]]; then
+            break
+        fi
+
+        # If the experiment dies before that => then error
+        if ! taskset -c 0 kill -0 ${run_expr_pid} 2>/dev/null; then
+            exit 1
+        fi
+    done
 
     # Stop the experiment
     timeout 1 bash -c "echo '{\"mode\": \"stop\"}' > ${pipe}"
@@ -312,7 +327,9 @@ setup_expr() {
     done
     get_result_dir models[@] batch_sizes[@] distribution_types[@] ${device_type}
     trap print_log_location EXIT
+    PRINT_OUTS=/tmp/print_outs-$(uuidgen | cut -c 1-8).txt
     rm -f ${PRINT_OUTS}
+    echo "Logs at ${PRINT_OUTS}"
 }
 
 
