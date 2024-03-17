@@ -2,7 +2,9 @@
 
 log() {
     echo -e "$@"
-    echo -e "$@" >> ${PRINT_OUTS}
+    if [[ ! -z ${PRINT_OUTS} ]]; then
+        echo -e "$@" >> ${PRINT_OUTS}
+    fi
 }
 
 print_log_location() {

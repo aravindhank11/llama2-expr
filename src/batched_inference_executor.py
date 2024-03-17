@@ -5,6 +5,7 @@ import argparse
 import signal
 import sys
 import time
+import timeit
 import random
 import torch
 from ctypes import cdll
@@ -50,14 +51,15 @@ class BatchedInferenceExecutor:
         self.duration = duration
         self.slo_low_wm = slo_lw
         self.slo_high_wm = slo_hw
-        if slo_percentile < 0 or slo_percentile > 1:
-            print("slo percentile must be float between 0 and 1.")
+        if slo_percentile < 0 or slo_percentile > 100:
+            print("slo percentile must be float between 0 and 100.")
             print(f"Got: {slo_percentile}")
             sys.exit(1)
         self.opc = OnlinePercentile(slo_percentile, SLO_HISTORY_BUFFER_SIZE)
         self.ctrl_slo_comm_running = AtomicBoolean(False)
 
-        if ctrl_grpc_channel:
+        self.ctrl_grpc_channel = ctrl_grpc_channel
+        if self.ctrl_grpc_channel:
             self._setup_ctrl_grpc_channel()
 
         # Thread synchronization mechanism
@@ -95,15 +97,14 @@ class BatchedInferenceExecutor:
 
     def _convey_slo_breach(self, watermark_type):
         # TODO: @Prasoon to implement gRPC caller
-        # watermark_type: HIGH => We violated the SLO
-        #                 LOW  => We had earlier reported an SLO violation, but
-        #                         no longer have it
+        # watermark_type: HIGH => We violated high watermark
+        #                 LOW  => We went below the low watermark
         print(f"Reporting SLO VIOLATION {watermark_type}")
 
         # Once communicated flip the atomic variable
         self.ctrl_slo_comm_running.flip()
 
-    def _slo_check(self, queueing_delay):
+    def _slo_check(self):
         """
            (SLO Breached)
         ---------------------- High water mark
@@ -112,11 +113,11 @@ class BatchedInferenceExecutor:
         ---------------------- Low water mark
            (SLO Unbreached)
         """
-        prev_p, p = self.opc.add_data(queueing_delay)
+        p = self.opc.get_pth_percentile()
 
-        # If we were earlier under SLO High Watermark, but just breached it
+        # If we breached the high watermark
         # Let Controller know => MPS to MIG might take place
-        if prev_p <= self.slo_high_wm and p >= self.slo_high_wm:
+        if p >= self.slo_high_wm:
             if not self.ctrl_slo_comm_running.get():
                 self.ctrl_slo_comm_running.flip()
                 slo_thread = threading.Thread(
@@ -125,9 +126,9 @@ class BatchedInferenceExecutor:
                 slo_thread.daemon = True
                 slo_thread.start()
 
-        # If we were earlier above SLO Low Watermark, but fell below
+        # If we go below the low watermark
         # Let Controller know => MIG to MPS might take place
-        elif prev_p >= self.slo_low_wm and p <= self.slo_low_wm:
+        elif p <= self.slo_low_wm:
             if not self.ctrl_slo_comm_running.get():
                 self.ctrl_slo_comm_running.flip()
                 slo_thread = threading.Thread(
@@ -168,6 +169,7 @@ class BatchedInferenceExecutor:
         total_time_arr = []
         queued_time_arr = []
 
+        is_percentile_calc = (not is_warmup) and (self.ctrl_grpc_channel)
         process_start_time = time.time()
         while i < num_reqs:
             if self.job_completed:
@@ -187,8 +189,8 @@ class BatchedInferenceExecutor:
             queueing_delay = start_time - queued_time
             queued_time_arr.append(queueing_delay)
 
-            if not is_warmup:
-                self._slo_check(queueing_delay)
+            if is_percentile_calc:
+                self.opc.add_element(queueing_delay)
 
             if self._orion_lib:
                 orion_block(self._orion_lib, i)
@@ -217,16 +219,27 @@ class BatchedInferenceExecutor:
 
     def enqueue_requests(self, queue, num_reqs, is_warmup):
         sleep_array_len = len(self._sleep_time)
+        is_percentile_calc = (not is_warmup) and (self.ctrl_grpc_channel)
+        slo_check_every = SLO_HISTORY_BUFFER_SIZE / 4
         for i in range(num_reqs):
             queued_time = time.time()
             queue.put(queued_time)
             if self.finish:
                 break
-            time.sleep(self._sleep_time[i % sleep_array_len])
+
+            curr = timeit.default_timer()
+            if is_percentile_calc and i % slo_check_every == 0:
+                self._slo_check()
+            time.sleep(
+                max(0,
+                    self._sleep_time[i % sleep_array_len] -
+                        (timeit.default_timer() - curr)
+                )
+            )
 
         # Before exiting, dump all items of the queue
         if not is_warmup:
-            if self.thread_barrier:
+            if not self.ctrl_grpc_channel:
                 while not queue.empty():
                     queue.get()
             else:
@@ -328,8 +341,8 @@ if __name__ == "__main__":
     parser.add_argument("--rps", type=float, default=30)
     parser.add_argument("--tid", type=int, default=0)
     parser.add_argument("--qid", type=int, default=-1)
-    parser.add_argument("--slo-percentile", type=float, default=0.9)
-    parser.add_argument("--slo-lw", type=float, default=float("inf"))
+    parser.add_argument("--slo-percentile", type=float, default=90)
+    parser.add_argument("--slo-lw", type=float, default=0)
     parser.add_argument("--slo-hw", type=float, default=float("inf"))
     parser.add_argument("--ctrl-grpc", type=str, default=None)
     opt, unused_args = parser.parse_known_args()

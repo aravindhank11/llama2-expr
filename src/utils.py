@@ -1,4 +1,4 @@
-import bisect
+from collections import deque
 import threading
 import time
 from enum import Enum
@@ -26,32 +26,31 @@ def orion_block(backend_lib, it):
 
 
 class OnlinePercentile:
-    def __init__(self, p, buffer_size):
-        self._buffer_size = buffer_size
-        self._sorted_data = []
-        self._inorder_data = []
-        self._p = p
-        self._count = 0
-        self._prev_p = 0
+    def __init__(self, p, K):
+        self.p = p
+        self.K = K
+        self.data_stream = deque(maxlen=K)
 
-    def add_data(self, element):
-        if self._count < self._buffer_size:
-            bisect.insort(self._sorted_data, element)
-            self._count += 1
+    def add_element(self, value):
+        self.data_stream.append(value)
+
+    def get_pth_percentile(self):
+        if not self.data_stream:
+            return -1;
+
+        # Sort the data stream
+        sorted_stream = sorted(self.data_stream)
+
+        # Calculate the index for the p-th percentile
+        index = int(self.p * len(sorted_stream) / 100)
+
+        # If the index is not an integer, interpolate the value
+        if index != len(sorted_stream) * self.p / 100:
+            lower_bound = sorted_stream[index - 1]
+            upper_bound = sorted_stream[index]
+            return (lower_bound + upper_bound) / 2.0
         else:
-            # Remove the oldest element
-            remove_elm = self._inorder_data.pop(0)
-            remove_idx = bisect.bisect_left(self._sorted_data, remove_elm)
-            self._sorted_data.pop(remove_idx)
-
-            # Insert the new element
-            bisect.insort(self._sorted_data, element)
-
-        self._inorder_data.append(element)
-        prev_p = self._prev_p
-        index = int(self._count * self._p)
-        self._prev_p = self._sorted_data[index]
-        return prev_p, self._prev_p
+            return sorted_stream[index - 1]
 
 
 class AtomicBoolean:
