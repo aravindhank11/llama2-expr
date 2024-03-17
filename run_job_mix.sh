@@ -59,30 +59,36 @@ modes_ran=()
 device_ids_ran=()
 uuids_ran=()
 cleanup_handler() {
-    exit_code=$?
+    local job_mix_exit_code=$?
 
     # Kill any pending procs
-    IFS="|"
-    uuid_grep="${uuids_ran[*]}"
-    unset IFS
-    ps -eaf | grep batched_inference_executor.py | grep "${uuid_grep}" |
-        grep -v grep | grep -v docker | awk '{print $2}' |
-        xargs -I{} kill -9 {} || :
+    if [[ ${#uuids_ran[@]} -gt 0 ]]; then
+        IFS="|"
+        uuid_grep="${uuids_ran[*]}"
+        unset IFS
+        ps -eaf | grep batched_inference_executor.py | grep "${uuid_grep}" |
+            grep -v grep | awk '{print $2}' |
+            xargs -I{} kill -9 {} || :
+    fi
+
+    # cleanup the containers created
+    cleanup_orion_containers uuid_grep || :
 
     # Clean the modes ran
-    for ((i=0; i<${#modes_ran[@]}; i++))
+    for ((y=0; y<${#modes_ran[@]}; y++))
     do
-        cleanup ${modes_ran[$i]} ${device_ids_ran[$i]} || :
+        cleanup ${modes_ran[$y]} ${device_ids_ran[$y]} || :
     done
 
     # Clean up the fifo pipe created
     rm -f ${fifo_pipe} || :
 
     # Clean up the IPC queue
-    ipcrm --all=msg
+    ipcrm --all=msg || :
 
     # Exit with the exit code with which the handler was called
-    exit ${exit_code}
+    echo "Exiting with Error code: ${job_mix_exit_code} (0 is clean exit)"
+    exit ${job_mix_exit_code}
 }
 
 
@@ -108,15 +114,13 @@ validate_input() {
 
 read_queue() {
     local qid=$1
-    if [[ ${USE_DOCKER} -eq 1 ]]; then
-        setup_tie_breaker_container
-        docker_prefix="${DOCKER} exec -it ${tie_breaker_ctr}"
-    fi
 
-    cmd="${docker_prefix} python3 -c \
+    cmd="python3 -c \
         \"from src.utils import SysVQueue; \
         from queue import Queue; \
         SysVQueue(${qid}, create_new_queue=False).read_queue(Queue())\""
+
+    echo "Runnning: '${cmd}'"
 
     eval ${cmd} &
 }
@@ -181,21 +185,6 @@ run_other_expr() {
     chunk_id=($(nvidia-smi -L | grep MIG- | awk '{print $2}' | sed 's/)//g'))
     cmd_arr=()
 
-    if [[ ${USE_DOCKER} == 1 ]]; then
-        if [[ ${mode_arg} == "mig" ]]; then
-            printf -v devices "%s," "${cci_uuid[@]}"
-            devices=${devices%,}
-            setup_tie_breaker_container ${devices} ${run_uuid_arg}
-        else
-            setup_tie_breaker_container ${device_id_arg} ${run_uuid_arg}
-        fi
-    fi
-
-    if [[ ${USE_DOCKER} -eq 1 ]]; then
-        # Assume only 1 device per container
-        docker_prefix="${DOCKER} exec -d -it ${tie_breaker_ctr} bash -c '"
-    fi
-
     # In MPS mode_arg, we knowingly set CUDA_VISIBLE_DEVICES to 0 (not a code bug)
     # Reasoning:
     # * When CUDA_VISIBLE_DEVICES is set before launching the control daemon,
@@ -227,28 +216,22 @@ run_other_expr() {
         fi
 
 
-        cmd="${docker_prefix} ${export_prefix} && \
+        cmd="${export_prefix} && \
             python3 src/batched_inference_executor.py \
             ${model_run_params[$c]} \
             --tid ${c}
             --uid ${run_uuid_arg}"
-
         if [[ ${is_prev} -eq 1 ]]; then
             cmd="${cmd} --qid ${prev_proc_arg[$c]}"
         fi
-
-        if [[ ${USE_DOCKER} -eq 1 ]]; then
-            cmd+="'"
-        else
-            cmd+=" > /dev/null &"
-        fi
+        cmd+=" > /dev/null &"
 
         eval $cmd
         cmd_arr+=("${cmd}")
     done
 
     readarray -t forked_pids < <(ps -eaf | grep batched_inference_executor.py |
-        grep ${run_uuid_arg} | grep -v grep | grep -v docker |
+        grep ${run_uuid_arg} | grep -v grep |
         awk '{for (i=1; i<=NF; i++) if ($i == "--tid") print $(i+1),$0}' |
         sort -n | cut -d' ' -f2- | awk '{print $2}')
     if [[ ${#forked_pids[@]} -ne ${num_procs} ]]; then
@@ -391,24 +374,18 @@ compute_stats()
     local load_arg=$3
     local result_dir_arg=$4
 
-    if [[ ${USE_DOCKER} -eq 1 ]]; then
-        setup_tie_breaker_container
-        docker_prefix="${DOCKER} exec -it ${tie_breaker_ctr}"
-    fi
-
-    cmd="${docker_prefix} python3 src/stats.py \
+    python3 src/stats.py \
         --mode ${mode_arg} \
         --load ${load_arg} \
         --result_dir ${result_dir_arg} \
-        ${pkl_files_arg[@]}"
-    eval ${cmd}
+        ${pkl_files_arg[@]}
 
     echo "Results stored in: ${result_dir_arg}"
 }
 
 setup_expr()
 {
-    trap cleanup_handler EXIT
+    #trap cleanup_handler EXIT
 
     # Find where to store results
     get_result_dir models[@] batch_sizes[@] distribution_types[@] ${device_type}
@@ -420,7 +397,7 @@ setup_expr()
     mkfifo ${fifo_pipe}
 
     # Clean up the IPC queue
-    ipcrm --all=msg
+    ipcrm --all=msg || :
 }
 
 source helper.sh && helper_setup

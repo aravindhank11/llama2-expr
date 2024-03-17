@@ -2,10 +2,6 @@
 
 DOCKER="docker"
 
-# tie breaker details
-TIE_BREAKER_CTR_PREFIX="tie-breaker"
-TIE_BREAKER_IMG="aravindhank11/tie-breaker"
-
 # orion details
 ORION_CTR_PREFIX="orion"
 ORION_IMG="fotstrt/orion-ae:v1"
@@ -17,13 +13,8 @@ if [[ $USE_SUDO == 1 ]]; then
 fi
 
 function helper_setup() {
-    if [[ ${USE_DOCKER} == 1 && ! -z ${VENV} ]]; then
-        echo "Set ONLY one of USE_DOCKER or VENV env variables and not both"
-        exit 1
-    fi
-
-    if [[ ${USE_DOCKER} -ne 1 && -z ${VENV} ]]; then
-        echo "Set EXACTLY one of USE_DOCKER or VENV env variables"
+    if [[ -z ${VENV} ]]; then
+        echo "Set VENV env variables"
         exit 1
     fi
 
@@ -132,13 +123,12 @@ function cleanup_mig_if_needed()
     fi
 
 	# Delete the GPU profile
-	exit_code=0
 	while :;
 	do
         # Cleanup Compute Instances
         ci_arr=($(${SUDO} nvidia-smi mig -i ${device_id} -lci | awk '{print $7}' | grep -P '^\d+$'))
         gi_arr=($(${SUDO} nvidia-smi mig -i ${device_id} -lci | awk '{print $3}' | grep -P '^\d+$'))
-        i=0
+        local i=0
         while [[ $i -lt ${#gi_arr[*]} ]];
         do
             ci=${ci_arr[$i]}
@@ -148,9 +138,13 @@ function cleanup_mig_if_needed()
         done
 
         # Cleanup GPU Instances
+        original_e=$(set +o | grep errexit)
+        set +e
         ${SUDO} nvidia-smi mig -i ${device_id} -dgi
-        exit_code=$?
-        if [[ ${exit_code} -eq 0 || ${exit_code} -eq 6 ]]; then
+        local mig_exit_code=$?
+        eval "$original_e"
+
+        if [[ ${mig_exit_code} -eq 0 || ${mig_exit_code} -eq 6 ]]; then
             break
         fi
         echo "${SUDO} nvidia-smi mig -i ${device_id} -dgi failed. Trying in 1s"
@@ -177,8 +171,6 @@ function cleanup()
     device_id=$2
     disable_mps_if_needed ${mode} ${device_id}
     cleanup_mig_if_needed ${mode} ${device_id}
-    cleanup_orion_container
-    cleanup_tie_breaker_containers
     unlock_gpu ${device_id}
 }
 
@@ -223,37 +215,47 @@ function wait_till_one_process_exits {
 }
 
 function setup_orion_container {
-    local device_id=$1
-    local uuid=$2
+    local devices_arg=$1
+    local uuid_arg=$2
     local WS=$(git rev-parse --show-toplevel)
     local DOCKER_WS=/root/$(basename ${WS})
 
-    if [[ -z ${uuid} ]]; then
-        uuid=$(uuidgen)
+    if [[ -z ${uuid_arg} ]]; then
+        uuid_arg=$(uuidgen)
     fi
 
-    # Setup container
-    cleanup_orion_container
-    orion_ctr=${ORION_PREFIX}"-"${uuid}
-    ${DOCKER} run -v ${WS}:${DOCKER_WS} -it -d \
+    local gpu_filter="--gpus '\"device=${devices_arg}\"'"
+    if [[ -z ${devices_arg} ]]; then
+        unset gpu_filter
+    fi
+
+    orion_ctr=${ORION_CTR_PREFIX}"-"${uuid}
+    cmd="${DOCKER} run -v ${WS}:${DOCKER_WS} -it -d \
         -w ${DOCKER_WS} \
         --name ${orion_ctr} \
         --ipc=host --pid=host \
-        --gpus "device=${device_id}" \
-        ${ORION_IMG} bash > /dev/null
+        ${gpu_filter} \
+        ${ORION_IMG} bash > /dev/null"
+    echo "Running cmd: '${cmd}'"
+    eval ${cmd}
 
     # Install necessary package
     NSIGHT_COMPUTE_TAR=nsight-compute.tar
     if [[ ! -f ${NSIGHT_COMPUTE_TAR} ]]; then
         # pip install gdown
         cmd="gdown --id 1_HY1FOIS6KP7dLTKRZ30Wliqc9P_N7hu"
-        exit_code=0
-        eval ${cmd} || exit_code=1
-        if [[ ${exit_code} -ne 0 ]]; then
+
+        original_e=$(set +o | grep errexit)
+        set +e
+        eval ${cmd}
+        local orion_setup_exit_code=$?
+        eval "$original_e"
+
+        if [[ ${orion_setup_exit_code} -ne 0 ]]; then
             echo "gdown package not found!"
             echo "Install using: 'pip install gdown'"
             echo "Or try running command: '${cmd}', fix it and re-call the script"
-            exit 1
+            return 1
         fi
     fi
     ${DOCKER} cp ${NSIGHT_COMPUTE_TAR} ${orion_ctr}:/usr/local/ > /dev/null 2>&1
@@ -263,44 +265,13 @@ function setup_orion_container {
     ${DOCKER} exec -it ${orion_ctr} bash -c "pip install transformers > /dev/null 2>&1"
 }
 
-function setup_tie_breaker_container {
-    local devices=$1
-    local uuid=$2
-    local WS=$(git rev-parse --show-toplevel)
-    local DOCKER_WS=/home/$USER/$(basename ${WS})
-
-    if [[ -z ${devices} ]]; then
-        devices="all"
+function cleanup_orion_containers {
+    local grep_filter=$1
+    if [[ -z ${grep_filter} ]]; then
+        return
     fi
-
-    if [[ -z ${uuid} ]]; then
-        uuid=$(uuidgen)
-    fi
-
-    # Setup container
-    cleanup_tie_breaker_containers
-    tie_breaker_ctr=${TIE_BREAKER_CTR_PREFIX}"-"${uuid}
-    cmd="${DOCKER} run -v ${WS}:${DOCKER_WS} -it -d \
-        -v /etc/passwd:/etc/passwd:ro \
-        -v /etc/group:/etc/group:ro \
-        -v /tmp:/tmp \
-        -w ${DOCKER_WS} \
-        -u $(id -u $USER):$(id -g $USER) \
-        --name ${tie_breaker_ctr} \
-        --ipc=host --pid=host \
-        --gpus '\"device=${devices}\"' \
-        ${TIE_BREAKER_IMG} bash > /dev/null"
-    echo ${cmd}
-    eval ${cmd}
-}
-
-function cleanup_orion_container {
-    ${DOCKER} ps -a | grep ${ORION_CTR_PREFIX} | awk '{print $NF}' | \
-        xargs -I{} ${DOCKER} rm -f {} >/dev/null 2>&1 || :
-}
-
-function cleanup_tie_breaker_containers {
-    ${DOCKER} ps -a | grep ${TIE_BREAKER_CTR_PREFIX} | awk '{print $NF}' | \
+    ${DOCKER} ps -a | grep ${ORION_CTR_PREFIX} | grep "${grep_filter}" |
+        awk '{print $NF}' | \
         xargs -I{} ${DOCKER} rm -f {} >/dev/null 2>&1 || :
 }
 

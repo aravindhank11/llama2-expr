@@ -1,6 +1,5 @@
 #!/bin/bash -e
 
-AI_THRESHOLD=14.87
 PYTHON=python3.8
 NCU_DIR=/usr/local/NVIDIA-Nsight-Compute-2023.3
 #NCU_DIR=/root/
@@ -106,9 +105,10 @@ profile_model() {
     sed -i '/^"ID","Process ID"/,$!d' ${result_dir}/output_ncu.csv
 
     echo "CREATING ORION CONSUMABLE INPUT"
+    read -p "Enter AI_THRESHOLD by looking at ${result_dir}/output_ncu.ncu-rep: " ai_threshold
     ${PYTHON} ${orion_dir}/profiling/postprocessing/process_ncu.py --results_dir ${result_dir}
     ${PYTHON} ${orion_dir}/profiling/postprocessing/get_num_blocks.py --results_dir ${result_dir} --device_type ${device_type}
-    ${PYTHON} ${orion_dir}/profiling/postprocessing/roofline_analysis.py --results_dir ${result_dir} --ai_threshold ${AI_THRESHOLD}
+    ${PYTHON} ${orion_dir}/profiling/postprocessing/roofline_analysis.py --results_dir ${result_dir} --ai_threshold ${ai_threshold}
     ${PYTHON} ${orion_dir}/profiling/postprocessing/generate_file.py \
         --input_file_name ${result_dir}/output_ncu_sms_roofline.csv \
         --output_file_name ${kernel_file} \

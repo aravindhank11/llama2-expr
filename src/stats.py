@@ -18,10 +18,11 @@ import pandas as pd
 TPUT = "tput"
 TOTAL_PREFIX = "total"
 QUEUED_PREFIX = "queued"
+PROCESSING_PREFIX = "processing"
 PERCENTILES = [0, 50, 90, 99, 100]
 
 METRIC_NAMES = [TPUT]
-for prefix in [TOTAL_PREFIX, QUEUED_PREFIX]:
+for prefix in [TOTAL_PREFIX, QUEUED_PREFIX, PROCESSING_PREFIX]:
     for percentile in PERCENTILES:
         METRIC_NAMES.append(f"{prefix}_p{percentile}")
 
@@ -92,8 +93,10 @@ if __name__ == "__main__":
         model, tput, total_times, queued_times = infer_stats
         populate_stats(TOTAL_PREFIX, total_times, tid, metrics)
         populate_stats(QUEUED_PREFIX, queued_times, tid, metrics)
+        processing_times = [x - y for x, y in zip(total_times, queued_times)]
+        populate_stats(PROCESSING_PREFIX, processing_times, tid, metrics)
         metrics[TPUT][tid] = tput
-        if models[tid] == None:
+        if models[tid] is None:
             models[tid] = f"{tid}_{model}"
         else:
             assert models[tid] == f"{tid}_{model}"
