@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+import "request_reply.proto";
+
+package tiebreakercontroller;
+
+service TieBreaker_Controller {
+    rpc DeployJobMix(DeploymentRequest) returns (DeploymentResponse) {}
+    rpc MigrateJobMix(MigrationRequest) returns (MigrationResponse) {}
+}
+
+message DeploymentRequest {
+    repeated string model_types = 1;
+    repeated string models = 2;
+    repeated int32 batch_sizes = 3;
+    repeated int64 slos = 4;
+    string distro_type = 5;
+    int64 rps = 6;
+    int32 slo_percentile = 7;
+    
+}
+
+message DeploymentResponse {
+    RequestReply status = 1;
+}
+
+message MigrationRequest {
+    int32 gpu_no = 1;
+    string breached_status = 2;
+}
+
+message MigrationResponse {
+    RequestReply status = 1;
+}
