@@ -35,7 +35,7 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
         exp_duration = args.exp_duration
         while True:
             current_time = time.time()
-            for job_mix, params in list(self.job_mix_deployment_params()):
+            for job_mix, params in list(self.job_mix_deployment_params.items()):
                 job_start_time = params[3]
                 if current_time >= job_start_time + exp_duration:
                     echo_dict = {"mode": "stop", "device-id": params[5]}
