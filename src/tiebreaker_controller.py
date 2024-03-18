@@ -51,17 +51,18 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
         # Launch models
         payload_string = json.dumps(payloads)
         deploy_cmd = "./run_job_mix.sh --device-type a100 --tie-breaker --load 1 \'" + payload_string + '\''
-        # deploy_tmp = subprocess.Popen(deploy_cmd, shell=True, executable='/bin/bash', stdout=subprocess.PIPE)
-        # pid = deploy_tmp.pid
-        pid = -1
-        print(deploy_cmd)
+        print('Deployment command is: ' + deploy_cmd)
+        deploy_tmp = subprocess.Popen(deploy_cmd, shell=True, executable='/bin/bash', stdout=subprocess.PIPE)
+        pid = deploy_tmp.pid
+        print(f'PID is {pid}')
+        # pid = -1
 
         # Echo mode and device to launch models on
         echo_dict = {"mode": "mps-uncap", "device-id": self.current_device}
         echo_dict_string = json.dumps(echo_dict)
         echo_cmd = "echo \'" + echo_dict_string + f"\' > /tmp/{pid}"
-        # echo_tmp = subprocess.Popen(echo_cmd, shell=True, executable='/bin/bash', stdout=subprocess.PIPE)
-        print(echo_cmd)
+        print('Echo cmd is ' + echo_cmd)
+        echo_tmp = subprocess.Popen(echo_cmd, shell=True, executable='/bin/bash', stdout=subprocess.PIPE)
 
         # Store job mix state
         job_mix_string = ""
@@ -78,7 +79,7 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
         self.job_mix_deployment_params[job_mix_string] = [request.distro_type, request.rps, request.slo_percentile]
         self.gpu_pid_job_mix[self.current_device] = [pid, job_mix_string, high_load_mechanism]
         self.current_device += 1
-
+        print()
         print(job_mix_string)
         print(self.job_mix_deployment_params)
         print(self.gpu_pid_job_mix)
