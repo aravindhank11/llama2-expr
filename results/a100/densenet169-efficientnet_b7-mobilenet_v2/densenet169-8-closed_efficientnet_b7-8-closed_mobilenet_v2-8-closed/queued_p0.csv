@@ -1,0 +1,3 @@
+mode,load,0_densenet169-8,1_efficientnet_b7-8,2_mobilenet_v2-8
+mps-uncap,1.0,0.0,0.0,0.0
+mig,1.0,0.0,0.0,0.0

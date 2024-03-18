@@ -1,0 +1,3 @@
+mode,load,0_vgg16-4,1_alexnet-16,2_resnet18-32
+mps-uncap,1.0,0.0,0.0,0.0
+mig,1.0,0.0,0.0,0.0
