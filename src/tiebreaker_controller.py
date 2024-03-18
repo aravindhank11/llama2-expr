@@ -28,7 +28,7 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
 
         # TODO: CHECK MODEL TYPES, MODELS, BATCHES, AND JOB SIZES SUPPORTED
 
-        if len(job_mix_deployment_params) > 2:
+        if len(self.job_mix_deployment_params) > 2:
             return tb_controller_pb2.DeploymentResponse(status=create_status('FAILURE', f'Server GPUs are occupied currently.'))
 
         # Construct string payload
