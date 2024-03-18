@@ -1,0 +1,2 @@
+mode,load,0_alexnet-2,1_densenet169-32,2_vgg11-16
+mps-uncap,1.0,0.0,0.0,0.0

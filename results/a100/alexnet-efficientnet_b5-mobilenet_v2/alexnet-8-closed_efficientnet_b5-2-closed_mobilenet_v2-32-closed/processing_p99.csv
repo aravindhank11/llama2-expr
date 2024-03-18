@@ -1,0 +1,2 @@
+mode,load,0_alexnet-8,1_efficientnet_b5-2,2_mobilenet_v2-32
+mps-uncap,1.0,4.295825958251953,23.985257148742676,8.661203384399414

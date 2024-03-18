@@ -1,0 +1,2 @@
+mode,load,0_efficientnet_b7-32,1_inception_v3-32,2_squeezenet1_0-16
+mps-uncap,1.0,84.56176042556763,47.71159172058105,15.344715118408212

@@ -1,0 +1,2 @@
+mode,load,0_densenet161-32,1_efficientnet_b5-16,2_inception_v3-16
+mps-uncap,1.0,601.9547866903987,408.470227941015,574.2806606629254

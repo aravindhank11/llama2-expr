@@ -1,0 +1,2 @@
+mode,load,0_alexnet-16,1_efficientnet_b6-4,2_resnet50-4
+mps-uncap,1.0,3.5758018493652344,23.46038818359375,8.89897346496582

@@ -1,0 +1,2 @@
+mode,load,0_mobilenet_v3_small-16,1_mobilenet_v3_small-32,2_vgg13-8
+mps-uncap,1.0,1779.158449145112,3403.1532145993774,1414.1287647962174

@@ -1,0 +1,2 @@
+mode,load,0_efficientnet_b6-4,1_mobilenet_v3_small-2,2_resnet50-2
+mps-uncap,1.0,14.355182647705078,3.5309791564941406,4.871845245361328

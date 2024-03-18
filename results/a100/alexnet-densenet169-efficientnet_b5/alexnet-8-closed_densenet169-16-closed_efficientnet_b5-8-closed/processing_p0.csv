@@ -1,0 +1,2 @@
+mode,load,0_alexnet-8,1_densenet169-16,2_efficientnet_b5-8
+mps-uncap,1.0,1.2972354888916016,19.27971839904785,19.12093162536621

@@ -1,0 +1,2 @@
+mode,load,0_alexnet-32,1_efficientnet_b5-16,2_squeezenet1_1-2
+mps-uncap,1.0,3.1044483184814453,26.543140411376953,3.2438039779663086

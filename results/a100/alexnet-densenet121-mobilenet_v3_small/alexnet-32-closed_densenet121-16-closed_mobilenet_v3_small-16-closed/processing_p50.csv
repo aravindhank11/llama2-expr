@@ -1,0 +1,2 @@
+mode,load,0_alexnet-32,1_densenet121-16,2_mobilenet_v3_small-16
+mps-uncap,1.0,2.974987030029297,19.072651863098145,4.952192306518555

@@ -1,0 +1,2 @@
+mode,load,0_mobilenet_v2-32,1_mobilenet_v2-32,2_mobilenet_v3_small-2
+mps-uncap,1.0,9.694099426269531,9.696125984191895,7.519721984863281

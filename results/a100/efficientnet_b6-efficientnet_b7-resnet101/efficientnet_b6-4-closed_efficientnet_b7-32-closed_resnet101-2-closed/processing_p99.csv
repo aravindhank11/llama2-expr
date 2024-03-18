@@ -1,0 +1,2 @@
+mode,load,0_efficientnet_b6-4,1_efficientnet_b7-32,2_resnet101-2
+mps-uncap,1.0,44.90419387817383,58.61138105392456,30.064420700073242

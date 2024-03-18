@@ -1,0 +1,2 @@
+mode,load,0_densenet169-4,1_efficientnet_b6-2,2_mobilenet_v2-2
+mps-uncap,1.0,10.483455657958984,11.274051666259766,2.3345947265625

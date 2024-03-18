@@ -1,0 +1,2 @@
+mode,load,0_squeezenet1_1-4,1_vgg13-4,2_vgg13-8
+mps-uncap,1.0,0.0,0.0,0.0

@@ -1,0 +1,2 @@
+mode,load,0_alexnet-4,1_mobilenet_v2-4,2_squeezenet1_1-4
+mps-uncap,1.0,1.1055469512939453,2.466917037963867,1.9104480743408203

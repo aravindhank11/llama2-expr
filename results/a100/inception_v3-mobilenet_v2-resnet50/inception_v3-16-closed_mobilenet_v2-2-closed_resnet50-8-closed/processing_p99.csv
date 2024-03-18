@@ -1,0 +1,2 @@
+mode,load,0_inception_v3-16,1_mobilenet_v2-2,2_resnet50-8
+mps-uncap,1.0,12.331399917602539,4.18910026550293,7.311820983886719

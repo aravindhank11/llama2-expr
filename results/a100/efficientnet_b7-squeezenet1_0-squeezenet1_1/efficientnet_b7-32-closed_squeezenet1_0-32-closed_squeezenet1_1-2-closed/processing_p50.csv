@@ -1,0 +1,2 @@
+mode,load,0_efficientnet_b7-32,1_squeezenet1_0-32,2_squeezenet1_1-2
+mps-uncap,1.0,84.7330093383789,10.550737380981445,6.676435470581055

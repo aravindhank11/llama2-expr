@@ -1,0 +1,2 @@
+mode,load,0_mobilenet_v3_small-16,1_resnet101-8,2_vgg13-4
+mps-uncap,1.0,0.0,0.0,0.0

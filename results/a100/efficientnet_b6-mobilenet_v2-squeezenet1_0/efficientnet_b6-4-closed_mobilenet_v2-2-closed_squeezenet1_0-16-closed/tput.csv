@@ -1,0 +1,2 @@
+mode,load,0_efficientnet_b6-4,1_mobilenet_v2-2,2_squeezenet1_0-16
+mps-uncap,1.0,202.34398639788856,521.0070058849747,4074.0089022279235

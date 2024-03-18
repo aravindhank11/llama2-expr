@@ -1,0 +1,2 @@
+mode,load,0_efficientnet_b5-2,1_inception_v3-32,2_resnet34-8
+mps-uncap,1.0,18.58377456665039,17.564058303833008,9.391546249389648

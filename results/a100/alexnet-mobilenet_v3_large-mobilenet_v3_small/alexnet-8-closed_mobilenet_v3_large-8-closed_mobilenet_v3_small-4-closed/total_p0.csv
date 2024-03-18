@@ -1,0 +1,2 @@
+mode,load,0_alexnet-8,1_mobilenet_v3_large-8,2_mobilenet_v3_small-4
+mps-uncap,1.0,1.0981559753417969,3.048419952392578,2.4094581604003906

@@ -1,0 +1,2 @@
+mode,load,0_densenet161-32,1_mobilenet_v3_large-32,2_mobilenet_v3_large-32
+mps-uncap,1.0,61.6154670715332,18.326282501220703,17.958498001098633

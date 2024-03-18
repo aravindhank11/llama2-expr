@@ -1,0 +1,2 @@
+mode,load,0_alexnet-16,1_efficientnet_b5-32,2_inception_v3-32
+mps-uncap,1.0,7.555961608886719,51.589250564575195,37.52589225769043

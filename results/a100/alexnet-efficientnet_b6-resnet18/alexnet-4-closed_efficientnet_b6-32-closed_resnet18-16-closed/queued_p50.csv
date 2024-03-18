@@ -1,0 +1,2 @@
+mode,load,0_alexnet-4,1_efficientnet_b6-32,2_resnet18-16
+mps-uncap,1.0,0.0,0.0,0.0

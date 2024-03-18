@@ -1,0 +1,2 @@
+mode,load,0_densenet201-4,1_inception_v3-2,2_squeezenet1_1-32
+mps-uncap,1.0,21.85826301574707,8.970022201538086,4.572629928588867

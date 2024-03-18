@@ -1,0 +1,2 @@
+mode,load,0_alexnet-2,1_inception_v3-16,2_squeezenet1_1-4
+mps-uncap,1.0,0.5998611450195312,7.119178771972656,1.5025138854980469

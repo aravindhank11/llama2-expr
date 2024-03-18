@@ -1,0 +1,2 @@
+mode,load,0_mobilenet_v3_small-8,1_squeezenet1_1-2,2_vgg19-32
+mps-uncap,1.0,2.856731414794922,0.9639263153076172,21.33321762084961
