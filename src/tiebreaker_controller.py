@@ -63,6 +63,10 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
         echo_dict_string = json.dumps(echo_dict)
         echo_cmd = "echo \'" + echo_dict_string + f"\' > /tmp/{pid}"
         print('Echo cmd is ' + echo_cmd)
+
+        while not os.path.exists(f'/tmp/{pid}'):
+            time.sleep(0.5)
+        
         echo_tmp = subprocess.Popen(echo_cmd, shell=True, executable='/bin/bash', stdout=subprocess.PIPE)
 
         # Store job mix state
