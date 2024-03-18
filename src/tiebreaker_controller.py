@@ -6,6 +6,7 @@ import threading
 from concurrent import futures
 import subprocess
 import time
+import argparse
 
 sys.path.insert(0, '../generated')
 import tb_controller_pb2
@@ -22,9 +23,30 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
         self.supported_models = []
         self.supported_batchs = [2, 4, 8, 16, 32]
         self.max_supported_size = 4
-        self.job_mix_deployment_params = {} # job mix -> [distro type, rps, slo percentile]
-        self.gpu_pid_job_mix = {}   # gpu device id -> [pid, job mix]
+        self.job_mix_deployment_params = {} # job mix -> [distro type, rps, slo percentile, job_start_time, pid, gpu device id, high load mechanism]
         self.current_device = 0
+
+        # Thread to monitor how long a job mix has been running for
+        self.monitor_thread = threading.Thread(target=self.monitor_job_params)
+        self.monitor_thread.daemon=True # # Daemonize the thread so it terminates when the main thread exits
+        self.monitor_thread.start()
+    
+    def monitor_job_params(self):
+        exp_duration = args.exp_duration
+        while True:
+            current_time = time.time()
+            for job_mix, params in list(self.job_mix_deployment_params()):
+                job_start_time = params[3]
+                if current_time >= job_start_time + exp_duration:
+                    echo_dict = {"mode": "stop", "device-id": params[5]}
+                    echo_dict_string = json.dumps(echo_dict)
+                    echo_cmd = "echo \'" + echo_dict_string + f"\' > /tmp/{params[4]}"
+                    print('Echo cmd is ' + echo_cmd)
+                    while not os.path.exists(f'/tmp/{params[4]}'):
+                        time.sleep(0.5)
+                    echo_tmp = subprocess.Popen(echo_cmd, shell=True, executable='/bin/bash', stdout=subprocess.PIPE)
+                    job_mix_start_time = time.time()
+            time.sleep(0.5)
     
     def DeployJobMix(self, request, context):
 
@@ -64,11 +86,10 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
         echo_dict_string = json.dumps(echo_dict)
         echo_cmd = "echo \'" + echo_dict_string + f"\' > /tmp/{pid}"
         print('Echo cmd is ' + echo_cmd)
-
         while not os.path.exists(f'/tmp/{pid}'):
             time.sleep(0.5)
-        
         echo_tmp = subprocess.Popen(echo_cmd, shell=True, executable='/bin/bash', stdout=subprocess.PIPE)
+        job_mix_start_time = time.time()
 
         # Store job mix state
         job_mix_string = ""
@@ -82,13 +103,11 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
         # TODO: consult mechanism here
         high_load_mechanism = 'mig'
 
-        self.job_mix_deployment_params[job_mix_string] = [request.distro_type, request.rps, request.slo_percentile]
-        self.gpu_pid_job_mix[self.current_device] = [pid, job_mix_string, high_load_mechanism]
+        self.job_mix_deployment_params[job_mix_string] = [request.distro_type, request.rps, request.slo_percentile, job_mix_start_time, pid, self.current_device, high_load_mechanism]
         self.current_device += 1
         print()
         print(job_mix_string)
         print(self.job_mix_deployment_params)
-        print(self.gpu_pid_job_mix)
         print(self.current_device)
         return tb_controller_pb2.DeploymentResponse(status=create_status('SUCCESS', f'Succesfully deployed models on an MPS GPU!'))
     
@@ -109,4 +128,7 @@ def tiebreaker_controller():
     server.wait_for_termination()
 
 if __name__=='__main__':
+    parser = argparse.ArgumentParser(allow_abbrev=False)
+    parser.add_argument("--exp-duration", type=int, default=60)
+    args = parser.parse_args()
     tiebreaker_controller()
