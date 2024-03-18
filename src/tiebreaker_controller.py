@@ -51,7 +51,7 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
 
         # Launch models
         payload_string = json.dumps(payloads)
-        deploy_cmd = "./run_job_mix.sh --device-type a100 --tie-breaker --load 1 \'" + payload_string + '\''
+        deploy_cmd = "~/llama2-expr/run_job_mix.sh --device-type a100 --tie-breaker --load 1 \'" + payload_string + '\''
         print('Deployment command is: ' + deploy_cmd)
         deploy_tmp = subprocess.Popen(deploy_cmd, shell=True, executable='/bin/bash', stdout=subprocess.PIPE)
         pid = deploy_tmp.pid
