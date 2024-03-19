@@ -24,7 +24,7 @@ from utils import (
     orion_block,
 )
 
-sys.path.insert(0, '../generated')
+# sys.path.insert(0, '../generated')
 import tb_controller_pb2
 import tb_controller_pb2_grpc
 
