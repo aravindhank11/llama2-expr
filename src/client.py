@@ -22,7 +22,7 @@ with grpc.insecure_channel('localhost:50053') as channel:
     time.sleep(20)
 
     migration_response = stub.MigrateJobMix(tb_controller_pb2.MigrationRequest(
-        gpu_no = 0
+        unique_mix_id = 1,
         breached_status = 'high_wm'
     ))
     print(migration_response.status)

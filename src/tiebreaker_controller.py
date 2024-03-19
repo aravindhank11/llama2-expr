@@ -24,7 +24,8 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
         self.supported_models = []
         self.supported_batchs = [2, 4, 8, 16, 32]
         self.max_supported_size = 4
-        self.job_mix_deployment_params = {} # job mix -> [distro type, rps, slo percentile, job_start_time, pid, gpu device id, high load mechanism]
+        self.unique_mix_id = 0
+        self.job_mix_deployment_params = {} # job mix -> [distro type, rps, slo percentile, job_start_time, pid, gpu device id, unique_mix_id, high load mechanism]
         self.device_status = {}
 
         # Parse server config file
@@ -66,8 +67,20 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
         if len(self.job_mix_deployment_params) == (self.no_server_devices / 2):
             return tb_controller_pb2.DeploymentResponse(status=create_status('FAILURE', f'Server GPUs are occupied currently.'))
 
+        # Find first available MPS device to launch job mix on
+        mps_device = -1
+        for device, value in list(self.device_status.items()):
+            if (value[0] == 'MPS') and (value[1] == 'AVAILABLE'):
+                updated_value = value
+                updated_value[1] = 'OCCUPIED'
+                self.device_status[device] = updated_value
+                mps_device = device
+                break
+
         # Construct string payload
         payloads = []
+        unique_mix_id = self.unique_mix_id
+        self.unique_mix_id += 1
         for i, model in enumerate(request.models):
             payloads.append(
                 {
@@ -79,7 +92,7 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
                     "slo-percentile": request.slo_percentile,
                     "slo-lw": request.slos[i],
                     "slo-hw": request.slos[i],
-                    "ctrl-grpc": args.port
+                    "ctrl-grpc": f"{str(args.port)} {unique_mix_id}"
                 }
             )
 
@@ -90,17 +103,6 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
         deploy_tmp = subprocess.Popen(deploy_cmd, shell=True, executable='/bin/bash', stdout=subprocess.PIPE)
         pid = deploy_tmp.pid
         print(f'PID is {pid}')
-        # pid = -1
-
-        # Find first available MPS device to launch model on
-        mps_device = -1
-        for device, value in list(self.device_status.items()):
-            if (value[0] == 'MPS') and (value[1] == 'AVAILABLE'):
-                updated_value = value
-                updated_value[1] = 'OCCUPIED'
-                self.device_status[device] = updated_value
-                mps_device = device
-                break
         
         # Didn't find available MPS device, shouldn't come here ever
         if mps_device == -1:
@@ -123,22 +125,23 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
                 job_mix_string = model + '-' + str(request.batch_sizes[i]) + '-' + str(request.slos[i])
             else:
                 job_mix_string += " " + model + '-' + str(request.batch_sizes[i]) + '-' + str(request.slos[i])
-        job_mix_string += f" {pid}"
+        job_mix_string += f" {unique_mix_id}"
 
         # Consult TieBreaker model for concurrency mechanism to use during high load
         # TODO: consult mechanism here
         high_load_mechanism = 'mig'
 
-        self.job_mix_deployment_params[job_mix_string] = [request.distro_type, request.rps, request.slo_percentile, job_mix_start_time, pid, mps_device, high_load_mechanism]
+        self.job_mix_deployment_params[job_mix_string] = [request.distro_type, request.rps, request.slo_percentile, job_mix_start_time, pid, mps_device, unique_mix_id, high_load_mechanism]
         print('Deployment state updates')
         print(f'Job mix string: {job_mix_string}')
         print(f'Job mix state dict: {self.job_mix_deployment_params}')
         print(f'Device status dict: {self.device_status}')
+        print(f'Unique id update: {self.unique_mix_id}')
         return tb_controller_pb2.DeploymentResponse(status=create_status('SUCCESS', f'Succesfully deployed models on an MPS GPU!'))
     
     def MigrateJobMix(self, request, context):
         for job_mix, params in list(self.job_mix_deployment_params.items()):
-            if (params[5] == request.gpu_no): 
+            if (params[-2] == request.unique_mix_id): 
                 # Need to live migrate
                 if (params[-1] == 'mig'):
 

@@ -25,7 +25,7 @@ message DeploymentResponse {
 }
 
 message MigrationRequest {
-    int32 gpu_no = 1;
+    int32 unique_mix_id = 1;
     string breached_status = 2;
 }
 
