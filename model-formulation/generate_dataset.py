@@ -92,7 +92,7 @@ def aggregate_mig():
         if os.path.isdir(os.path.join(RESULTS_DIR, outer_dir)):
             models = outer_dir.split('-')
             # print(models)
-            if len(models) == 2:
+            if len(models) == 4:
                 print(os.path.join(RESULTS_DIR, outer_dir))
                 # shutil.rmtree(os.path.join(RESULTS_DIR, outer_dir))
     
