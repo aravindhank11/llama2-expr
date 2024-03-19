@@ -112,34 +112,46 @@ function cleanup_mig_if_needed()
         return
     fi
 
-	# Delete the GPU profile
-	while :;
-	do
-        # Cleanup Compute Instances
-        ci_arr=($(${SUDO} nvidia-smi mig -i ${device_id} -lci | awk '{print $7}' | grep -P '^\d+$'))
-        gi_arr=($(${SUDO} nvidia-smi mig -i ${device_id} -lci | awk '{print $3}' | grep -P '^\d+$'))
-        local i=0
-        while [[ $i -lt ${#gi_arr[*]} ]];
-        do
-            ci=${ci_arr[$i]}
-            gi=${gi_arr[$i]}
-            ${SUDO} nvidia-smi mig -i ${device_id} -dci -ci ${ci} -gi ${gi}
-            i=$(( $i + 1))
-        done
+	# # Delete the GPU profile
+	# while :;
+	# do
+    #     # Cleanup Compute Instances
+    #     ci_arr=($(${SUDO} nvidia-smi mig -i ${device_id} -lci | awk '{print $7}' | grep -P '^\d+$'))
+    #     gi_arr=($(${SUDO} nvidia-smi mig -i ${device_id} -lci | awk '{print $3}' | grep -P '^\d+$'))
+    #     local i=0
+    #     while [[ $i -lt ${#gi_arr[*]} ]];
+    #     do
+    #         ci=${ci_arr[$i]}
+    #         gi=${gi_arr[$i]}
+    #         ${SUDO} nvidia-smi mig -i ${device_id} -dci -ci ${ci} -gi ${gi}
+    #         i=$(( $i + 1))
+    #     done
 
-        # Cleanup GPU Instances
-        original_e=$(set +o | grep errexit)
-        set +e
-        ${SUDO} nvidia-smi mig -i ${device_id} -dgi
-        local mig_exit_code=$?
-        eval "$original_e"
+    #     # Cleanup GPU Instances
+    #     original_e=$(set +o | grep errexit)
+    #     set +e
+    #     ${SUDO} nvidia-smi mig -i ${device_id} -dgi
+    #     local mig_exit_code=$?
+    #     eval "$original_e"
 
-        if [[ ${mig_exit_code} -eq 0 || ${mig_exit_code} -eq 6 ]]; then
-            break
-        fi
-        echo "${SUDO} nvidia-smi mig -i ${device_id} -dgi failed. Trying in 1s"
-        sleep 1
-    done
+    #     if [[ ${mig_exit_code} -eq 0 || ${mig_exit_code} -eq 6 ]]; then
+    #         break
+    #     fi
+    #     echo "${SUDO} nvidia-smi mig -i ${device_id} -dgi failed. Trying in 1s"
+    #     sleep 1
+    # done
+
+    original_e=$(set +o | grep errexit)
+    set +e
+    ${SUDO} nvidia-smi mig -i ${device_id} -dci && ${SUDO} nvidia-smi mig -i ${device_id} -dgi
+    local mig_exit_code=$?
+    eval "$original_e"
+    if [[ ${mig_exit_code} -eq 0 || ${mig_exit_code} -eq 6 ]]; then
+        return 0
+    else 
+        return ${mig_exit_code}
+    fi
+
 }
 
 function lock_gpu() {
