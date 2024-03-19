@@ -1,0 +1,2 @@
+mode,load,0_mobilenet_v3_small-8,1_mobilenet_v3_small-8,2_mobilenet_v3_small-8,3_mobilenet_v3_small-8
+mig,1.0,3.0596256256103516,3.0739307403564453,3.1075477600097656,3.4210681915283203
