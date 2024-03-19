@@ -123,6 +123,7 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
                 job_mix_string = model + '-' + str(request.batch_sizes[i]) + '-' + str(request.slos[i])
             else:
                 job_mix_string += " " + model + '-' + str(request.batch_sizes[i]) + '-' + str(request.slos[i])
+        job_mix_string += f"-{pid}"
 
         # Consult TieBreaker model for concurrency mechanism to use during high load
         # TODO: consult mechanism here
