@@ -9,3 +9,4 @@
 *output_nsys.sqlite
 model-formulation/catboost_info/*
 print_outs.txt
+*__pycache__
