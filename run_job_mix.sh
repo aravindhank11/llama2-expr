@@ -419,6 +419,7 @@ setup_expr()
     ipcrm --all=msg || :
 }
 
+cd ~/llama2-expr
 source helper.sh && helper_setup
 get_input $@
 validate_input

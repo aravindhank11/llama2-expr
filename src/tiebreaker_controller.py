@@ -7,6 +7,7 @@ from concurrent import futures
 import subprocess
 import time
 import argparse
+import json
 
 sys.path.insert(0, '../generated')
 import tb_controller_pb2
@@ -26,9 +27,15 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
         self.job_mix_deployment_params = {} # job mix -> [distro type, rps, slo percentile, job_start_time, pid, gpu device id, high load mechanism]
         self.device_status = {}
 
-        # Initialize server device status to be all available initially
-        for i in range(args.no_server_devices):
-            self.device_status[i] = 'AVAILABLE'
+        # Parse server config file
+        with open(args.device_config, 'r') as file:
+            data = json.load(file)
+            for entry in data['server']:
+                self.device_status[entry['device_id']] = [entry['value'], 'AVAILABLE']
+        self.no_server_devices = len(self.device_status)
+
+        print(self.device_status)
+        print(self.no_server_devices)
 
         # Thread to monitor how long a job mix has been running for
         self.monitor_thread = threading.Thread(target=self.monitor_job_params)
@@ -54,8 +61,9 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
     def DeployJobMix(self, request, context):
 
         # TODO: CHECK MODEL TYPES, MODELS, BATCHES, AND JOB SIZES SUPPORTED
-
-        if len(self.job_mix_deployment_params) > (args.no_server_devices / 2):
+        
+        # Assuming even number of A100s, for every pair one MPS and one MIG
+        if len(self.job_mix_deployment_params) == (self.no_server_devices / 2):
             return tb_controller_pb2.DeploymentResponse(status=create_status('FAILURE', f'Server GPUs are occupied currently.'))
 
         # Construct string payload
@@ -71,7 +79,7 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
                     "slo-percentile": request.slo_percentile,
                     "slo-lw": request.slos[i],
                     "slo-hw": request.slos[i],
-                    "ctrl-grpc": None
+                    "ctrl-grpc": args.port
                 }
             )
 
@@ -86,14 +94,17 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
 
         # Find first available MPS device to launch model on
         mps_device = -1
-        for device, status in list(self.device_status.items()):
-            if device < (args.no_server_devices / 2):
-                if status == 'AVAILABLE':
-                    self.device_status[device] = 'OCCUPIED'
-                    mps_device = device
-                    break
-            else:
-                return tb_controller_pb2.DeploymentResponse(status=create_status('FAILURE', f'Server GPUs are occupied currently. Should not end up here!'))
+        for device, value in list(self.device_status.items()):
+            if (value[0] == 'MPS') and (value[1] == 'AVAILABLE'):
+                updated_value = value
+                updated_value[1] = 'OCCUPIED'
+                self.device_status[device] = updated_value
+                mps_device = device
+                break
+        
+        # Didn't find available MPS device, shouldn't come here ever
+        if mps_device == -1:
+            return tb_controller_pb2.DeploymentResponse(status=create_status('FAILURE', f'Server GPUs are occupied currently. Should not end up here!'))
 
         # Echo mode and device to launch models on
         echo_dict = {"mode": "mps-uncap", "device-id": mps_device}
@@ -125,15 +136,18 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
     
     def MigrateJobMix(self, request, context):
         for job_mix, params in list(self.job_mix_deployment_params.items()):
+            # Need to live migrate
             if (params[5] == request.gpu_no) and (params[-1] == 'mig'):
 
                 # Find available MIG GPU
                 mig_device = -1
-                for device, status in list(self.device_status.items()):
-                    if device >= (args.no_server_devices / 2):
-                        if status == 'AVAILABLE':
-                            mig_device = device
-                            self.device_status[device] = 'OCCUPIED'
+                for device, value in list(self.device_status.items()):
+                    if (value[0] == 'MIG') and (value[1] == 'AVAILABLE'):
+                        updated_value = value
+                        updated_value[1] = 'OCCUPIED'
+                        self.device_status[device] = updated_value
+                        mig_device = device
+                        break
                 
                 # Failed to find available MIG GPU
                 if mig_device == -1:
@@ -142,17 +156,22 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
                 # Issue echo command to kickstart live migration
                 echo_dict = {"mode": f"{params[-1]}", "device-id": mig_device}
                 echo_dict_string = json.dumps(echo_dict)
-                echo_cmd = "echo \'" + echo_dict_string + f"\' > /tmp/{pid}"
+                echo_cmd = "echo \'" + echo_dict_string + f"\' > /tmp/{params[4]}"
                 print('Echo cmd is ' + echo_cmd)
                 echo_tmp = subprocess.Popen(echo_cmd, shell=True, executable='/bin/bash', stdout=subprocess.PIPE)
 
                 # Update state -- old device is available
-                self.device_status[params[5]] = 'AVAILABLE'
+                update_device_value = self.device_status[params[5]]
+                update_device_value[1] = 'AVAILABLE'
+                self.device_status[params[5]] = update_device_value
 
                 # Update job mix state -- specify new device
                 updated_params = params
                 updated_params[5] = mig_device
                 self.job_mix_deployment_params[job_mix] = updated_params
+            # No need for live migratino
+            else:
+                return tb_controller_pb2.MigrationResponse(status=create_status('SUCCESS', f'No need to live migrate the job mix per TieBreaker Model!'))
 
 
         return tb_controller_pb2.MigrationResponse(status=create_status('FAILURE', f'Could not find job mix with given request gpu no {request.gpu_no}'))
@@ -160,7 +179,7 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
 def tiebreaker_controller():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=40))
     tb_controller_pb2_grpc.add_TieBreaker_ControllerServicer_to_server(TieBreaker_Controller(), server)
-    server.add_insecure_port('[::]:50053')
+    server.add_insecure_port(f'[::]:{args.port}')
     server.start()
     print('TieBreaker Controller is up and running!')
     server.wait_for_termination()
@@ -168,6 +187,7 @@ def tiebreaker_controller():
 if __name__=='__main__':
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument("--exp-duration", type=int, default=60)
-    parser.add_argument("--no-server-devices", type=int, default=4)
+    parser.add_argument("--port", type=str, default=50053)
+    parser.add_argument("--device-config", type=str, default='../device-config.json')
     args = parser.parse_args()
     tiebreaker_controller()
