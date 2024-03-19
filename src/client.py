@@ -19,10 +19,10 @@ with grpc.insecure_channel('localhost:50053') as channel:
     ))
     print(deployment_response.status)
 
-    time.sleep(20)
+    # time.sleep(20)
 
-    migration_response = stub.MigrateJobMix(tb_controller_pb2.MigrationRequest(
-        unique_mix_id = 1,
-        breached_status = 'high_wm'
-    ))
-    print(migration_response.status)
+    # migration_response = stub.MigrateJobMix(tb_controller_pb2.MigrationRequest(
+    #     unique_mix_id = 1,
+    #     breached_status = 'HIGH'
+    # ))
+    # print(migration_response.status)

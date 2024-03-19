@@ -12,6 +12,7 @@ from ctypes import cdll
 from queue import Queue
 from queue import Empty as QueueEmptyException
 import numpy as np
+import grpc
 from batched_inference import get_batched_inference_object
 from utils import (
     OnlinePercentile,
@@ -22,6 +23,10 @@ from utils import (
     log,
     orion_block,
 )
+
+sys.path.insert(0, '../generated')
+import tb_controller_pb2
+import tb_controller_pb2_grpc
 
 
 WARMUP_REQS = 10
@@ -59,6 +64,8 @@ class BatchedInferenceExecutor:
         self.ctrl_slo_comm_running = AtomicBoolean(False)
 
         self.ctrl_grpc_channel = ctrl_grpc_channel
+        self.unique_mix_id = None
+        self.stub = None
         if self.ctrl_grpc_channel:
             self._setup_ctrl_grpc_channel()
 
@@ -92,14 +99,24 @@ class BatchedInferenceExecutor:
             sys.exit(1)
 
     def _setup_ctrl_grpc_channel(self):
-        # TODO: @Prasoon to implement gRPC setup
-        pass
-
+        split_list = self.ctrl_grpc_channel.split(' ')
+        if len(split_list) == 2:
+            print("Creating stub to TieBreaker Controller")
+            port = split_list[0]
+            self.unique_mix_id = split_list[1]
+            with grpc.insecure_channel(f'localhost:{port}'):
+                self.stub = tb_controller_pb2_grpc.TieBreaker_ControllerStub(channel)
+        
     def _convey_slo_breach(self, watermark_type):
-        # TODO: @Prasoon to implement gRPC caller
         # watermark_type: HIGH => We violated high watermark
         #                 LOW  => We went below the low watermark
         print(f"Reporting SLO VIOLATION {watermark_type}")
+        if (self.stub != None) and (self.unique_mix_id != None):
+            migration_response = self.stub.MigrateJobMix(tb_controller_pb2.MigrationRequest(
+                unique_mix_id=self.unique_mix_id,
+                breached_status = watermark_type
+            ))
+            print(f"Migration response: {migration_response.status}")
 
         # Once communicated flip the atomic variable
         self.ctrl_slo_comm_running.flip()
