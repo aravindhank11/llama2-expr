@@ -54,7 +54,9 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
                     echo_cmd = "echo \'" + echo_dict_string + f"\' > /tmp/{params[4]}"
                     print('Echo cmd is ' + echo_cmd)
                     echo_tmp = subprocess.Popen(echo_cmd, shell=True, executable='/bin/bash', stdout=subprocess.PIPE)
-                    self.device_status[params[5]] = 'AVAILABLE'
+                    updated_value = self.device_status[params[5]]
+                    updated_value[1] = 'AVAILABLE'
+                    self.device_status[params[5]] = updated_value
                     del self.job_mix_deployment_params[job_mix]
             time.sleep(0.5)
     
