@@ -25,8 +25,8 @@ from utils import (
 )
 
 # sys.path.insert(0, '../generated')
-from generated import tb_controller_pb2
-from generated import tb_controller_pb2_grpc
+import tb_controller_pb2
+import tb_controller_pb2_grpc
 
 
 WARMUP_REQS = 10
