@@ -1,0 +1,365 @@
+[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ (reverse-i-search)`': [Ke': [7me[27mxitx': [7mex[27mitp': cd llama2-[7mexp[27mr/o': export USE_SUDO=1; [7mexpo[27mrt VENV=~/virtual/tiebreaker[1@r': export USE_SUDO=1; [7mexpor[27m[1@t': export USE_SUDO=1; [7mexport[27m[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ export USE_SUDO=1; export VENV=~/virtual/tiebreaker
+[?2004l[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ clear
+[?2004l[H[2J[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ ./collect_mig_2.sh [K
+[?2004l./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet18-2 vision-resnet18-2
+Logs at /tmp/print_outs-67ef0673.txt
+Running closed loop experiment for mig
+[sudo] password for lab-admin: 
+Run success: results are stored in results/a100/resnet18-resnet18/resnet18-2-closed_resnet18-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-67ef0673.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet18-4 vision-resnet18-4
+Logs at /tmp/print_outs-fd2a70ed.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet18-resnet18/resnet18-4-closed_resnet18-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-fd2a70ed.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet18-8 vision-resnet18-8
+Logs at /tmp/print_outs-4152a3e3.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet18-resnet18/resnet18-8-closed_resnet18-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-4152a3e3.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet18-16 vision-resnet18-16
+Logs at /tmp/print_outs-3661544e.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet18-resnet18/resnet18-16-closed_resnet18-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-3661544e.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet18-32 vision-resnet18-32
+Logs at /tmp/print_outs-146170b0.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet18-resnet18/resnet18-32-closed_resnet18-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-146170b0.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet34-2 vision-resnet34-2
+Logs at /tmp/print_outs-36206364.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet34-resnet34/resnet34-2-closed_resnet34-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-36206364.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet34-4 vision-resnet34-4
+Logs at /tmp/print_outs-ef10a771.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet34-resnet34/resnet34-4-closed_resnet34-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-ef10a771.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet34-8 vision-resnet34-8
+Logs at /tmp/print_outs-752f767a.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet34-resnet34/resnet34-8-closed_resnet34-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-752f767a.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet34-16 vision-resnet34-16
+Logs at /tmp/print_outs-1bf87f17.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet34-resnet34/resnet34-16-closed_resnet34-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-1bf87f17.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet34-32 vision-resnet34-32
+Logs at /tmp/print_outs-d5a4900e.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet34-resnet34/resnet34-32-closed_resnet34-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-d5a4900e.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet50-2 vision-resnet50-2
+Logs at /tmp/print_outs-59dd8dfc.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet50-resnet50/resnet50-2-closed_resnet50-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-59dd8dfc.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet50-4 vision-resnet50-4
+Logs at /tmp/print_outs-a3140a9e.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet50-resnet50/resnet50-4-closed_resnet50-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-a3140a9e.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet50-8 vision-resnet50-8
+Logs at /tmp/print_outs-95312006.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet50-resnet50/resnet50-8-closed_resnet50-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-95312006.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet50-16 vision-resnet50-16
+Logs at /tmp/print_outs-70183f45.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet50-resnet50/resnet50-16-closed_resnet50-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-70183f45.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet50-32 vision-resnet50-32
+Logs at /tmp/print_outs-75407548.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet50-resnet50/resnet50-32-closed_resnet50-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-75407548.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet101-2 vision-resnet101-2
+Logs at /tmp/print_outs-e95d0087.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet101-resnet101/resnet101-2-closed_resnet101-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-e95d0087.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet101-4 vision-resnet101-4
+Logs at /tmp/print_outs-7ceff4a0.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet101-resnet101/resnet101-4-closed_resnet101-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-7ceff4a0.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet101-8 vision-resnet101-8
+Logs at /tmp/print_outs-e2ba3efc.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet101-resnet101/resnet101-8-closed_resnet101-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-e2ba3efc.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet101-16 vision-resnet101-16
+Logs at /tmp/print_outs-0545a57c.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet101-resnet101/resnet101-16-closed_resnet101-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-0545a57c.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet101-32 vision-resnet101-32
+Logs at /tmp/print_outs-0e5878a1.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet101-resnet101/resnet101-32-closed_resnet101-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-0e5878a1.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet152-2 vision-resnet152-2
+Logs at /tmp/print_outs-438ba813.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet152-resnet152/resnet152-2-closed_resnet152-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-438ba813.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet152-4 vision-resnet152-4
+Logs at /tmp/print_outs-b2d26cfe.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet152-resnet152/resnet152-4-closed_resnet152-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-b2d26cfe.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet152-8 vision-resnet152-8
+Logs at /tmp/print_outs-e53c0056.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet152-resnet152/resnet152-8-closed_resnet152-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-e53c0056.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet152-16 vision-resnet152-16
+Logs at /tmp/print_outs-ece97779.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet152-resnet152/resnet152-16-closed_resnet152-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-ece97779.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet152-32 vision-resnet152-32
+Logs at /tmp/print_outs-a959f647.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet152-resnet152/resnet152-32-closed_resnet152-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-a959f647.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-alexnet-2 vision-alexnet-2
+Logs at /tmp/print_outs-5405bb3e.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/alexnet-alexnet/alexnet-2-closed_alexnet-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-5405bb3e.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-alexnet-4 vision-alexnet-4
+Logs at /tmp/print_outs-7cc9f1b1.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/alexnet-alexnet/alexnet-4-closed_alexnet-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-7cc9f1b1.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-alexnet-8 vision-alexnet-8
+Logs at /tmp/print_outs-5f13c933.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/alexnet-alexnet/alexnet-8-closed_alexnet-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-5f13c933.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-alexnet-16 vision-alexnet-16
+Logs at /tmp/print_outs-c9868b67.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/alexnet-alexnet/alexnet-16-closed_alexnet-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-c9868b67.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-alexnet-32 vision-alexnet-32
+Logs at /tmp/print_outs-67a147c2.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/alexnet-alexnet/alexnet-32-closed_alexnet-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-67a147c2.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet18-2 vision-resnet18-2 vision-resnet18-2 vision-resnet18-2
+Logs at /tmp/print_outs-631bbe1f.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet18-resnet18-resnet18-resnet18/resnet18-2-closed_resnet18-2-closed_resnet18-2-closed_resnet18-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-631bbe1f.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet18-4 vision-resnet18-4 vision-resnet18-4 vision-resnet18-4
+Logs at /tmp/print_outs-6a5ec726.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet18-resnet18-resnet18-resnet18/resnet18-4-closed_resnet18-4-closed_resnet18-4-closed_resnet18-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-6a5ec726.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet18-8 vision-resnet18-8 vision-resnet18-8 vision-resnet18-8
+Logs at /tmp/print_outs-b8277a7d.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet18-resnet18-resnet18-resnet18/resnet18-8-closed_resnet18-8-closed_resnet18-8-closed_resnet18-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-b8277a7d.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet18-16 vision-resnet18-16 vision-resnet18-16 vision-resnet18-16
+Logs at /tmp/print_outs-448f8372.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet18-resnet18-resnet18-resnet18/resnet18-16-closed_resnet18-16-closed_resnet18-16-closed_resnet18-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-448f8372.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet18-32 vision-resnet18-32 vision-resnet18-32 vision-resnet18-32
+Logs at /tmp/print_outs-12b92dd7.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet18-resnet18-resnet18-resnet18/resnet18-32-closed_resnet18-32-closed_resnet18-32-closed_resnet18-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-12b92dd7.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet34-2 vision-resnet34-2 vision-resnet34-2 vision-resnet34-2
+Logs at /tmp/print_outs-5828ea4a.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet34-resnet34-resnet34-resnet34/resnet34-2-closed_resnet34-2-closed_resnet34-2-closed_resnet34-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-5828ea4a.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet34-4 vision-resnet34-4 vision-resnet34-4 vision-resnet34-4
+Logs at /tmp/print_outs-2ace27a5.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet34-resnet34-resnet34-resnet34/resnet34-4-closed_resnet34-4-closed_resnet34-4-closed_resnet34-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-2ace27a5.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet34-8 vision-resnet34-8 vision-resnet34-8 vision-resnet34-8
+Logs at /tmp/print_outs-8ebf0635.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet34-resnet34-resnet34-resnet34/resnet34-8-closed_resnet34-8-closed_resnet34-8-closed_resnet34-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-8ebf0635.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet34-16 vision-resnet34-16 vision-resnet34-16 vision-resnet34-16
+Logs at /tmp/print_outs-e2dca2a4.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet34-resnet34-resnet34-resnet34/resnet34-16-closed_resnet34-16-closed_resnet34-16-closed_resnet34-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-e2dca2a4.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet34-32 vision-resnet34-32 vision-resnet34-32 vision-resnet34-32
+Logs at /tmp/print_outs-ca8be68e.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet34-resnet34-resnet34-resnet34/resnet34-32-closed_resnet34-32-closed_resnet34-32-closed_resnet34-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-ca8be68e.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet50-2 vision-resnet50-2 vision-resnet50-2 vision-resnet50-2
+Logs at /tmp/print_outs-1d281fbb.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet50-resnet50-resnet50-resnet50/resnet50-2-closed_resnet50-2-closed_resnet50-2-closed_resnet50-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-1d281fbb.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet50-4 vision-resnet50-4 vision-resnet50-4 vision-resnet50-4
+Logs at /tmp/print_outs-69a419ff.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet50-resnet50-resnet50-resnet50/resnet50-4-closed_resnet50-4-closed_resnet50-4-closed_resnet50-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-69a419ff.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet50-8 vision-resnet50-8 vision-resnet50-8 vision-resnet50-8
+Logs at /tmp/print_outs-3aeaf93d.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet50-resnet50-resnet50-resnet50/resnet50-8-closed_resnet50-8-closed_resnet50-8-closed_resnet50-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-3aeaf93d.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet50-16 vision-resnet50-16 vision-resnet50-16 vision-resnet50-16
+Logs at /tmp/print_outs-d260a7ed.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet50-resnet50-resnet50-resnet50/resnet50-16-closed_resnet50-16-closed_resnet50-16-closed_resnet50-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-d260a7ed.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet50-32 vision-resnet50-32 vision-resnet50-32 vision-resnet50-32
+Logs at /tmp/print_outs-ab7b31f4.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet50-resnet50-resnet50-resnet50/resnet50-32-closed_resnet50-32-closed_resnet50-32-closed_resnet50-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-ab7b31f4.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet101-2 vision-resnet101-2 vision-resnet101-2 vision-resnet101-2
+Logs at /tmp/print_outs-2cb81467.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet101-resnet101-resnet101-resnet101/resnet101-2-closed_resnet101-2-closed_resnet101-2-closed_resnet101-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-2cb81467.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet101-4 vision-resnet101-4 vision-resnet101-4 vision-resnet101-4
+Logs at /tmp/print_outs-db4300c9.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet101-resnet101-resnet101-resnet101/resnet101-4-closed_resnet101-4-closed_resnet101-4-closed_resnet101-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-db4300c9.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet101-8 vision-resnet101-8 vision-resnet101-8 vision-resnet101-8
+Logs at /tmp/print_outs-7d1fcf89.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet101-resnet101-resnet101-resnet101/resnet101-8-closed_resnet101-8-closed_resnet101-8-closed_resnet101-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-7d1fcf89.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet101-16 vision-resnet101-16 vision-resnet101-16 vision-resnet101-16
+Logs at /tmp/print_outs-404f69cb.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet101-resnet101-resnet101-resnet101/resnet101-16-closed_resnet101-16-closed_resnet101-16-closed_resnet101-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-404f69cb.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet101-32 vision-resnet101-32 vision-resnet101-32 vision-resnet101-32
+Logs at /tmp/print_outs-d134d776.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet101-resnet101-resnet101-resnet101/resnet101-32-closed_resnet101-32-closed_resnet101-32-closed_resnet101-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-d134d776.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet152-2 vision-resnet152-2 vision-resnet152-2 vision-resnet152-2
+Logs at /tmp/print_outs-5e2cd0e5.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet152-resnet152-resnet152-resnet152/resnet152-2-closed_resnet152-2-closed_resnet152-2-closed_resnet152-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-5e2cd0e5.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet152-4 vision-resnet152-4 vision-resnet152-4 vision-resnet152-4
+Logs at /tmp/print_outs-7a58b617.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet152-resnet152-resnet152-resnet152/resnet152-4-closed_resnet152-4-closed_resnet152-4-closed_resnet152-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-7a58b617.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet152-8 vision-resnet152-8 vision-resnet152-8 vision-resnet152-8
+Logs at /tmp/print_outs-1522c8a9.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet152-resnet152-resnet152-resnet152/resnet152-8-closed_resnet152-8-closed_resnet152-8-closed_resnet152-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-1522c8a9.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet152-16 vision-resnet152-16 vision-resnet152-16 vision-resnet152-16
+Logs at /tmp/print_outs-d12e924b.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet152-resnet152-resnet152-resnet152/resnet152-16-closed_resnet152-16-closed_resnet152-16-closed_resnet152-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-d12e924b.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-resnet152-32 vision-resnet152-32 vision-resnet152-32 vision-resnet152-32
+Logs at /tmp/print_outs-ae3df3e7.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/resnet152-resnet152-resnet152-resnet152/resnet152-32-closed_resnet152-32-closed_resnet152-32-closed_resnet152-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-ae3df3e7.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-alexnet-2 vision-alexnet-2 vision-alexnet-2 vision-alexnet-2
+Logs at /tmp/print_outs-d62ff18a.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/alexnet-alexnet-alexnet-alexnet/alexnet-2-closed_alexnet-2-closed_alexnet-2-closed_alexnet-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-d62ff18a.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-alexnet-4 vision-alexnet-4 vision-alexnet-4 vision-alexnet-4
+Logs at /tmp/print_outs-09c34e3c.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/alexnet-alexnet-alexnet-alexnet/alexnet-4-closed_alexnet-4-closed_alexnet-4-closed_alexnet-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-09c34e3c.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-alexnet-8 vision-alexnet-8 vision-alexnet-8 vision-alexnet-8
+Logs at /tmp/print_outs-150f7497.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/alexnet-alexnet-alexnet-alexnet/alexnet-8-closed_alexnet-8-closed_alexnet-8-closed_alexnet-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-150f7497.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-alexnet-16 vision-alexnet-16 vision-alexnet-16 vision-alexnet-16
+Logs at /tmp/print_outs-b6939b97.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/alexnet-alexnet-alexnet-alexnet/alexnet-16-closed_alexnet-16-closed_alexnet-16-closed_alexnet-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-b6939b97.txt for logs
+./run.sh --device-type a100 --device-id 2 --modes mig --duration 60 --distribution closed vision-alexnet-32 vision-alexnet-32 vision-alexnet-32 vision-alexnet-32
+Logs at /tmp/print_outs-7edef268.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/alexnet-alexnet-alexnet-alexnet/alexnet-32-closed_alexnet-32-closed_alexnet-32-closed_alexnet-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-7edef268.txt for logs
+[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ 

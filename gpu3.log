@@ -1,0 +1,312 @@
+[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ screen -ls
+[?2004lThere are screens on:
+	490764.pts-11.ece-a63826	(03/19/2024 05:20:03 AM)	(Attached)
+	490630.pts-6.ece-a63826	(03/19/2024 05:19:51 AM)	(Attached)
+	490407.pts-5.ece-a63826	(03/19/2024 05:19:25 AM)	(Attached)
+	489673.pts-4.ece-a63826	(03/19/2024 05:18:48 AM)	(Attached)
+4 Sockets in /run/screen/S-lab-admin.
+[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ (reverse-i-search)`': [Ke': scre[7me[27mn -ls[5Px': [7mex[27mitp': cd llama2-[7mexp[27mr/o': export USE_SUDO=1; [7mexpo[27mrt VENV=~/virtual/tiebreaker[1@r': export USE_SUDO=1; [7mexpor[27m[1@t': export USE_SUDO=1; [7mexport[27m[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ export USE_SUDO=1; export VENV=~/virtual/tiebreaker
+[?2004l[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ clear
+[?2004l[H[2J[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ ./collect_mig_3.sh [K
+[?2004l./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_0-2 vision-squeezenet1_0-2
+Logs at /tmp/print_outs-c3e6cafc.txt
+Running closed loop experiment for mig
+[sudo] password for lab-admin: 
+Run success: results are stored in results/a100/squeezenet1_0-squeezenet1_0/squeezenet1_0-2-closed_squeezenet1_0-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-c3e6cafc.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_0-4 vision-squeezenet1_0-4
+Logs at /tmp/print_outs-b1f88b5d.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_0-squeezenet1_0/squeezenet1_0-4-closed_squeezenet1_0-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-b1f88b5d.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_0-8 vision-squeezenet1_0-8
+Logs at /tmp/print_outs-599915c0.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_0-squeezenet1_0/squeezenet1_0-8-closed_squeezenet1_0-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-599915c0.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_0-16 vision-squeezenet1_0-16
+Logs at /tmp/print_outs-6cf2887a.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_0-squeezenet1_0/squeezenet1_0-16-closed_squeezenet1_0-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-6cf2887a.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_0-32 vision-squeezenet1_0-32
+Logs at /tmp/print_outs-ce73682a.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_0-squeezenet1_0/squeezenet1_0-32-closed_squeezenet1_0-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-ce73682a.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_1-2 vision-squeezenet1_1-2
+Logs at /tmp/print_outs-cec4efab.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_1-squeezenet1_1/squeezenet1_1-2-closed_squeezenet1_1-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-cec4efab.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_1-4 vision-squeezenet1_1-4
+Logs at /tmp/print_outs-0f51b8df.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_1-squeezenet1_1/squeezenet1_1-4-closed_squeezenet1_1-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-0f51b8df.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_1-8 vision-squeezenet1_1-8
+Logs at /tmp/print_outs-43467232.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_1-squeezenet1_1/squeezenet1_1-8-closed_squeezenet1_1-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-43467232.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_1-16 vision-squeezenet1_1-16
+Logs at /tmp/print_outs-905dca62.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_1-squeezenet1_1/squeezenet1_1-16-closed_squeezenet1_1-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-905dca62.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_1-32 vision-squeezenet1_1-32
+Logs at /tmp/print_outs-1c182ca4.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_1-squeezenet1_1/squeezenet1_1-32-closed_squeezenet1_1-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-1c182ca4.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b5-2 vision-efficientnet_b5-2
+Logs at /tmp/print_outs-334e4d25.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b5-efficientnet_b5/efficientnet_b5-2-closed_efficientnet_b5-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-334e4d25.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b5-4 vision-efficientnet_b5-4
+Logs at /tmp/print_outs-3ee3ecd0.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b5-efficientnet_b5/efficientnet_b5-4-closed_efficientnet_b5-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-3ee3ecd0.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b5-8 vision-efficientnet_b5-8
+Logs at /tmp/print_outs-0f592897.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b5-efficientnet_b5/efficientnet_b5-8-closed_efficientnet_b5-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-0f592897.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b5-16 vision-efficientnet_b5-16
+Logs at /tmp/print_outs-4cb382e5.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b5-efficientnet_b5/efficientnet_b5-16-closed_efficientnet_b5-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-4cb382e5.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b5-32 vision-efficientnet_b5-32
+Logs at /tmp/print_outs-51283f50.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b5-efficientnet_b5/efficientnet_b5-32-closed_efficientnet_b5-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-51283f50.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b6-2 vision-efficientnet_b6-2
+Logs at /tmp/print_outs-cd41b6ca.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b6-efficientnet_b6/efficientnet_b6-2-closed_efficientnet_b6-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-cd41b6ca.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b6-4 vision-efficientnet_b6-4
+Logs at /tmp/print_outs-9fa48b68.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b6-efficientnet_b6/efficientnet_b6-4-closed_efficientnet_b6-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-9fa48b68.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b6-8 vision-efficientnet_b6-8
+Logs at /tmp/print_outs-aa73eb63.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b6-efficientnet_b6/efficientnet_b6-8-closed_efficientnet_b6-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-aa73eb63.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b6-16 vision-efficientnet_b6-16
+Logs at /tmp/print_outs-3464d4ca.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b6-efficientnet_b6/efficientnet_b6-16-closed_efficientnet_b6-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-3464d4ca.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b6-32 vision-efficientnet_b6-32
+Logs at /tmp/print_outs-0959328c.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b6-efficientnet_b6/efficientnet_b6-32-closed_efficientnet_b6-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-0959328c.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b7-2 vision-efficientnet_b7-2
+Logs at /tmp/print_outs-de872764.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b7-efficientnet_b7/efficientnet_b7-2-closed_efficientnet_b7-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-de872764.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b7-4 vision-efficientnet_b7-4
+Logs at /tmp/print_outs-a45e7ab2.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b7-efficientnet_b7/efficientnet_b7-4-closed_efficientnet_b7-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-a45e7ab2.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b7-8 vision-efficientnet_b7-8
+Logs at /tmp/print_outs-9f95167b.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b7-efficientnet_b7/efficientnet_b7-8-closed_efficientnet_b7-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-9f95167b.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b7-16 vision-efficientnet_b7-16
+Logs at /tmp/print_outs-bae8073e.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b7-efficientnet_b7/efficientnet_b7-16-closed_efficientnet_b7-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-bae8073e.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b7-32 vision-efficientnet_b7-32
+Logs at /tmp/print_outs-392f0e3a.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b7-efficientnet_b7/efficientnet_b7-32-closed_efficientnet_b7-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-392f0e3a.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_0-2 vision-squeezenet1_0-2 vision-squeezenet1_0-2 vision-squeezenet1_0-2
+Logs at /tmp/print_outs-fe4efaa6.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_0-squeezenet1_0-squeezenet1_0-squeezenet1_0/squeezenet1_0-2-closed_squeezenet1_0-2-closed_squeezenet1_0-2-closed_squeezenet1_0-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-fe4efaa6.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_0-4 vision-squeezenet1_0-4 vision-squeezenet1_0-4 vision-squeezenet1_0-4
+Logs at /tmp/print_outs-85b31f61.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_0-squeezenet1_0-squeezenet1_0-squeezenet1_0/squeezenet1_0-4-closed_squeezenet1_0-4-closed_squeezenet1_0-4-closed_squeezenet1_0-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-85b31f61.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_0-8 vision-squeezenet1_0-8 vision-squeezenet1_0-8 vision-squeezenet1_0-8
+Logs at /tmp/print_outs-3cacd1db.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_0-squeezenet1_0-squeezenet1_0-squeezenet1_0/squeezenet1_0-8-closed_squeezenet1_0-8-closed_squeezenet1_0-8-closed_squeezenet1_0-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-3cacd1db.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_0-16 vision-squeezenet1_0-16 vision-squeezenet1_0-16 vision-squeezenet1_0-16
+Logs at /tmp/print_outs-68e7e5c5.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_0-squeezenet1_0-squeezenet1_0-squeezenet1_0/squeezenet1_0-16-closed_squeezenet1_0-16-closed_squeezenet1_0-16-closed_squeezenet1_0-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-68e7e5c5.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_0-32 vision-squeezenet1_0-32 vision-squeezenet1_0-32 vision-squeezenet1_0-32
+Logs at /tmp/print_outs-2926059b.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_0-squeezenet1_0-squeezenet1_0-squeezenet1_0/squeezenet1_0-32-closed_squeezenet1_0-32-closed_squeezenet1_0-32-closed_squeezenet1_0-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-2926059b.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_1-2 vision-squeezenet1_1-2 vision-squeezenet1_1-2 vision-squeezenet1_1-2
+Logs at /tmp/print_outs-7d0bfc5e.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_1-squeezenet1_1-squeezenet1_1-squeezenet1_1/squeezenet1_1-2-closed_squeezenet1_1-2-closed_squeezenet1_1-2-closed_squeezenet1_1-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-7d0bfc5e.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_1-4 vision-squeezenet1_1-4 vision-squeezenet1_1-4 vision-squeezenet1_1-4
+Logs at /tmp/print_outs-4ce8ab4c.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_1-squeezenet1_1-squeezenet1_1-squeezenet1_1/squeezenet1_1-4-closed_squeezenet1_1-4-closed_squeezenet1_1-4-closed_squeezenet1_1-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-4ce8ab4c.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_1-8 vision-squeezenet1_1-8 vision-squeezenet1_1-8 vision-squeezenet1_1-8
+Logs at /tmp/print_outs-e5c53c44.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_1-squeezenet1_1-squeezenet1_1-squeezenet1_1/squeezenet1_1-8-closed_squeezenet1_1-8-closed_squeezenet1_1-8-closed_squeezenet1_1-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-e5c53c44.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_1-16 vision-squeezenet1_1-16 vision-squeezenet1_1-16 vision-squeezenet1_1-16
+Logs at /tmp/print_outs-be0d65d3.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_1-squeezenet1_1-squeezenet1_1-squeezenet1_1/squeezenet1_1-16-closed_squeezenet1_1-16-closed_squeezenet1_1-16-closed_squeezenet1_1-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-be0d65d3.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-squeezenet1_1-32 vision-squeezenet1_1-32 vision-squeezenet1_1-32 vision-squeezenet1_1-32
+Logs at /tmp/print_outs-32eff80b.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/squeezenet1_1-squeezenet1_1-squeezenet1_1-squeezenet1_1/squeezenet1_1-32-closed_squeezenet1_1-32-closed_squeezenet1_1-32-closed_squeezenet1_1-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-32eff80b.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b5-2 vision-efficientnet_b5-2 vision-efficientnet_b5-2 vision-efficientnet_b5-2
+Logs at /tmp/print_outs-b2010055.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b5-efficientnet_b5-efficientnet_b5-efficientnet_b5/efficientnet_b5-2-closed_efficientnet_b5-2-closed_efficientnet_b5-2-closed_efficientnet_b5-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-b2010055.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b5-4 vision-efficientnet_b5-4 vision-efficientnet_b5-4 vision-efficientnet_b5-4
+Logs at /tmp/print_outs-4ecd3102.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b5-efficientnet_b5-efficientnet_b5-efficientnet_b5/efficientnet_b5-4-closed_efficientnet_b5-4-closed_efficientnet_b5-4-closed_efficientnet_b5-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-4ecd3102.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b5-8 vision-efficientnet_b5-8 vision-efficientnet_b5-8 vision-efficientnet_b5-8
+Logs at /tmp/print_outs-a3735e0b.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b5-efficientnet_b5-efficientnet_b5-efficientnet_b5/efficientnet_b5-8-closed_efficientnet_b5-8-closed_efficientnet_b5-8-closed_efficientnet_b5-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-a3735e0b.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b5-16 vision-efficientnet_b5-16 vision-efficientnet_b5-16 vision-efficientnet_b5-16
+Logs at /tmp/print_outs-286904bc.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b5-efficientnet_b5-efficientnet_b5-efficientnet_b5/efficientnet_b5-16-closed_efficientnet_b5-16-closed_efficientnet_b5-16-closed_efficientnet_b5-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-286904bc.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b5-32 vision-efficientnet_b5-32 vision-efficientnet_b5-32 vision-efficientnet_b5-32
+Logs at /tmp/print_outs-9f744eb7.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b5-efficientnet_b5-efficientnet_b5-efficientnet_b5/efficientnet_b5-32-closed_efficientnet_b5-32-closed_efficientnet_b5-32-closed_efficientnet_b5-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-9f744eb7.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b6-2 vision-efficientnet_b6-2 vision-efficientnet_b6-2 vision-efficientnet_b6-2
+Logs at /tmp/print_outs-e2e51859.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b6-efficientnet_b6-efficientnet_b6-efficientnet_b6/efficientnet_b6-2-closed_efficientnet_b6-2-closed_efficientnet_b6-2-closed_efficientnet_b6-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-e2e51859.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b6-4 vision-efficientnet_b6-4 vision-efficientnet_b6-4 vision-efficientnet_b6-4
+Logs at /tmp/print_outs-8cb3a0ee.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b6-efficientnet_b6-efficientnet_b6-efficientnet_b6/efficientnet_b6-4-closed_efficientnet_b6-4-closed_efficientnet_b6-4-closed_efficientnet_b6-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-8cb3a0ee.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b6-8 vision-efficientnet_b6-8 vision-efficientnet_b6-8 vision-efficientnet_b6-8
+Logs at /tmp/print_outs-4bda5d4c.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b6-efficientnet_b6-efficientnet_b6-efficientnet_b6/efficientnet_b6-8-closed_efficientnet_b6-8-closed_efficientnet_b6-8-closed_efficientnet_b6-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-4bda5d4c.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b6-16 vision-efficientnet_b6-16 vision-efficientnet_b6-16 vision-efficientnet_b6-16
+Logs at /tmp/print_outs-5493315a.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b6-efficientnet_b6-efficientnet_b6-efficientnet_b6/efficientnet_b6-16-closed_efficientnet_b6-16-closed_efficientnet_b6-16-closed_efficientnet_b6-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-5493315a.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b6-32 vision-efficientnet_b6-32 vision-efficientnet_b6-32 vision-efficientnet_b6-32
+Logs at /tmp/print_outs-8a52fa13.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b6-efficientnet_b6-efficientnet_b6-efficientnet_b6/efficientnet_b6-32-closed_efficientnet_b6-32-closed_efficientnet_b6-32-closed_efficientnet_b6-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-8a52fa13.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b7-2 vision-efficientnet_b7-2 vision-efficientnet_b7-2 vision-efficientnet_b7-2
+Logs at /tmp/print_outs-fe5426cb.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b7-efficientnet_b7-efficientnet_b7-efficientnet_b7/efficientnet_b7-2-closed_efficientnet_b7-2-closed_efficientnet_b7-2-closed_efficientnet_b7-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-fe5426cb.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b7-4 vision-efficientnet_b7-4 vision-efficientnet_b7-4 vision-efficientnet_b7-4
+Logs at /tmp/print_outs-9b66dafd.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b7-efficientnet_b7-efficientnet_b7-efficientnet_b7/efficientnet_b7-4-closed_efficientnet_b7-4-closed_efficientnet_b7-4-closed_efficientnet_b7-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-9b66dafd.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b7-8 vision-efficientnet_b7-8 vision-efficientnet_b7-8 vision-efficientnet_b7-8
+Logs at /tmp/print_outs-b1ebc6f9.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b7-efficientnet_b7-efficientnet_b7-efficientnet_b7/efficientnet_b7-8-closed_efficientnet_b7-8-closed_efficientnet_b7-8-closed_efficientnet_b7-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-b1ebc6f9.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b7-16 vision-efficientnet_b7-16 vision-efficientnet_b7-16 vision-efficientnet_b7-16
+Logs at /tmp/print_outs-f3aad85e.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b7-efficientnet_b7-efficientnet_b7-efficientnet_b7/efficientnet_b7-16-closed_efficientnet_b7-16-closed_efficientnet_b7-16-closed_efficientnet_b7-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-f3aad85e.txt for logs
+./run.sh --device-type a100 --device-id 3 --modes mig --duration 60 --distribution closed vision-efficientnet_b7-32 vision-efficientnet_b7-32 vision-efficientnet_b7-32 vision-efficientnet_b7-32
+Logs at /tmp/print_outs-36ca1218.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/efficientnet_b7-efficientnet_b7-efficientnet_b7-efficientnet_b7/efficientnet_b7-32-closed_efficientnet_b7-32-closed_efficientnet_b7-32-closed_efficientnet_b7-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-36ca1218.txt for logs
+[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ 

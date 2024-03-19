@@ -1,0 +1,2 @@
+mode,load,0_mobilenet_v2-16,1_mobilenet_v2-16
+mig,1.0,0.0,0.0

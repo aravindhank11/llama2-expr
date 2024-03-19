@@ -1,0 +1,367 @@
+[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ ./collect_m^C[?2004l[?2004h[?2004l
+[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ (reverse-i-search)`': [Ke': [7me[27mxitp': ps -eaf | gr[7mep[27m ./run_job_mix[C[8@failed reverse-i-search)`epo': ps -eaf | grep^C[?2004l[?2004h[?2004l
+[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ (reverse-i-search)`': [Ke': [7me[27mxitx': [7mex[27mitp': cd llama2-[7mexp[27mr/o': export USE_SUDO=1; [7mexpo[27mrt VENV=~/virtual/tiebreaker[1@r': export USE_SUDO=1; [7mexpor[27m[1@t': export USE_SUDO=1; [7mexport[27m[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ export USE_SUDO=1; export VENV=~/virtual/tiebreaker
+[?2004l[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ clear
+[?2004l[H[2J[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ clearexport USE_SUDO=1; export VENV=~/virtual/tiebreaker[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cit[K./collect_mig_3.shexit[Kport USE_SUDO=1; export VENV=~/virtual/tiebreaker[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cclear[K[K./collect_mig_0.sh [K
+[?2004l./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v2-2 vision-mobilenet_v2-2
+Logs at /tmp/print_outs-22eac905.txt
+Running closed loop experiment for mig
+[sudo] password for lab-admin: 
+Run success: results are stored in results/a100/mobilenet_v2-mobilenet_v2/mobilenet_v2-2-closed_mobilenet_v2-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-22eac905.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v2-4 vision-mobilenet_v2-4
+Logs at /tmp/print_outs-bc096f5f.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v2-mobilenet_v2/mobilenet_v2-4-closed_mobilenet_v2-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-bc096f5f.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v2-8 vision-mobilenet_v2-8
+Logs at /tmp/print_outs-e225cbf4.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v2-mobilenet_v2/mobilenet_v2-8-closed_mobilenet_v2-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-e225cbf4.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v2-16 vision-mobilenet_v2-16
+Logs at /tmp/print_outs-b6ea809e.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v2-mobilenet_v2/mobilenet_v2-16-closed_mobilenet_v2-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-b6ea809e.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v2-32 vision-mobilenet_v2-32
+Logs at /tmp/print_outs-d0dc67db.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v2-mobilenet_v2/mobilenet_v2-32-closed_mobilenet_v2-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-d0dc67db.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_small-2 vision-mobilenet_v3_small-2
+Logs at /tmp/print_outs-97e891a7.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_small-mobilenet_v3_small/mobilenet_v3_small-2-closed_mobilenet_v3_small-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-97e891a7.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_small-4 vision-mobilenet_v3_small-4
+Logs at /tmp/print_outs-5f1b0bc4.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_small-mobilenet_v3_small/mobilenet_v3_small-4-closed_mobilenet_v3_small-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-5f1b0bc4.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_small-8 vision-mobilenet_v3_small-8
+Logs at /tmp/print_outs-1d982458.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_small-mobilenet_v3_small/mobilenet_v3_small-8-closed_mobilenet_v3_small-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-1d982458.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_small-16 vision-mobilenet_v3_small-16
+Logs at /tmp/print_outs-51785647.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_small-mobilenet_v3_small/mobilenet_v3_small-16-closed_mobilenet_v3_small-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-51785647.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_small-32 vision-mobilenet_v3_small-32
+Logs at /tmp/print_outs-0b972981.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_small-mobilenet_v3_small/mobilenet_v3_small-32-closed_mobilenet_v3_small-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-0b972981.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_large-2 vision-mobilenet_v3_large-2
+Logs at /tmp/print_outs-82bc175b.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_large-mobilenet_v3_large/mobilenet_v3_large-2-closed_mobilenet_v3_large-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-82bc175b.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_large-4 vision-mobilenet_v3_large-4
+Logs at /tmp/print_outs-707e2bdd.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_large-mobilenet_v3_large/mobilenet_v3_large-4-closed_mobilenet_v3_large-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-707e2bdd.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_large-8 vision-mobilenet_v3_large-8
+Logs at /tmp/print_outs-735a647a.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_large-mobilenet_v3_large/mobilenet_v3_large-8-closed_mobilenet_v3_large-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-735a647a.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_large-16 vision-mobilenet_v3_large-16
+Logs at /tmp/print_outs-28812f7f.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_large-mobilenet_v3_large/mobilenet_v3_large-16-closed_mobilenet_v3_large-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-28812f7f.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_large-32 vision-mobilenet_v3_large-32
+Logs at /tmp/print_outs-7c4131f8.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_large-mobilenet_v3_large/mobilenet_v3_large-32-closed_mobilenet_v3_large-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-7c4131f8.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet121-2 vision-densenet121-2
+Logs at /tmp/print_outs-3e37ac62.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet121-densenet121/densenet121-2-closed_densenet121-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-3e37ac62.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet121-4 vision-densenet121-4
+Logs at /tmp/print_outs-ccccae57.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet121-densenet121/densenet121-4-closed_densenet121-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-ccccae57.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet121-8 vision-densenet121-8
+Logs at /tmp/print_outs-c65f2bbb.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet121-densenet121/densenet121-8-closed_densenet121-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-c65f2bbb.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet121-16 vision-densenet121-16
+Logs at /tmp/print_outs-51de98c5.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet121-densenet121/densenet121-16-closed_densenet121-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-51de98c5.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet121-32 vision-densenet121-32
+Logs at /tmp/print_outs-a2ce3dcc.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet121-densenet121/densenet121-32-closed_densenet121-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-a2ce3dcc.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet161-2 vision-densenet161-2
+Logs at /tmp/print_outs-f26d923f.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet161-densenet161/densenet161-2-closed_densenet161-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-f26d923f.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet161-4 vision-densenet161-4
+Logs at /tmp/print_outs-7b514e2d.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet161-densenet161/densenet161-4-closed_densenet161-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-7b514e2d.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet161-8 vision-densenet161-8
+Logs at /tmp/print_outs-71de6f31.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet161-densenet161/densenet161-8-closed_densenet161-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-71de6f31.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet161-16 vision-densenet161-16
+Logs at /tmp/print_outs-32295f36.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet161-densenet161/densenet161-16-closed_densenet161-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-32295f36.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet161-32 vision-densenet161-32
+Logs at /tmp/print_outs-b206e1cb.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet161-densenet161/densenet161-32-closed_densenet161-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-b206e1cb.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet169-2 vision-densenet169-2
+Logs at /tmp/print_outs-c7ab298c.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet169-densenet169/densenet169-2-closed_densenet169-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-c7ab298c.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet169-4 vision-densenet169-4
+Logs at /tmp/print_outs-5d2bf10a.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet169-densenet169/densenet169-4-closed_densenet169-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-5d2bf10a.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet169-8 vision-densenet169-8
+Logs at /tmp/print_outs-273c523b.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet169-densenet169/densenet169-8-closed_densenet169-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-273c523b.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet169-16 vision-densenet169-16
+Logs at /tmp/print_outs-3a8d10af.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet169-densenet169/densenet169-16-closed_densenet169-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-3a8d10af.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet169-32 vision-densenet169-32
+Logs at /tmp/print_outs-d3b96fcc.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet169-densenet169/densenet169-32-closed_densenet169-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-d3b96fcc.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v2-2 vision-mobilenet_v2-2 vision-mobilenet_v2-2 vision-mobilenet_v2-2
+Logs at /tmp/print_outs-72c2b260.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v2-mobilenet_v2-mobilenet_v2-mobilenet_v2/mobilenet_v2-2-closed_mobilenet_v2-2-closed_mobilenet_v2-2-closed_mobilenet_v2-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-72c2b260.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v2-4 vision-mobilenet_v2-4 vision-mobilenet_v2-4 vision-mobilenet_v2-4
+Logs at /tmp/print_outs-478f1973.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v2-mobilenet_v2-mobilenet_v2-mobilenet_v2/mobilenet_v2-4-closed_mobilenet_v2-4-closed_mobilenet_v2-4-closed_mobilenet_v2-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-478f1973.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v2-8 vision-mobilenet_v2-8 vision-mobilenet_v2-8 vision-mobilenet_v2-8
+Logs at /tmp/print_outs-81074aa5.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v2-mobilenet_v2-mobilenet_v2-mobilenet_v2/mobilenet_v2-8-closed_mobilenet_v2-8-closed_mobilenet_v2-8-closed_mobilenet_v2-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-81074aa5.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v2-16 vision-mobilenet_v2-16 vision-mobilenet_v2-16 vision-mobilenet_v2-16
+Logs at /tmp/print_outs-bfa1e9bc.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v2-mobilenet_v2-mobilenet_v2-mobilenet_v2/mobilenet_v2-16-closed_mobilenet_v2-16-closed_mobilenet_v2-16-closed_mobilenet_v2-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-bfa1e9bc.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v2-32 vision-mobilenet_v2-32 vision-mobilenet_v2-32 vision-mobilenet_v2-32
+Logs at /tmp/print_outs-271e32fb.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v2-mobilenet_v2-mobilenet_v2-mobilenet_v2/mobilenet_v2-32-closed_mobilenet_v2-32-closed_mobilenet_v2-32-closed_mobilenet_v2-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-271e32fb.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_small-2 vision-mobilenet_v3_small-2 vision-mobilenet_v3_small-2 vision-mobilenet_v3_small-2
+Logs at /tmp/print_outs-5bec44de.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_small-mobilenet_v3_small-mobilenet_v3_small-mobilenet_v3_small/mobilenet_v3_small-2-closed_mobilenet_v3_small-2-closed_mobilenet_v3_small-2-closed_mobilenet_v3_small-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-5bec44de.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_small-4 vision-mobilenet_v3_small-4 vision-mobilenet_v3_small-4 vision-mobilenet_v3_small-4
+Logs at /tmp/print_outs-b971419f.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_small-mobilenet_v3_small-mobilenet_v3_small-mobilenet_v3_small/mobilenet_v3_small-4-closed_mobilenet_v3_small-4-closed_mobilenet_v3_small-4-closed_mobilenet_v3_small-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-b971419f.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_small-8 vision-mobilenet_v3_small-8 vision-mobilenet_v3_small-8 vision-mobilenet_v3_small-8
+Logs at /tmp/print_outs-f5d5e736.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_small-mobilenet_v3_small-mobilenet_v3_small-mobilenet_v3_small/mobilenet_v3_small-8-closed_mobilenet_v3_small-8-closed_mobilenet_v3_small-8-closed_mobilenet_v3_small-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-f5d5e736.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_small-16 vision-mobilenet_v3_small-16 vision-mobilenet_v3_small-16 vision-mobilenet_v3_small-16
+Logs at /tmp/print_outs-00b9f729.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_small-mobilenet_v3_small-mobilenet_v3_small-mobilenet_v3_small/mobilenet_v3_small-16-closed_mobilenet_v3_small-16-closed_mobilenet_v3_small-16-closed_mobilenet_v3_small-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-00b9f729.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_small-32 vision-mobilenet_v3_small-32 vision-mobilenet_v3_small-32 vision-mobilenet_v3_small-32
+Logs at /tmp/print_outs-de925ac0.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_small-mobilenet_v3_small-mobilenet_v3_small-mobilenet_v3_small/mobilenet_v3_small-32-closed_mobilenet_v3_small-32-closed_mobilenet_v3_small-32-closed_mobilenet_v3_small-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-de925ac0.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_large-2 vision-mobilenet_v3_large-2 vision-mobilenet_v3_large-2 vision-mobilenet_v3_large-2
+Logs at /tmp/print_outs-eb2f2ecf.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_large-mobilenet_v3_large-mobilenet_v3_large-mobilenet_v3_large/mobilenet_v3_large-2-closed_mobilenet_v3_large-2-closed_mobilenet_v3_large-2-closed_mobilenet_v3_large-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-eb2f2ecf.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_large-4 vision-mobilenet_v3_large-4 vision-mobilenet_v3_large-4 vision-mobilenet_v3_large-4
+Logs at /tmp/print_outs-5be960da.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_large-mobilenet_v3_large-mobilenet_v3_large-mobilenet_v3_large/mobilenet_v3_large-4-closed_mobilenet_v3_large-4-closed_mobilenet_v3_large-4-closed_mobilenet_v3_large-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-5be960da.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_large-8 vision-mobilenet_v3_large-8 vision-mobilenet_v3_large-8 vision-mobilenet_v3_large-8
+Logs at /tmp/print_outs-c44eec05.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_large-mobilenet_v3_large-mobilenet_v3_large-mobilenet_v3_large/mobilenet_v3_large-8-closed_mobilenet_v3_large-8-closed_mobilenet_v3_large-8-closed_mobilenet_v3_large-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-c44eec05.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_large-16 vision-mobilenet_v3_large-16 vision-mobilenet_v3_large-16 vision-mobilenet_v3_large-16
+Logs at /tmp/print_outs-5ca2365e.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_large-mobilenet_v3_large-mobilenet_v3_large-mobilenet_v3_large/mobilenet_v3_large-16-closed_mobilenet_v3_large-16-closed_mobilenet_v3_large-16-closed_mobilenet_v3_large-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-5ca2365e.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v3_large-32 vision-mobilenet_v3_large-32 vision-mobilenet_v3_large-32 vision-mobilenet_v3_large-32
+Logs at /tmp/print_outs-54f4654b.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/mobilenet_v3_large-mobilenet_v3_large-mobilenet_v3_large-mobilenet_v3_large/mobilenet_v3_large-32-closed_mobilenet_v3_large-32-closed_mobilenet_v3_large-32-closed_mobilenet_v3_large-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-54f4654b.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet121-2 vision-densenet121-2 vision-densenet121-2 vision-densenet121-2
+Logs at /tmp/print_outs-534b2c2d.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet121-densenet121-densenet121-densenet121/densenet121-2-closed_densenet121-2-closed_densenet121-2-closed_densenet121-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-534b2c2d.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet121-4 vision-densenet121-4 vision-densenet121-4 vision-densenet121-4
+Logs at /tmp/print_outs-fc139766.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet121-densenet121-densenet121-densenet121/densenet121-4-closed_densenet121-4-closed_densenet121-4-closed_densenet121-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-fc139766.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet121-8 vision-densenet121-8 vision-densenet121-8 vision-densenet121-8
+Logs at /tmp/print_outs-8130317b.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet121-densenet121-densenet121-densenet121/densenet121-8-closed_densenet121-8-closed_densenet121-8-closed_densenet121-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-8130317b.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet121-16 vision-densenet121-16 vision-densenet121-16 vision-densenet121-16
+Logs at /tmp/print_outs-02f8f737.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet121-densenet121-densenet121-densenet121/densenet121-16-closed_densenet121-16-closed_densenet121-16-closed_densenet121-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-02f8f737.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet121-32 vision-densenet121-32 vision-densenet121-32 vision-densenet121-32
+Logs at /tmp/print_outs-d41b4b43.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet121-densenet121-densenet121-densenet121/densenet121-32-closed_densenet121-32-closed_densenet121-32-closed_densenet121-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-d41b4b43.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet161-2 vision-densenet161-2 vision-densenet161-2 vision-densenet161-2
+Logs at /tmp/print_outs-9ba92505.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet161-densenet161-densenet161-densenet161/densenet161-2-closed_densenet161-2-closed_densenet161-2-closed_densenet161-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-9ba92505.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet161-4 vision-densenet161-4 vision-densenet161-4 vision-densenet161-4
+Logs at /tmp/print_outs-7ff75ed7.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet161-densenet161-densenet161-densenet161/densenet161-4-closed_densenet161-4-closed_densenet161-4-closed_densenet161-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-7ff75ed7.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet161-8 vision-densenet161-8 vision-densenet161-8 vision-densenet161-8
+Logs at /tmp/print_outs-11348089.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet161-densenet161-densenet161-densenet161/densenet161-8-closed_densenet161-8-closed_densenet161-8-closed_densenet161-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-11348089.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet161-16 vision-densenet161-16 vision-densenet161-16 vision-densenet161-16
+Logs at /tmp/print_outs-d12d94e5.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet161-densenet161-densenet161-densenet161/densenet161-16-closed_densenet161-16-closed_densenet161-16-closed_densenet161-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-d12d94e5.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet161-32 vision-densenet161-32 vision-densenet161-32 vision-densenet161-32
+Logs at /tmp/print_outs-ea8f8722.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet161-densenet161-densenet161-densenet161/densenet161-32-closed_densenet161-32-closed_densenet161-32-closed_densenet161-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-ea8f8722.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet169-2 vision-densenet169-2 vision-densenet169-2 vision-densenet169-2
+Logs at /tmp/print_outs-5368b858.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet169-densenet169-densenet169-densenet169/densenet169-2-closed_densenet169-2-closed_densenet169-2-closed_densenet169-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-5368b858.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet169-4 vision-densenet169-4 vision-densenet169-4 vision-densenet169-4
+Logs at /tmp/print_outs-4fea03cc.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet169-densenet169-densenet169-densenet169/densenet169-4-closed_densenet169-4-closed_densenet169-4-closed_densenet169-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-4fea03cc.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet169-8 vision-densenet169-8 vision-densenet169-8 vision-densenet169-8
+Logs at /tmp/print_outs-0fd3d2e0.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet169-densenet169-densenet169-densenet169/densenet169-8-closed_densenet169-8-closed_densenet169-8-closed_densenet169-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-0fd3d2e0.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet169-16 vision-densenet169-16 vision-densenet169-16 vision-densenet169-16
+Logs at /tmp/print_outs-497b0fcc.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet169-densenet169-densenet169-densenet169/densenet169-16-closed_densenet169-16-closed_densenet169-16-closed_densenet169-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-497b0fcc.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-densenet169-32 vision-densenet169-32 vision-densenet169-32 vision-densenet169-32
+Logs at /tmp/print_outs-6ef08269.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet169-densenet169-densenet169-densenet169/densenet169-32-closed_densenet169-32-closed_densenet169-32-closed_densenet169-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-6ef08269.txt for logs
+[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ 

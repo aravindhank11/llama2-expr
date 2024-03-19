@@ -1,0 +1,2 @@
+mode,load,0_efficientnet_b5-32,1_efficientnet_b5-32,2_efficientnet_b5-32,3_efficientnet_b5-32
+mig,1.0,92.83876419067383,92.91553497314453,93.12820434570312,182.50012397766113

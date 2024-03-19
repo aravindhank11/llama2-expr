@@ -1,0 +1,2 @@
+mode,load,0_efficientnet_b5-8,1_efficientnet_b5-8,2_efficientnet_b5-8,3_efficientnet_b5-8
+mig,1.0,25.134596824645996,25.2230167388916,25.259027481079105,49.11684989929199

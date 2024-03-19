@@ -1,0 +1,2 @@
+mode,load,0_mobilenet_v3_large-2,1_mobilenet_v3_large-2,2_mobilenet_v3_large-2,3_mobilenet_v3_large-2
+mig,1.0,721.5399844737963,725.9167551002496,716.8432372053335,696.5226561390249

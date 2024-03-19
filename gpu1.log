@@ -1,0 +1,364 @@
+[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ (reverse-i-search)`': [Ke': [7me[27mxitx': [7mex[27mitp': cd llama2-[7mexp[27mr/o': export USE_SUDO=1; [7mexpo[27mrt VENV=~/virtual/tiebreaker[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ export USE_SUDO=1; export VENV=~/virtual/tiebreaker
+[?2004l[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ clear
+[?2004l[H[2J[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ ./collect_mig_1.sh [K
+[?2004l./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-densenet201-2 vision-densenet201-2
+Logs at /tmp/print_outs-4f50f068.txt
+Running closed loop experiment for mig
+[sudo] password for lab-admin: 
+Run success: results are stored in results/a100/densenet201-densenet201/densenet201-2-closed_densenet201-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-4f50f068.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-densenet201-4 vision-densenet201-4
+Logs at /tmp/print_outs-a33a1644.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet201-densenet201/densenet201-4-closed_densenet201-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-a33a1644.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-densenet201-8 vision-densenet201-8
+Logs at /tmp/print_outs-a43d7fed.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet201-densenet201/densenet201-8-closed_densenet201-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-a43d7fed.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-densenet201-16 vision-densenet201-16
+Logs at /tmp/print_outs-be158d7d.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet201-densenet201/densenet201-16-closed_densenet201-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-be158d7d.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-densenet201-32 vision-densenet201-32
+Logs at /tmp/print_outs-a6cd27e8.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet201-densenet201/densenet201-32-closed_densenet201-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-a6cd27e8.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg11-2 vision-vgg11-2
+Logs at /tmp/print_outs-68e1e43f.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg11-vgg11/vgg11-2-closed_vgg11-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-68e1e43f.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg11-4 vision-vgg11-4
+Logs at /tmp/print_outs-88470be7.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg11-vgg11/vgg11-4-closed_vgg11-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-88470be7.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg11-8 vision-vgg11-8
+Logs at /tmp/print_outs-95189c9a.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg11-vgg11/vgg11-8-closed_vgg11-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-95189c9a.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg11-16 vision-vgg11-16
+Logs at /tmp/print_outs-486b4979.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg11-vgg11/vgg11-16-closed_vgg11-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-486b4979.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg11-32 vision-vgg11-32
+Logs at /tmp/print_outs-28986a8c.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg11-vgg11/vgg11-32-closed_vgg11-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-28986a8c.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg13-2 vision-vgg13-2
+Logs at /tmp/print_outs-c26a8f83.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg13-vgg13/vgg13-2-closed_vgg13-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-c26a8f83.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg13-4 vision-vgg13-4
+Logs at /tmp/print_outs-2e5757f3.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg13-vgg13/vgg13-4-closed_vgg13-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-2e5757f3.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg13-8 vision-vgg13-8
+Logs at /tmp/print_outs-c59239ed.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg13-vgg13/vgg13-8-closed_vgg13-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-c59239ed.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg13-16 vision-vgg13-16
+Logs at /tmp/print_outs-d4813e98.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg13-vgg13/vgg13-16-closed_vgg13-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-d4813e98.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg13-32 vision-vgg13-32
+Logs at /tmp/print_outs-05f5db82.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg13-vgg13/vgg13-32-closed_vgg13-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-05f5db82.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg16-2 vision-vgg16-2
+Logs at /tmp/print_outs-46c9fbe7.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg16-vgg16/vgg16-2-closed_vgg16-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-46c9fbe7.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg16-4 vision-vgg16-4
+Logs at /tmp/print_outs-89b3a8b2.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg16-vgg16/vgg16-4-closed_vgg16-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-89b3a8b2.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg16-8 vision-vgg16-8
+Logs at /tmp/print_outs-e097ed08.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg16-vgg16/vgg16-8-closed_vgg16-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-e097ed08.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg16-16 vision-vgg16-16
+Logs at /tmp/print_outs-31736653.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg16-vgg16/vgg16-16-closed_vgg16-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-31736653.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg16-32 vision-vgg16-32
+Logs at /tmp/print_outs-9c313b9b.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg16-vgg16/vgg16-32-closed_vgg16-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-9c313b9b.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg19-2 vision-vgg19-2
+Logs at /tmp/print_outs-b6dac2a2.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg19-vgg19/vgg19-2-closed_vgg19-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-b6dac2a2.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg19-4 vision-vgg19-4
+Logs at /tmp/print_outs-6c50ced1.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg19-vgg19/vgg19-4-closed_vgg19-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-6c50ced1.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg19-8 vision-vgg19-8
+Logs at /tmp/print_outs-6e54f438.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg19-vgg19/vgg19-8-closed_vgg19-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-6e54f438.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg19-16 vision-vgg19-16
+Logs at /tmp/print_outs-1c1a5737.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg19-vgg19/vgg19-16-closed_vgg19-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-1c1a5737.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg19-32 vision-vgg19-32
+Logs at /tmp/print_outs-aecc6671.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg19-vgg19/vgg19-32-closed_vgg19-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-aecc6671.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-inception_v3-2 vision-inception_v3-2
+Logs at /tmp/print_outs-4d8bda28.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/inception_v3-inception_v3/inception_v3-2-closed_inception_v3-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-4d8bda28.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-inception_v3-4 vision-inception_v3-4
+Logs at /tmp/print_outs-631add0a.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/inception_v3-inception_v3/inception_v3-4-closed_inception_v3-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-631add0a.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-inception_v3-8 vision-inception_v3-8
+Logs at /tmp/print_outs-ebdd1857.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/inception_v3-inception_v3/inception_v3-8-closed_inception_v3-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-ebdd1857.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-inception_v3-16 vision-inception_v3-16
+Logs at /tmp/print_outs-4b05a691.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/inception_v3-inception_v3/inception_v3-16-closed_inception_v3-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-4b05a691.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-inception_v3-32 vision-inception_v3-32
+Logs at /tmp/print_outs-743a9fef.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/inception_v3-inception_v3/inception_v3-32-closed_inception_v3-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-743a9fef.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-densenet201-2 vision-densenet201-2 vision-densenet201-2 vision-densenet201-2
+Logs at /tmp/print_outs-1d9046f6.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet201-densenet201-densenet201-densenet201/densenet201-2-closed_densenet201-2-closed_densenet201-2-closed_densenet201-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-1d9046f6.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-densenet201-4 vision-densenet201-4 vision-densenet201-4 vision-densenet201-4
+Logs at /tmp/print_outs-53e881c5.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet201-densenet201-densenet201-densenet201/densenet201-4-closed_densenet201-4-closed_densenet201-4-closed_densenet201-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-53e881c5.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-densenet201-8 vision-densenet201-8 vision-densenet201-8 vision-densenet201-8
+Logs at /tmp/print_outs-62513a67.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet201-densenet201-densenet201-densenet201/densenet201-8-closed_densenet201-8-closed_densenet201-8-closed_densenet201-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-62513a67.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-densenet201-16 vision-densenet201-16 vision-densenet201-16 vision-densenet201-16
+Logs at /tmp/print_outs-68c44fa4.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet201-densenet201-densenet201-densenet201/densenet201-16-closed_densenet201-16-closed_densenet201-16-closed_densenet201-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-68c44fa4.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-densenet201-32 vision-densenet201-32 vision-densenet201-32 vision-densenet201-32
+Logs at /tmp/print_outs-5ee83fb5.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/densenet201-densenet201-densenet201-densenet201/densenet201-32-closed_densenet201-32-closed_densenet201-32-closed_densenet201-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-5ee83fb5.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg11-2 vision-vgg11-2 vision-vgg11-2 vision-vgg11-2
+Logs at /tmp/print_outs-f42aa2f9.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg11-vgg11-vgg11-vgg11/vgg11-2-closed_vgg11-2-closed_vgg11-2-closed_vgg11-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-f42aa2f9.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg11-4 vision-vgg11-4 vision-vgg11-4 vision-vgg11-4
+Logs at /tmp/print_outs-295ecf4f.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg11-vgg11-vgg11-vgg11/vgg11-4-closed_vgg11-4-closed_vgg11-4-closed_vgg11-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-295ecf4f.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg11-8 vision-vgg11-8 vision-vgg11-8 vision-vgg11-8
+Logs at /tmp/print_outs-8e9d2af6.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg11-vgg11-vgg11-vgg11/vgg11-8-closed_vgg11-8-closed_vgg11-8-closed_vgg11-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-8e9d2af6.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg11-16 vision-vgg11-16 vision-vgg11-16 vision-vgg11-16
+Logs at /tmp/print_outs-5b15b4ca.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg11-vgg11-vgg11-vgg11/vgg11-16-closed_vgg11-16-closed_vgg11-16-closed_vgg11-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-5b15b4ca.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg11-32 vision-vgg11-32 vision-vgg11-32 vision-vgg11-32
+Logs at /tmp/print_outs-eb642278.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg11-vgg11-vgg11-vgg11/vgg11-32-closed_vgg11-32-closed_vgg11-32-closed_vgg11-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-eb642278.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg13-2 vision-vgg13-2 vision-vgg13-2 vision-vgg13-2
+Logs at /tmp/print_outs-fbef9d9c.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg13-vgg13-vgg13-vgg13/vgg13-2-closed_vgg13-2-closed_vgg13-2-closed_vgg13-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-fbef9d9c.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg13-4 vision-vgg13-4 vision-vgg13-4 vision-vgg13-4
+Logs at /tmp/print_outs-e4facd13.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg13-vgg13-vgg13-vgg13/vgg13-4-closed_vgg13-4-closed_vgg13-4-closed_vgg13-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-e4facd13.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg13-8 vision-vgg13-8 vision-vgg13-8 vision-vgg13-8
+Logs at /tmp/print_outs-41b94af6.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg13-vgg13-vgg13-vgg13/vgg13-8-closed_vgg13-8-closed_vgg13-8-closed_vgg13-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-41b94af6.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg13-16 vision-vgg13-16 vision-vgg13-16 vision-vgg13-16
+Logs at /tmp/print_outs-bf80f6fd.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg13-vgg13-vgg13-vgg13/vgg13-16-closed_vgg13-16-closed_vgg13-16-closed_vgg13-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-bf80f6fd.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg13-32 vision-vgg13-32 vision-vgg13-32 vision-vgg13-32
+Logs at /tmp/print_outs-84925fb0.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg13-vgg13-vgg13-vgg13/vgg13-32-closed_vgg13-32-closed_vgg13-32-closed_vgg13-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-84925fb0.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg16-2 vision-vgg16-2 vision-vgg16-2 vision-vgg16-2
+Logs at /tmp/print_outs-43e66951.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg16-vgg16-vgg16-vgg16/vgg16-2-closed_vgg16-2-closed_vgg16-2-closed_vgg16-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-43e66951.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg16-4 vision-vgg16-4 vision-vgg16-4 vision-vgg16-4
+Logs at /tmp/print_outs-de315ed0.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg16-vgg16-vgg16-vgg16/vgg16-4-closed_vgg16-4-closed_vgg16-4-closed_vgg16-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-de315ed0.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg16-8 vision-vgg16-8 vision-vgg16-8 vision-vgg16-8
+Logs at /tmp/print_outs-8583dd62.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg16-vgg16-vgg16-vgg16/vgg16-8-closed_vgg16-8-closed_vgg16-8-closed_vgg16-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-8583dd62.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg16-16 vision-vgg16-16 vision-vgg16-16 vision-vgg16-16
+Logs at /tmp/print_outs-ae775c86.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg16-vgg16-vgg16-vgg16/vgg16-16-closed_vgg16-16-closed_vgg16-16-closed_vgg16-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-ae775c86.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg16-32 vision-vgg16-32 vision-vgg16-32 vision-vgg16-32
+Logs at /tmp/print_outs-b6d3fd70.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg16-vgg16-vgg16-vgg16/vgg16-32-closed_vgg16-32-closed_vgg16-32-closed_vgg16-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-b6d3fd70.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg19-2 vision-vgg19-2 vision-vgg19-2 vision-vgg19-2
+Logs at /tmp/print_outs-417f38d7.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg19-vgg19-vgg19-vgg19/vgg19-2-closed_vgg19-2-closed_vgg19-2-closed_vgg19-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-417f38d7.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg19-4 vision-vgg19-4 vision-vgg19-4 vision-vgg19-4
+Logs at /tmp/print_outs-e22ca85a.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg19-vgg19-vgg19-vgg19/vgg19-4-closed_vgg19-4-closed_vgg19-4-closed_vgg19-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-e22ca85a.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg19-8 vision-vgg19-8 vision-vgg19-8 vision-vgg19-8
+Logs at /tmp/print_outs-c52d5979.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg19-vgg19-vgg19-vgg19/vgg19-8-closed_vgg19-8-closed_vgg19-8-closed_vgg19-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-c52d5979.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg19-16 vision-vgg19-16 vision-vgg19-16 vision-vgg19-16
+Logs at /tmp/print_outs-a27b4eaf.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg19-vgg19-vgg19-vgg19/vgg19-16-closed_vgg19-16-closed_vgg19-16-closed_vgg19-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-a27b4eaf.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-vgg19-32 vision-vgg19-32 vision-vgg19-32 vision-vgg19-32
+Logs at /tmp/print_outs-84ca9b50.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/vgg19-vgg19-vgg19-vgg19/vgg19-32-closed_vgg19-32-closed_vgg19-32-closed_vgg19-32-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-84ca9b50.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-inception_v3-2 vision-inception_v3-2 vision-inception_v3-2 vision-inception_v3-2
+Logs at /tmp/print_outs-c8ad9c45.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/inception_v3-inception_v3-inception_v3-inception_v3/inception_v3-2-closed_inception_v3-2-closed_inception_v3-2-closed_inception_v3-2-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-c8ad9c45.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-inception_v3-4 vision-inception_v3-4 vision-inception_v3-4 vision-inception_v3-4
+Logs at /tmp/print_outs-f7f239fc.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/inception_v3-inception_v3-inception_v3-inception_v3/inception_v3-4-closed_inception_v3-4-closed_inception_v3-4-closed_inception_v3-4-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-f7f239fc.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-inception_v3-8 vision-inception_v3-8 vision-inception_v3-8 vision-inception_v3-8
+Logs at /tmp/print_outs-d5396aee.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/inception_v3-inception_v3-inception_v3-inception_v3/inception_v3-8-closed_inception_v3-8-closed_inception_v3-8-closed_inception_v3-8-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-d5396aee.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-inception_v3-16 vision-inception_v3-16 vision-inception_v3-16 vision-inception_v3-16
+Logs at /tmp/print_outs-afb148fc.txt
+Running closed loop experiment for mig
+Run success: results are stored in results/a100/inception_v3-inception_v3-inception_v3-inception_v3/inception_v3-16-closed_inception_v3-16-closed_inception_v3-16-closed_inception_v3-16-closed
+Exiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-afb148fc.txt for logs
+./run.sh --device-type a100 --device-id 1 --modes mig --duration 60 --distribution closed vision-inception_v3-32 vision-inception_v3-32 vision-inception_v3-32 vision-inception_v3-32
+Logs at /tmp/print_outs-29838d8c.txt
+Running closed loop experiment for mig
+Exiting with error_code=1 (0 is clean exit)
+Examine /tmp/print_outs-29838d8c.txt for logs
+[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ 
