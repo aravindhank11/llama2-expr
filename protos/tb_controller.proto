@@ -26,7 +26,7 @@ message DeploymentResponse {
 
 message MigrationRequest {
     int32 unique_mix_id = 1;
-    string breached_status = 2;
+    int32 breached_status = 2;
 }
 
 message MigrationResponse {

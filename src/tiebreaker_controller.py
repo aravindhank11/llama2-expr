@@ -39,7 +39,7 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
 
         # Thread to monitor how long a job mix has been running for
         self.monitor_thread = threading.Thread(target=self.monitor_job_params)
-        self.monitor_thread.daemon=True # # Daemonize the thread so it terminates when the main thread exits
+        self.monitor_thread.daemon=True 
         self.monitor_thread.start()
     
     def monitor_job_params(self):

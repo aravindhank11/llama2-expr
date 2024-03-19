@@ -114,7 +114,7 @@ class BatchedInferenceExecutor:
         if (self.stub != None) and (self.unique_mix_id != None):
             migration_response = self.stub.MigrateJobMix(tb_controller_pb2.MigrationRequest(
                 unique_mix_id=self.unique_mix_id,
-                breached_status = watermark_type
+                breached_status = watermark_type[0]
             ))
             print(f"Migration response: {migration_response.status}")
 

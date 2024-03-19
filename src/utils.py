@@ -36,7 +36,7 @@ class OnlinePercentile:
 
     def get_pth_percentile(self):
         if not self.data_stream:
-            return -1;
+            return -1
 
         # Sort the data stream
         sorted_stream = sorted(self.data_stream)
