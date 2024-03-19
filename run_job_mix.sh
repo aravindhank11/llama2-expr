@@ -182,8 +182,9 @@ run_other_expr() {
         percent=($(echo ${mps_equi_percentages[$num_procs]} | tr "," "\n"))
     fi
 
-    cci_uuid=($(nvidia-smi -L | grep MIG- | awk '{print $6}' | sed 's/)//g'))
-    chunk_id=($(nvidia-smi -L | grep MIG- | awk '{print $2}' | sed 's/)//g'))
+    mig_info=$(awk "/^GPU ${device_id_arg}:/{p=1; next} /^GPU/{p=0} p && /^  MIG/{print}" <<< "$(nvidia-smi -L)")
+    chunk_id=($(echo "$mig_info" | awk '{print $2}'))
+    cci_uuid=($(echo "$mig_info" | awk '{print $NF}' | sed 's/[()]//g'))
     cmd_arr=()
 
     # In MPS mode_arg, we knowingly set CUDA_VISIBLE_DEVICES to 0 (not a code bug)
