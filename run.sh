@@ -6,10 +6,10 @@ log() {
 }
 
 print_log_location() {
-    local run_sh_exit_code=$?
-    log "Exiting with error_code=$run_sh_exit_code (0 is clean exit)"
+    exit_code=$?
+    log "Exiting with error_code=$exit_code (0 is clean exit)"
     log "Examine ${PRINT_OUTS} for logs"
-    exit ${run_sh_exit_code}
+    exit ${exit_code}
 }
 
 run_cmd() {
