@@ -1,6 +1,7 @@
 import pandas as pd
 import statistics
 import os
+import shutil
 
 RESULTS_DIR = '../results/a100'
 
@@ -92,7 +93,8 @@ def aggregate_mig():
             models = outer_dir.split('-')
             # print(models)
             if len(models) == 2:
-                print(models)
+                print(os.path.join(RESULTS_DIR, outer_dir))
+                # shutil.rmtree(os.path.join(RESULTS_DIR, outer_dir))
     
 
 def lookup_slo(row, job_no):

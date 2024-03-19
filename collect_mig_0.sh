@@ -12,11 +12,11 @@ for model in "${models[@]}"; do
     done
 done
 
-# Second run with 2, 2, 2, 1
-for model in "${models[@]}"; do
-    for batch in "${batches[@]}"; do
-        command="./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-${model}-${batch} vision-${model}-${batch} vision-${model}-${batch} vision-${model}-${batch}"
-        echo "$command"
-        eval $command
-    done
-done
+# # Second run with 2, 2, 2, 1
+# for model in "${models[@]}"; do
+#     for batch in "${batches[@]}"; do
+#         command="./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-${model}-${batch} vision-${model}-${batch} vision-${model}-${batch} vision-${model}-${batch}"
+#         echo "$command"
+#         eval $command
+#     done
+# done
