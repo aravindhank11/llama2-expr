@@ -129,9 +129,10 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
         high_load_mechanism = 'mig'
 
         self.job_mix_deployment_params[job_mix_string] = [request.distro_type, request.rps, request.slo_percentile, job_mix_start_time, pid, mps_device, high_load_mechanism]
-        print()
-        print(job_mix_string)
-        print(self.job_mix_deployment_params)
+        print('Deployment state updates')
+        print(f'Job mix string: {job_mix_string}')
+        print(f'Job mix state dict: {self.job_mix_deployment_params}')
+        print(f'Device status dict: {self.device_status}')
         return tb_controller_pb2.DeploymentResponse(status=create_status('SUCCESS', f'Succesfully deployed models on an MPS GPU!'))
     
     def MigrateJobMix(self, request, context):
@@ -169,10 +170,13 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
                 updated_params = params
                 updated_params[5] = mig_device
                 self.job_mix_deployment_params[job_mix] = updated_params
-            # No need for live migratino
+
+                print('Migration state updates:')
+                print(f'Job mix state dict: {self.job_mix_deployment_params}')
+                print(f'Device status dict: {self.device_status}')
+            # No need for live migration
             else:
                 return tb_controller_pb2.MigrationResponse(status=create_status('SUCCESS', f'No need to live migrate the job mix per TieBreaker Model!'))
-
 
         return tb_controller_pb2.MigrationResponse(status=create_status('FAILURE', f'Could not find job mix with given request gpu no {request.gpu_no}'))
 
