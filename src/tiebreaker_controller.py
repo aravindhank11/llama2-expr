@@ -185,7 +185,7 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
                 else:
                     return tb_controller_pb2.MigrationResponse(status=create_status('SUCCESS', f'No need to live migrate the job mix per TieBreaker Model!'))
 
-        return tb_controller_pb2.MigrationResponse(status=create_status('FAILURE', f'Could not find job mix with given request gpu no {request.gpu_no}'))
+        return tb_controller_pb2.MigrationResponse(status=create_status('FAILURE', f'Could not find job mix with given job mix id {request.unique_mix_id}'))
 
 def tiebreaker_controller():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=40))
