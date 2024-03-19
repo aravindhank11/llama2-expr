@@ -9,7 +9,7 @@ package tiebreakercontroller;
 enum RequestReplyEnum {
   INVALID = 0;
   SUCCESS = 1;
-  UNAVAILABLE = 2;
+  FAILURE = 2;
 }
 
 message RequestReply {

@@ -174,6 +174,8 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
                 print('Migration state updates:')
                 print(f'Job mix state dict: {self.job_mix_deployment_params}')
                 print(f'Device status dict: {self.device_status}')
+
+                return tb_controller_pb2.MigrationResponse(status=create_status('SUCCESS', f'Succesfully migrated job mix to MIG GPU {mig_device}'))
             # No need for live migration
             else:
                 return tb_controller_pb2.MigrationResponse(status=create_status('SUCCESS', f'No need to live migrate the job mix per TieBreaker Model!'))
