@@ -20,3 +20,6 @@ done
 #         eval $command
 #     done
 # done
+
+# ./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v2-2 vision-mobilenet_v2-2
+# ./run.sh --device-type a100 --device-id 0 --modes mig --duration 60 --distribution closed vision-mobilenet_v2-4 vision-mobilenet_v2-4
