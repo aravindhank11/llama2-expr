@@ -1,0 +1,2 @@
+mode,load,0_mobilenet_v2-8,1_mobilenet_v2-8
+mig,1.0,3.0786991119384766,3.2317638397216797
