@@ -9,8 +9,8 @@ import time
 import argparse
 import json
 
-from generated import tb_controller_pb2
-from generated import tb_controller_pb2_grpc
+import tb_controller_pb2
+import tb_controller_pb2_grpc
 
 def create_status(enum_status, msg):
     status = {}
