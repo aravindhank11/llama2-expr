@@ -138,48 +138,49 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
     
     def MigrateJobMix(self, request, context):
         for job_mix, params in list(self.job_mix_deployment_params.items()):
-            # Need to live migrate
-            if (params[5] == request.gpu_no) and (params[-1] == 'mig'):
+            if (params[5] == request.gpu_no): 
+                # Need to live migrate
+                if (params[-1] == 'mig'):
 
-                # Find available MIG GPU
-                mig_device = -1
-                for device, value in list(self.device_status.items()):
-                    if (value[0] == 'MIG') and (value[1] == 'AVAILABLE'):
-                        updated_value = value
-                        updated_value[1] = 'OCCUPIED'
-                        self.device_status[device] = updated_value
-                        mig_device = device
-                        break
-                
-                # Failed to find available MIG GPU
-                if mig_device == -1:
-                    return tb_controller_pb2.MigrationResponse(status=create_status('FAILURE', f'MIG GPUs unavailable!'))
-                
-                # Issue echo command to kickstart live migration
-                echo_dict = {"mode": f"{params[-1]}", "device-id": mig_device}
-                echo_dict_string = json.dumps(echo_dict)
-                echo_cmd = "echo \'" + echo_dict_string + f"\' > /tmp/{params[4]}"
-                print('Echo cmd is ' + echo_cmd)
-                echo_tmp = subprocess.Popen(echo_cmd, shell=True, executable='/bin/bash', stdout=subprocess.PIPE)
+                    # Find available MIG GPU
+                    mig_device = -1
+                    for device, value in list(self.device_status.items()):
+                        if (value[0] == 'MIG') and (value[1] == 'AVAILABLE'):
+                            updated_value = value
+                            updated_value[1] = 'OCCUPIED'
+                            self.device_status[device] = updated_value
+                            mig_device = device
+                            break
+                    
+                    # Failed to find available MIG GPU
+                    if mig_device == -1:
+                        return tb_controller_pb2.MigrationResponse(status=create_status('FAILURE', f'MIG GPUs unavailable!'))
+                    
+                    # Issue echo command to kickstart live migration
+                    echo_dict = {"mode": f"{params[-1]}", "device-id": mig_device}
+                    echo_dict_string = json.dumps(echo_dict)
+                    echo_cmd = "echo \'" + echo_dict_string + f"\' > /tmp/{params[4]}"
+                    print('Echo cmd is ' + echo_cmd)
+                    echo_tmp = subprocess.Popen(echo_cmd, shell=True, executable='/bin/bash', stdout=subprocess.PIPE)
 
-                # Update state -- old device is available
-                update_device_value = self.device_status[params[5]]
-                update_device_value[1] = 'AVAILABLE'
-                self.device_status[params[5]] = update_device_value
+                    # Update state -- old device is available
+                    update_device_value = self.device_status[params[5]]
+                    update_device_value[1] = 'AVAILABLE'
+                    self.device_status[params[5]] = update_device_value
 
-                # Update job mix state -- specify new device
-                updated_params = params
-                updated_params[5] = mig_device
-                self.job_mix_deployment_params[job_mix] = updated_params
+                    # Update job mix state -- specify new device
+                    updated_params = params
+                    updated_params[5] = mig_device
+                    self.job_mix_deployment_params[job_mix] = updated_params
 
-                print('Migration state updates:')
-                print(f'Job mix state dict: {self.job_mix_deployment_params}')
-                print(f'Device status dict: {self.device_status}')
+                    print('Migration state updates:')
+                    print(f'Job mix state dict: {self.job_mix_deployment_params}')
+                    print(f'Device status dict: {self.device_status}')
 
-                return tb_controller_pb2.MigrationResponse(status=create_status('SUCCESS', f'Succesfully migrated job mix to MIG GPU {mig_device}'))
-            # No need for live migration
-            else:
-                return tb_controller_pb2.MigrationResponse(status=create_status('SUCCESS', f'No need to live migrate the job mix per TieBreaker Model!'))
+                    return tb_controller_pb2.MigrationResponse(status=create_status('SUCCESS', f'Succesfully migrated job mix to MIG GPU {mig_device}'))
+                # No need for live migration
+                else:
+                    return tb_controller_pb2.MigrationResponse(status=create_status('SUCCESS', f'No need to live migrate the job mix per TieBreaker Model!'))
 
         return tb_controller_pb2.MigrationResponse(status=create_status('FAILURE', f'Could not find job mix with given request gpu no {request.gpu_no}'))
 
