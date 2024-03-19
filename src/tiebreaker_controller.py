@@ -24,7 +24,11 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
         self.supported_batchs = [2, 4, 8, 16, 32]
         self.max_supported_size = 4
         self.job_mix_deployment_params = {} # job mix -> [distro type, rps, slo percentile, job_start_time, pid, gpu device id, high load mechanism]
-        self.current_device = 0
+        self.device_status = {}
+
+        # Initialize server device status to be all available initially
+        for i in range(args.no_server_devices):
+            self.device_status[i] = 'AVAILABLE'
 
         # Thread to monitor how long a job mix has been running for
         self.monitor_thread = threading.Thread(target=self.monitor_job_params)
@@ -42,17 +46,16 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
                     echo_dict_string = json.dumps(echo_dict)
                     echo_cmd = "echo \'" + echo_dict_string + f"\' > /tmp/{params[4]}"
                     print('Echo cmd is ' + echo_cmd)
-                    while not os.path.exists(f'/tmp/{params[4]}'):
-                        time.sleep(0.5)
                     echo_tmp = subprocess.Popen(echo_cmd, shell=True, executable='/bin/bash', stdout=subprocess.PIPE)
-                    job_mix_start_time = time.time()
+                    self.device_status[params[5]] = 'AVAILABLE'
+                    del self.job_mix_deployment_params[job_mix]
             time.sleep(0.5)
     
     def DeployJobMix(self, request, context):
 
         # TODO: CHECK MODEL TYPES, MODELS, BATCHES, AND JOB SIZES SUPPORTED
 
-        if len(self.job_mix_deployment_params) > 2:
+        if len(self.job_mix_deployment_params) > (args.no_server_devices / 2):
             return tb_controller_pb2.DeploymentResponse(status=create_status('FAILURE', f'Server GPUs are occupied currently.'))
 
         # Construct string payload
@@ -81,8 +84,19 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
         print(f'PID is {pid}')
         # pid = -1
 
+        # Find first available MPS device to launch model on
+        mps_device = -1
+        for device, status in list(self.device_status.items()):
+            if device < (args.no_server_devices / 2):
+                if status == 'AVAILABLE':
+                    self.device_status[device] = 'OCCUPIED'
+                    mps_device = device
+                    break
+            else:
+                return tb_controller_pb2.DeploymentResponse(status=create_status('FAILURE', f'Server GPUs are occupied currently. Should not end up here!'))
+
         # Echo mode and device to launch models on
-        echo_dict = {"mode": "mps-uncap", "device-id": self.current_device}
+        echo_dict = {"mode": "mps-uncap", "device-id": mps_device}
         echo_dict_string = json.dumps(echo_dict)
         echo_cmd = "echo \'" + echo_dict_string + f"\' > /tmp/{pid}"
         print('Echo cmd is ' + echo_cmd)
@@ -103,21 +117,45 @@ class TieBreaker_Controller(tb_controller_pb2_grpc.TieBreaker_ControllerServicer
         # TODO: consult mechanism here
         high_load_mechanism = 'mig'
 
-        self.job_mix_deployment_params[job_mix_string] = [request.distro_type, request.rps, request.slo_percentile, job_mix_start_time, pid, self.current_device, high_load_mechanism]
-        self.current_device += 1
+        self.job_mix_deployment_params[job_mix_string] = [request.distro_type, request.rps, request.slo_percentile, job_mix_start_time, pid, mps_device, high_load_mechanism]
         print()
         print(job_mix_string)
         print(self.job_mix_deployment_params)
-        print(self.current_device)
         return tb_controller_pb2.DeploymentResponse(status=create_status('SUCCESS', f'Succesfully deployed models on an MPS GPU!'))
     
     def MigrateJobMix(self, request, context):
-        
-        
+        for job_mix, params in list(self.job_mix_deployment_params.items()):
+            if (params[5] == request.gpu_no) and (params[-1] == 'mig'):
 
-        # 1. Consult model --> should we migrate
-        # 2. Create new process (run.sh again?)
-        print('hello world')
+                # Find available MIG GPU
+                mig_device = -1
+                for device, status in list(self.device_status.items()):
+                    if device >= (args.no_server_devices / 2):
+                        if status == 'AVAILABLE':
+                            mig_device = device
+                            self.device_status[device] = 'OCCUPIED'
+                
+                # Failed to find available MIG GPU
+                if mig_device == -1:
+                    return tb_controller_pb2.MigrationResponse(status=create_status('FAILURE', f'MIG GPUs unavailable!'))
+                
+                # Issue echo command to kickstart live migration
+                echo_dict = {"mode": f"{params[-1]}", "device-id": mig_device}
+                echo_dict_string = json.dumps(echo_dict)
+                echo_cmd = "echo \'" + echo_dict_string + f"\' > /tmp/{pid}"
+                print('Echo cmd is ' + echo_cmd)
+                echo_tmp = subprocess.Popen(echo_cmd, shell=True, executable='/bin/bash', stdout=subprocess.PIPE)
+
+                # Update state -- old device is available
+                self.device_status[params[5]] = 'AVAILABLE'
+
+                # Update job mix state -- specify new device
+                updated_params = params
+                updated_params[5] = mig_device
+                self.job_mix_deployment_params[job_mix] = updated_params
+
+
+        return tb_controller_pb2.MigrationResponse(status=create_status('FAILURE', f'Could not find job mix with given request gpu no {request.gpu_no}'))
 
 def tiebreaker_controller():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=40))
@@ -130,5 +168,6 @@ def tiebreaker_controller():
 if __name__=='__main__':
     parser = argparse.ArgumentParser(allow_abbrev=False)
     parser.add_argument("--exp-duration", type=int, default=60)
+    parser.add_argument("--no-server-devices", type=int, default=4)
     args = parser.parse_args()
     tiebreaker_controller()
