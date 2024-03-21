@@ -1,0 +1,2 @@
+mode,load,0_mobilenet_v3_large-16
+mps-uncap,0.9,0.010967254638671875

@@ -1,0 +1,2 @@
+mode,load,0_mobilenet_v2-8
+mps-uncap,1.0,3.3652782440185547
