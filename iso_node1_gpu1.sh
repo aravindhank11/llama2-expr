@@ -8,7 +8,7 @@ for model in "${models[@]}"; do
     for batch in "${batches[@]}"; do
         command="./run.sh --device-type a100 --device-id 1 --modes mps-uncap --duration 60 --distribution closed vision-${model}-${batch}"
         echo "$command"
-        # eval $command
+        eval $command
     done
 done
 
@@ -17,6 +17,6 @@ for model in "${models[@]}"; do
     for batch in "${batches[@]}"; do
         command="./run.sh --device-type a100 --device-id 1 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.9 --load-end 0.9 vision-${model}-${batch}"
         echo "$command"
-        # eval $command
+        eval $command
     done
 done
