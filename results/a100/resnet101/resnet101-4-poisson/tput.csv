@@ -1,0 +1,2 @@
+mode,load,0_resnet101-4
+mps-uncap,0.9,385.6462298731183
