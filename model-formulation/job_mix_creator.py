@@ -223,7 +223,6 @@ def filter_tested_combos(num_models):
             if sublist is not None:    # filter out None items
                 print(*sublist, file=fp)
 
-
 if __name__=='__main__':
     # filter_tested_combos(3)
     filter_tested_combos(4)
