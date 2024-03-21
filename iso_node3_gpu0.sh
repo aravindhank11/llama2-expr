@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-models=('mobilenet_v2' 'mobilenet_v3_small' 'mobilenet_v3_large' 'densenet121') 
+models=('efficientnet_b5' 'efficientnet_b6' 'efficientnet_b7')
 batches=(2 4 8 16 32)
 
 # Run in closed loop
