@@ -1,0 +1,2 @@
+mode,load,0_resnet50-32,1_squeezenet1_1-2
+mps-uncap,1.0,12.342333793640137,2.592325210571289

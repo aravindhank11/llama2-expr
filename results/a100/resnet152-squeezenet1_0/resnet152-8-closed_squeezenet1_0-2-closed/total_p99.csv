@@ -1,0 +1,2 @@
+mode,load,0_resnet152-8,1_squeezenet1_0-2
+mps-uncap,1.0,11.473209857940674,2.060384750366212

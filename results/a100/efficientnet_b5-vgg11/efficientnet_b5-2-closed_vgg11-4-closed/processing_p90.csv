@@ -1,0 +1,2 @@
+mode,load,0_efficientnet_b5-2,1_vgg11-4
+mps-uncap,1.0,14.134883880615234,2.355813980102539

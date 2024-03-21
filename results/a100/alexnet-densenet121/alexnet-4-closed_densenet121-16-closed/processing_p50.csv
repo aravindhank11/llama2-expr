@@ -1,0 +1,2 @@
+mode,load,0_alexnet-4,1_densenet121-16
+mps-uncap,1.0,0.911712646484375,12.532472610473633

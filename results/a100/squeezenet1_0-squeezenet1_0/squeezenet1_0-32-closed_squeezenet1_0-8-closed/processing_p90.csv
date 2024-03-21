@@ -1,0 +1,2 @@
+mode,load,0_squeezenet1_0-32,1_squeezenet1_0-8
+mps-uncap,1.0,7.185459136962891,6.067991256713867

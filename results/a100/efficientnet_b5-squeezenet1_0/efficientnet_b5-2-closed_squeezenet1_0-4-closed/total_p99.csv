@@ -1,0 +1,2 @@
+mode,load,0_efficientnet_b5-2,1_squeezenet1_0-4
+mps-uncap,1.0,10.219812393188477,1.5482902526855469

@@ -1,0 +1,2 @@
+mode,load,0_efficientnet_b7-8,1_inception_v3-8
+mps-uncap,1.0,416.20714526905954,915.2908297700656

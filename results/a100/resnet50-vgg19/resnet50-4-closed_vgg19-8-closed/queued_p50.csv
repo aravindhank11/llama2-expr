@@ -1,0 +1,2 @@
+mode,load,0_resnet50-4,1_vgg19-8
+mps-uncap,1.0,0.0,0.0

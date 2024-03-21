@@ -1,0 +1,2 @@
+mode,load,0_densenet169-8,1_mobilenet_v2-8
+mps-uncap,1.0,12.38393783569336,3.0966043472290044

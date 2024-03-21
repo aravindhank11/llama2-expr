@@ -1,0 +1,2 @@
+mode,load,0_efficientnet_b6-8,1_resnet18-16
+mps-uncap,1.0,19.35767650604248,4.9460768699646

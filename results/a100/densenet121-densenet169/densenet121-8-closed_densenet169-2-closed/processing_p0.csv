@@ -1,0 +1,2 @@
+mode,load,0_densenet121-8,1_densenet169-2
+mps-uncap,1.0,6.695985794067383,9.972333908081055

@@ -1,0 +1,2 @@
+mode,load,0_densenet161-8,1_squeezenet1_1-2
+mps-uncap,1.0,12.565135955810547,1.7275810241699219

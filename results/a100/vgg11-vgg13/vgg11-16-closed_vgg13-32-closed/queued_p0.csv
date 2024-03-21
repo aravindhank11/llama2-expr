@@ -1,0 +1,2 @@
+mode,load,0_vgg11-16,1_vgg13-32
+mps-uncap,1.0,0.0,0.0

@@ -1,0 +1,2 @@
+mode,load,0_inception_v3-16,1_resnet152-4
+mps-uncap,1.0,8.45956802368164,10.144710540771484

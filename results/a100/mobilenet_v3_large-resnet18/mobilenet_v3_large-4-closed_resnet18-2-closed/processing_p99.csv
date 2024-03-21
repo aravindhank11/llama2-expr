@@ -1,0 +1,2 @@
+mode,load,0_mobilenet_v3_large-4,1_resnet18-2
+mps-uncap,1.0,2.9141902923583984,1.2044906616210938

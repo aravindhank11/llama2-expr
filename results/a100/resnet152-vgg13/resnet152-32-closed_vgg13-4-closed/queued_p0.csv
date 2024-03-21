@@ -1,0 +1,2 @@
+mode,load,0_resnet152-32,1_vgg13-4
+mps-uncap,1.0,0.0,0.0

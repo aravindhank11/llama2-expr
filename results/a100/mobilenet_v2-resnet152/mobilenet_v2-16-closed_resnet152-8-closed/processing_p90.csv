@@ -1,0 +1,2 @@
+mode,load,0_mobilenet_v2-16,1_resnet152-8
+mps-uncap,1.0,4.728245735168457,16.788005828857422

@@ -1,2 +1,3 @@
 mode,load,0_densenet169-4,1_densenet169-4
 mig,1.0,0.0,0.0
+mps-uncap,1.0,0.0,0.0

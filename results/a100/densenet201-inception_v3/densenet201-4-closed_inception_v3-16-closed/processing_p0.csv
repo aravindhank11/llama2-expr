@@ -1,0 +1,2 @@
+mode,load,0_densenet201-4,1_inception_v3-16
+mps-uncap,1.0,12.624979019165039,7.604360580444336

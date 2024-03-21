@@ -1,0 +1,2 @@
+mode,load,0_efficientnet_b5-16,1_resnet50-32
+mps-uncap,1.0,36.75383567810058,19.122979640960693

@@ -1,0 +1,2 @@
+mode,load,0_mobilenet_v3_small-4,1_vgg19-32
+mps-uncap,1.0,19.38952922821045,22.56585121154785

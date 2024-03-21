@@ -1,0 +1,2 @@
+mode,load,0_densenet169-8,1_efficientnet_b6-32
+mps-uncap,1.0,240.65113626254285,794.5139715366056

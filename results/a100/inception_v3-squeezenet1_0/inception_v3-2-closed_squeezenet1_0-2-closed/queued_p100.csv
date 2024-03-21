@@ -1,0 +1,2 @@
+mode,load,0_inception_v3-2,1_squeezenet1_0-2
+mps-uncap,1.0,0.0050067901611328125,0.0054836273193359375

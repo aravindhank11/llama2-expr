@@ -10,11 +10,11 @@ if [[ -z "$start_line" || ! "$start_line" =~ ^[0-9]+$ ]] || [[ ! "$device_id" =~
     exit 1
 fi
 
-input_file="./model-formulation/job_mixes/combos_3.txt"
+input_file="./model-formulation/job_mixes/combos_2.txt"
 
 # Read lines starting from the specified line and ending 50 lines later
 counter=0
-while IFS= read -r line && [ $counter -lt 400 ]; do
+while IFS= read -r line && [ $counter -lt 600 ]; do
     ((counter++))
 
     result_line=""
@@ -26,7 +26,7 @@ while IFS= read -r line && [ $counter -lt 400 ]; do
         result_line="$result_line vision-$concatenated"
     done
     model_mixes+=("$result_line")
-done < <(sed -n "${start_line},+400p" "$input_file")
+done < <(sed -n "${start_line},+600p" "$input_file")
 
 for model_mix in "${model_mixes[@]}"
 do
