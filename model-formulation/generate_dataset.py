@@ -4,6 +4,8 @@ import os
 import shutil
 
 RESULTS_DIR = '../results/a100'
+# RESULTS_DIR = '/home/ps35324/a100'
+PROFILE_DB = '../profiler/data/a100/model_profiles.csv'
 
 def aggregate_mps(job_size):
 
@@ -34,8 +36,8 @@ def aggregate_mps(job_size):
                             df_queued_p99 = pd.read_csv(os.path.join(RESULTS_DIR, outer_dir, sub_dir) + '/queued_p99.csv')
                             df_queued_p100 = pd.read_csv(os.path.join(RESULTS_DIR, outer_dir, sub_dir) + '/queued_p100.csv')
 
-                            data_point = []
                             for mode in df_tput['mode'].unique():
+                                data_point = []
                                 # Get model and batch sizes of the job mix
                                 job_mix = df_tput.columns.tolist()[2:]
                                 for job in job_mix:
@@ -62,6 +64,7 @@ def aggregate_mps(job_size):
                                 data_points.append(data_point)
                         else:
                             print(os.path.join(RESULTS_DIR, outer_dir, sub_dir))
+    
 
     columns = []
     for i in range(1, job_size + 1):
@@ -315,12 +318,97 @@ def stitch_mig_data(df, df_mig, job_size):
 
     return df_final
 
+def merge_data():
+    df1 = pd.read_csv('./data/tb_250_data.csv')
+    df2 = pd.read_csv('./data/tb_2400_data.csv')
+
+    df1['job_mix'] = df1.apply(lambda row: '-'.join([str(row['m1']), str(row['b1']), str(row['m2']), str(row['b2']), str(row['m3']), str(row['b3'])]), axis=1)
+    df_final = pd.concat([df1, df2])
+    df_final.to_csv('./data/tb-large-training-set-3.csv', index=False)
+
+def label_data():
+    # TODO: make agnostic to job size
+    df = pd.read_csv('./data/raw-data/tb-large-training-set-3.csv')
+    labels = {}
+    data_points = []
+
+    for job_mix in df['job_mix'].unique():
+        df_mps = df[(df['job_mix'] == job_mix) & (df['mode'] == 'mps-uncap')]
+        df_mig = df[(df['job_mix'] == job_mix) & (df['mode'] == 'mig')]
+        mps_tput = df_mps[['tput_m1', 'tput_m2', 'tput_m3']].sum().sum()
+        mps_tail_latency = df_mps[['total_p100_m1', 'total_p100_m2', 'total_p100_m3']].max().max()
+        mps_slo_violations = df_mps['slo_violation_no'].tolist()[0]
+        mig_tput = df_mig[['tput_m1', 'tput_m2', 'tput_m3']].sum().sum()
+        mig_tail_latency = df_mig[['total_p100_m1', 'total_p100_m2', 'total_p100_m3']].max().max()
+        mig_slo_violations = df_mig['slo_violation_no'].tolist()[0]
+
+        data_point = []
+        # If one has an SLO violation, choose other
+        if (mps_slo_violations > 0) and (mig_slo_violations == 0):
+            data_point.extend(df_mig.iloc[0].tolist())
+            data_point.append(0)
+            data_point.append('mps_slo_violation')
+        elif (mps_slo_violations == 0) and (mig_slo_violations > 0):
+            data_point.extend(df_mps.iloc[0].tolist())
+            data_point.append(1)
+            data_point.append('mig_slo_violation')
+        elif (mps_slo_violations == 0) and (mig_slo_violations == 0):
+            if (mps_tput > mig_tput):
+                data_point.extend(df_mps.iloc[0].tolist())
+                data_point.append(1)
+                data_point.append('mps_tput')
+            else:
+                data_point.extend(df_mig.iloc[0].tolist())
+                data_point.append(0)
+                data_point.append('mig_tput')
+            # labels[job_mix] = (mps_tput > mig_tput).astype(int)
+        elif (mps_slo_violations > 0) and (mig_slo_violations > 0):
+            if (mps_tail_latency < mig_tail_latency):
+                data_point.extend(df_mps.iloc[0].tolist())
+                data_point.append(1)
+                data_point.append('mps_tail')
+            else:
+                data_point.extend(df_mig.iloc[0].tolist())
+                data_point.append(0)
+                data_point.append('mig_tail')
+        data_points.append(data_point)
+            # labels[job_mix] = (mps_tail_latency < mig_tail_latency).astype(int)
+    
+
+    columns = df.columns.tolist() + ['label', 'case']
+    df_final = pd.DataFrame(data_points, columns=columns)
+    print(df_final['label'].value_counts().reset_index(name='count').to_string())
+    print(df_final['case'].value_counts().reset_index(name='count').to_string())
+    return df_final
+
+def add_profiling_data(df_init, job_size):
+    df_profiled = pd.read_csv(PROFILE_DB)
+    df = df_init
+    for i in range(1, job_size + 1):
+        df = pd.merge(df, df_profiled, left_on=[f'm{i}', f'b{i}'], right_on=['model', 'batch_size'], how='left')
+        new_column_names = {col: col + f'_{i}' for col in df_profiled.columns}
+        df.rename(columns=new_column_names, inplace=True)
+        df.drop([f'model_{i}', f'batch_size_{i}', f'tput_m{i}', f'total_p90_m{i}', f'total_p99_m{i}', f'total_p100_m{i}'], axis=1, inplace=True)
+    return df
 
 if __name__=='__main__':
-    df = aggregate_mps(job_size=3)
-    df = add_slos_to_data(df=df, job_size=3)
-    df_mig = aggregate_mig()
-    df_final = stitch_mig_data(df=df, df_mig=df_mig, job_size=3)
-    print(df_final['job_mix'].value_counts().reset_index(name='count').to_string())
+    size=3
+    # df = aggregate_mps(job_size=3)
+    # df = add_slos_to_data(df=df, job_size=3)
+    # df.to_csv('./data/tb_first_250_data.csv', index=False)
+    # print(df.to_string())
+    # df_mig = aggregate_mig()
+    # df_final = stitch_mig_data(df=df, df_mig=df_mig, job_size=3)
+    # df_final = add_slos_to_data(df=df_final, job_size=3)
+    # print(df_final)
+    # df_final.to_csv('./data/tb_2400_data.csv', index=False)
+    # print(df_final['job_mix'].value_counts().reset_index(name='count').to_string())
+    # merge_data()
+    df = label_data()
+    df_final = add_profiling_data(df_init=df, job_size=3)
+    df_final.drop(['mode', 'load', 'slo_m1', 'slo_violation_m1', 'slo_m2', 'slo_violation_m2', 'slo_m3', 'slo_violation_m3', 'slo_violation_no', 'job_mix'], axis=1, inplace=True)
+    df_final.to_csv(f'./data/size-2650/tb-training-set-{size}.csv', index=False)
+
+
 
         

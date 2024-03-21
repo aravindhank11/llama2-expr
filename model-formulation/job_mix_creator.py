@@ -140,12 +140,35 @@ def assign_mig_slice(combo_list):
 def create_valid_combos(num_models):
 
     combos = []
-    # Create list of all possible combinatinos of the models for the given co-location number
-    for j1 in MODEL_CONFIGS_250:
-        for j2 in MODEL_CONFIGS_250:
-            for j3 in MODEL_CONFIGS_250:
-                combos.append([j1, j2, j3])
-    
+    if num_models == 3:
+        # Create list of all possible combinatinos of the models for the given co-location number
+        for j1 in MODEL_CONFIGS_250:
+            for j2 in MODEL_CONFIGS_250:
+                for j3 in MODEL_CONFIGS_250:
+                    combos.append([j1, j2, j3])
+    elif num_models == 2:
+        # Create list of all possible combinatinos of the models for the given co-location number
+        for j1 in MODEL_CONFIGS_250:
+            for j2 in MODEL_CONFIGS_250:
+                combos.append([j1, j2])
+    elif num_models == 4:
+        # Create list of all possible combinatinos of the models for the given co-location number
+        for j1 in MODEL_CONFIGS_250:
+            for j2 in MODEL_CONFIGS_250:
+                for j3 in MODEL_CONFIGS_250:
+                    for j4 in MODEL_CONFIGS_250:
+                        combos.append([j1, j2, j3, j4])
+                        if len(combos) == 200000:
+                            break 
+                    if len(combos) == 200000:
+                            break 
+                if len(combos) == 200000:
+                            break 
+            if len(combos) == 200000:
+                            break 
+        
+    print(len(combos))
+
     # Remove duplicates -- only keep unique combinations
     unique_combos = set()
     for combo in combos:
@@ -180,7 +203,7 @@ def filter_tested_combos(num_models):
         for model in combo:
             string_list.append(model[0] + '-' + str(model[1]) + '-' + str(model[2]) + '-' + str(model[3]))
         tested_combos_set.add(tuple(sorted(string_list)))
-
+    print(len(tested_combos_set))
     valid_combos = create_valid_combos(num_models)
     valid_combos_set = set()
     for combo in valid_combos:
@@ -188,12 +211,11 @@ def filter_tested_combos(num_models):
         for model in combo:
             string_list.append(model[0] + '-' + str(model[1]) + '-' + str(model[2]) + '-' + str(model[3]))
         valid_combos_set.add(tuple(sorted(string_list)))
+    print(len(valid_combos_set))
 
     filtered_combos_set = valid_combos_set - tested_combos_set
     filtered_combos = list([list(tuple_combo) for tuple_combo in filtered_combos_set])
-    print(filtered_combos[0])
     shuffle(filtered_combos)
-    print(filtered_combos[0])
 
     # Save the combinations to a file -- this is done because we can't reproduce the same combination orders do to sets being used
     with open('./job_mixes/combos_{}.txt'.format(num_models), 'w') as fp:
@@ -203,7 +225,8 @@ def filter_tested_combos(num_models):
 
 
 if __name__=='__main__':
-    filter_tested_combos(3)
+    # filter_tested_combos(3)
+    filter_tested_combos(4)
 
 
 
