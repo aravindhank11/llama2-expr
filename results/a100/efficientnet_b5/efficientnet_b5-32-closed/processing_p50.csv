@@ -1,0 +1,2 @@
+mode,load,0_efficientnet_b5-32
+mps-uncap,1.0,31.708240509033203
