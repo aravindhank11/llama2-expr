@@ -32,6 +32,7 @@ run_cmd() {
         sleep 0.01
         ctr=$((ctr+1))
     done
+    sleep 1
 
     # Start the experiment
     timeout 1 bash -c "echo '{\"device-id\": ${device_id_arg}, \"mode\": \"${mode_arg}\"}' > ${pipe}"
