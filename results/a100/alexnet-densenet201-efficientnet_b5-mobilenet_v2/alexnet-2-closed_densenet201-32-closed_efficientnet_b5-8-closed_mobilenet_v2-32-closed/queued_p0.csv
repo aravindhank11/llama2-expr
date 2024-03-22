@@ -1,0 +1,2 @@
+mode,load,0_alexnet-2,1_densenet201-32,2_efficientnet_b5-8,3_mobilenet_v2-32
+mps-uncap,1.0,0.0,0.0,0.0,0.0

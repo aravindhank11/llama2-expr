@@ -1,0 +1,2 @@
+mode,load,0_mobilenet_v2-32,1_resnet50-4,2_squeezenet1_0-16,3_vgg11-32
+mps-uncap,1.0,0.0,0.0,0.0,0.0

@@ -1,0 +1,2 @@
+mode,load,0_efficientnet_b5-2,1_mobilenet_v2-32,2_resnet101-32,3_squeezenet1_0-2
+mps-uncap,1.0,0.0,0.0,0.0,0.0
