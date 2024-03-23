@@ -2,7 +2,9 @@
 
 log() {
     echo -e "$@"
-    echo -e "$@" >> ${PRINT_OUTS}
+    if [[ ! -z ${PRINT_OUTS} ]]; then
+        echo -e "$@" >> ${PRINT_OUTS}
+    fi
 }
 
 print_log_location() {
@@ -31,7 +33,7 @@ run_cmd() {
         ctr=$((ctr+1))
     done
     sleep 1
-    
+
     # Start the experiment
     timeout 1 bash -c "echo '{\"device-id\": ${device_id_arg}, \"mode\": \"${mode_arg}\"}' > ${pipe}"
 
@@ -74,7 +76,7 @@ generate_json_input() {
     export images_per_second=$5
     export slo_percentile=0
     export slo_hw=1000000000
-    export slo_lw=1000000000
+    export slo_lw=0
     export ctrl_grpc=null
 
     template=$(cat model-param.json.template)
@@ -114,14 +116,14 @@ generate_distribution_load() {
 
     for mode in ${modes[@]}
     do
-        for ((i = $(multiply_and_round ${load_start} 10 0); i <= $(multiply_and_round ${load_end} 10 0); i++)); do
-            ratio=$(echo "$load_start + ($i - 1) * $load_step" | bc)
+        for ((i = $(multiply_and_round ${load_start} 10 0); i <= $(multiply_and_round ${load_end} 10 0); i+=$(multiply_and_round ${load_step} 10 0))); do
+            ratio=$(multiply_and_round ${i} 0.1 1)
             json_array=()
             for ((j=0; j<${num_procs}; j++))
             do
                 mul=$(multiply_and_round ${ratio} ${rps[$j]})
                 echo ${mul}
-                generate_json_input ${model_types[$i]} ${models[$i]} ${batch_sizes[$i]} ${distribution} ${mul}
+                generate_json_input ${model_types[$j]} ${models[$j]} ${batch_sizes[$j]} ${distribution} ${mul}
                 json_array+=("${json_input}")
             done
 
@@ -131,7 +133,7 @@ generate_distribution_load() {
                 --load ${ratio} \
                 '${model_params}'"
 
-            log "${mode} ${ratio}"
+            log "=> ${mode} ${ratio}"
 
             run_cmd "${cmd}" ${device_id} ${mode} ${duration}
         done
@@ -154,12 +156,6 @@ get_rps() {
             tput=("${cols[@]}")
         fi
     done < <(tail -n +2 "${tput_csv}")
-
-    if [[ ${#tput[@]} -ne ${num_procs} ]]; then
-        log "Unable to get throughput metrics for all models"
-        exit 1
-    fi
-    log "TPUTS: ${tput[@]}"
 
     if [[ ${#tput[@]} -ne ${num_procs} ]]; then
         log "Unable to get throughput metrics for all models"
