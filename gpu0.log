@@ -3605,4 +3605,390 @@ Running closed loop experiment for mps-uncap
 Run success: results are stored in results/a100/resnet34-squeezenet1_1/resnet34-4-closed_squeezenet1_1-4-closed
 Exiting with error_code=0 (0 is clean exit)
 Examine /tmp/print_outs-6ec3a115.txt for logs
-[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ 
+[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ [?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ [K[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ .[Kech o$[K[K[Ko $E[KUSE_SUDO
+[?2004l1
+[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ echo $VENV
+[?2004l/home/lab-admin/virtual/tiebreaker
+[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ clear
+[?2004l[H[2J[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ ./test_combos_mps_poisson.sh [K
+[?2004lUsage: ./test_combos_mps_poisson.sh <starting_line_number> <device_id (0-3)> <size (2-4)
+[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ ./test_combos_mps_poisson.sh 1 0 3
+[?2004l./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-efficientnet_b6-16 vision-mobilenet_v3_small-8 vision-vgg19-4
+Logs at /tmp/print_outs-37308057.txt
+TPUTS: 431.2920023559512 1309.0380183108666 589.6219256880438
+TPUTS: 431.2920023559512 1309.0380183108666 589.6219256880438
+RPS: 26.95 163.62 147.40
+40.42
+245.43
+221.10
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "40.42", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                 
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "40.42", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                   
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-37308057.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-alexnet-2 vision-resnet101-4 vision-vgg13-16
+Logs at /tmp/print_outs-f48ddf7a.txt
+TPUTS: 572.1688567229742 111.18753684914849 1710.895133008089
+TPUTS: 572.1688567229742 111.18753684914849 1710.895133008089
+RPS: 286.08 27.79 106.93
+429.12
+41.68
+160.39
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "429.12", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                  
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "429.12", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                    
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-f48ddf7a.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-densenet161-8 vision-efficientnet_b5-8 vision-inception_v3-32
+Logs at /tmp/print_outs-0878e432.txt
+TPUTS: 292.18227822124106 348.34460832348896 1730.0170749926563
+TPUTS: 292.18227822124106 348.34460832348896 1730.0170749926563
+RPS: 36.52 43.54 54.06
+54.78
+65.31
+81.09
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "54.78", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                 
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "54.78", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                   
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-0878e432.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-densenet121-16 vision-vgg11-8 vision-vgg11-8
+Logs at /tmp/print_outs-b8ba813e.txt
+TPUTS: 304.58173495337616 1196.4373580981887 1197.7579522569183
+TPUTS: 304.58173495337616 1196.4373580981887 1197.7579522569183
+RPS: 19.03 149.55 149.71
+28.54
+224.32
+224.56
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "28.54", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                 
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "28.54", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                   
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-b8ba813e.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-alexnet-2 vision-densenet121-32 vision-vgg16-16
+Logs at /tmp/print_outs-54ddfc7b.txt
+TPUTS: 522.0676329271839 498.97456940168354 1245.139472142153
+TPUTS: 522.0676329271839 498.97456940168354 1245.139472142153
+RPS: 261.03 15.59 77.82
+391.54
+23.38
+116.73
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "391.54", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                  
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "391.54", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                    
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-54ddfc7b.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-densenet201-16 vision-densenet201-8 vision-vgg11-16
+Logs at /tmp/print_outs-bd339076.txt
+TPUTS: 219.9850882151183 128.90442194354839 2256.113009687318
+TPUTS: 219.9850882151183 128.90442194354839 2256.113009687318
+RPS: 13.74 16.11 141.00
+20.61
+24.16
+211.50
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "20.61", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                 
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "20.61", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                   
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-bd339076.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-inception_v3-16 vision-inception_v3-8 vision-vgg16-16
+Logs at /tmp/print_outs-ee8b5eac.txt
+TPUTS: 405.3471985604663 241.33654157343423 1410.8877713892657
+TPUTS: 405.3471985604663 241.33654157343423 1410.8877713892657
+RPS: 25.33 30.16 88.18
+37.99
+45.24
+132.27
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "37.99", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                 
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "37.99", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                   
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-ee8b5eac.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-efficientnet_b6-8 vision-resnet34-8 vision-squeezenet1_1-4
+Logs at /tmp/print_outs-b64f5f57.txt
+TPUTS: 424.6151894510326 1447.3140261377528 1843.6544336354257
+TPUTS: 424.6151894510326 1447.3140261377528 1843.6544336354257
+RPS: 53.07 180.91 460.91
+79.60
+271.36
+691.36
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "79.60", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                 
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "79.60", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                   
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-b64f5f57.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-efficientnet_b6-4 vision-resnet50-16 vision-vgg13-16
+Logs at /tmp/print_outs-51078429.txt
+TPUTS: 49.317029658375155 565.849414973211 1526.0884022749956
+TPUTS: 49.317029658375155 565.849414973211 1526.0884022749956
+RPS: 12.32 35.36 95.38
+18.48
+53.04
+143.07
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "18.48", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                 
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "18.48", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                   
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-51078429.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-densenet169-2 vision-resnet18-16 vision-vgg13-8
+Logs at /tmp/print_outs-ff707426.txt
+TPUTS: 48.2799689475445 1985.5161583026859 1383.572170136629
+TPUTS: 48.2799689475445 1985.5161583026859 1383.572170136629
+RPS: 24.13 124.09 172.94
+36.19
+186.13
+259.41
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "36.19", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                 
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "36.19", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                   
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-ff707426.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-efficientnet_b5-4 vision-vgg13-32 vision-vgg16-16
+Logs at /tmp/print_outs-cf75a645.txt
+TPUTS: 26.916877890110527 1302.5610559165566 649.9656938750919
+TPUTS: 26.916877890110527 1302.5610559165566 649.9656938750919
+RPS: 6.72 40.70 40.62
+10.08
+61.05
+60.93
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "10.08", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                 
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "10.08", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                   
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-cf75a645.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-densenet169-32 vision-squeezenet1_0-2 vision-squeezenet1_0-2
+Logs at /tmp/print_outs-1b7501e3.txt
+TPUTS: 1199.4130603878823 824.5732409981202 756.3690603691516
+TPUTS: 1199.4130603878823 824.5732409981202 756.3690603691516
+RPS: 37.48 412.28 378.18
+56.22
+618.42
+567.27
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "56.22", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                 
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "56.22", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                   
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-1b7501e3.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-inception_v3-8 vision-mobilenet_v3_large-8 vision-resnet18-2
+Logs at /tmp/print_outs-80d33025.txt
+TPUTS: 1080.9212819266202 2415.8059632953964 1203.6299839542928
+TPUTS: 1080.9212819266202 2415.8059632953964 1203.6299839542928
+RPS: 135.11 301.97 601.81
+202.66
+452.95
+902.71
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "202.66", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                  
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "202.66", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                    
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-80d33025.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-efficientnet_b7-32 vision-mobilenet_v3_small-2 vision-vgg19-16
+Logs at /tmp/print_outs-5691bc58.txt
+TPUTS: 258.4727261430753 123.29464231028246 934.1454215153935
+TPUTS: 258.4727261430753 123.29464231028246 934.1454215153935
+RPS: 8.07 61.64 58.38
+12.10
+92.46
+87.57
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "12.10", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                 
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "12.10", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                   
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-5691bc58.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-squeezenet1_0-32 vision-alexnet-4 vision-mobilenet_v2-4
+Logs at /tmp/print_outs-d0e2f528.txt
+tail: cannot open 'results/a100/squeezenet1_0-alexnet-mobilenet_v2/squeezenet1_0-32-closed_alexnet-4-closed_mobilenet_v2-4-closed/tput.csv' for reading: No such file or directory
+Unable to get throughput metrics for all models
+Exiting with error_code=1 (0 is clean exit)
+Examine /tmp/print_outs-d0e2f528.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-efficientnet_b7-2 vision-resnet101-2 vision-resnet101-32
+Logs at /tmp/print_outs-6920433c.txt
+TPUTS: 60.054203045240214 145.1685109468161 1440.3818197691537
+TPUTS: 60.054203045240214 145.1685109468161 1440.3818197691537
+RPS: 30.02 72.58 45.01
+45.03
+108.87
+67.51
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "45.03", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                 
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "45.03", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                   
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-6920433c.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-resnet18-32 vision-resnet50-16 vision-resnet50-8
+Logs at /tmp/print_outs-396f0f43.txt
+tail: cannot open 'results/a100/resnet18-resnet50-resnet50/resnet18-32-closed_resnet50-16-closed_resnet50-8-closed/tput.csv' for reading: No such file or directory
+Unable to get throughput metrics for all models
+Exiting with error_code=1 (0 is clean exit)
+Examine /tmp/print_outs-396f0f43.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-densenet161-4 vision-mobilenet_v2-16 vision-vgg11-2
+Logs at /tmp/print_outs-1d69a1b9.txt
+TPUTS: 170.92504928612212 2825.858064908331 742.1982442357187
+TPUTS: 170.92504928612212 2825.858064908331 742.1982442357187
+RPS: 42.73 176.61 371.09
+64.09
+264.91
+556.63
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "64.09", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                 
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "64.09", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                   
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-1d69a1b9.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-vgg19-4 vision-efficientnet_b6-16 vision-resnet18-8
+Logs at /tmp/print_outs-cad70974.txt
+tail: cannot open 'results/a100/vgg19-efficientnet_b6-resnet18/vgg19-4-closed_efficientnet_b6-16-closed_resnet18-8-closed/tput.csv' for reading: No such file or directory
+Unable to get throughput metrics for all models
+Exiting with error_code=1 (0 is clean exit)
+Examine /tmp/print_outs-cad70974.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-alexnet-2 vision-mobilenet_v3_small-16 vision-resnet152-4
+Logs at /tmp/print_outs-43dbae42.txt
+TPUTS: 2087.7427885665247 5287.002020394072 326.4821890692403
+TPUTS: 2087.7427885665247 5287.002020394072 326.4821890692403
+RPS: 1043.87 330.43 81.62
+1565.80
+495.64
+122.43
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "1565.80", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                   
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "1565.80", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                     
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-43dbae42.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-efficientnet_b5-8 vision-resnet152-8 vision-vgg11-4
+Logs at /tmp/print_outs-dbc9c90a.txt
+TPUTS: 322.06657842321226 313.3501669621522 1148.5669347104022
+TPUTS: 322.06657842321226 313.3501669621522 1148.5669347104022
+RPS: 40.25 39.16 287.14
+60.37
+58.74
+430.71
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "60.37", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                 
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "60.37", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                   
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-dbc9c90a.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-mobilenet_v2-8 vision-mobilenet_v3_small-8 vision-vgg19-32
+Logs at /tmp/print_outs-874fb25a.txt
+TPUTS: 514.7753417769179 575.5570360761268 1363.2750245905893
+TPUTS: 514.7753417769179 575.5570360761268 1363.2750245905893
+RPS: 64.34 71.94 42.60
+96.51
+107.91
+63.90
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "96.51", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                 
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "96.51", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                   
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-874fb25a.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-mobilenet_v3_small-16 vision-resnet50-4 vision-vgg19-32
+Logs at /tmp/print_outs-1493f913.txt
+TPUTS: 899.8822302803983 162.4283409337509 1344.09710310016
+TPUTS: 899.8822302803983 162.4283409337509 1344.09710310016
+RPS: 56.24 40.60 42.00
+84.36
+60.90
+63.00
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "84.36", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                 
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "84.36", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                   
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-1493f913.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-mobilenet_v2-32 vision-squeezenet1_0-4 vision-vgg19-8
+Logs at /tmp/print_outs-827799cd.txt
+TPUTS: 2278.547048188864 569.5885772200613 815.4148025462989
+TPUTS: 2278.547048188864 569.5885772200613 815.4148025462989
+RPS: 71.20 142.39 101.92
+106.80
+213.58
+152.88
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "106.80", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                  
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "106.80", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                    
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-827799cd.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-alexnet-16 vision-densenet121-8 vision-mobilenet_v3_small-4
+Logs at /tmp/print_outs-966b2c7a.txt
+TPUTS: 8816.31181963998 636.2562862837209 1259.1915343576486
+TPUTS: 8816.31181963998 636.2562862837209 1259.1915343576486
+RPS: 551.01 79.53 314.79
+826.51
+119.29
+472.18
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "826.51", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                  
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "826.51", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                    
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-966b2c7a.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-densenet201-4 vision-inception_v3-4 vision-squeezenet1_0-2
+Logs at /tmp/print_outs-f81bafae.txt
+tail: cannot open 'results/a100/densenet201-inception_v3-squeezenet1_0/densenet201-4-closed_inception_v3-4-closed_squeezenet1_0-2-closed/tput.csv' for reading: No such file or directory
+Unable to get throughput metrics for all models
+Exiting with error_code=1 (0 is clean exit)
+Examine /tmp/print_outs-f81bafae.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-alexnet-16 vision-resnet18-8 vision-squeezenet1_1-8
+Logs at /tmp/print_outs-ca0965e5.txt
+TPUTS: 7573.699406110706 2143.0051566700254 2777.894717808188
+TPUTS: 7573.699406110706 2143.0051566700254 2777.894717808188
+RPS: 473.35 267.87 347.23
+710.02
+401.80
+520.84
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "710.02", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                  
+jq: error: syntax error, unexpected ',' (Unix shell quoting issues?) at <top-level>, line 1:
+. += [{ "model-type": "poisson", "model": "710.02", "batch-size": , "distribution-type": "", "rps": , "slo-percentile": 0, "slo-lw": 1000000000, "slo-hw": 1000000000, "ctrl-grpc": null }]                                                                                                    
+jq: 2 compile errors
+Exiting with error_code=3 (0 is clean exit)
+Examine /tmp/print_outs-ca0965e5.txt for logs
+./run.sh --device-type a100 --device-id 0 --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0  vision-densenet169-2 vision-resnet18-4 vision-vgg16-2
+Logs at /tmp/print_outs-311bc846.txt
+TPUTS: 121.81853586804777 1680.7069617724096 722.971285719004
+TPUTS: 121.81853586804777 1680.7069617724096 722.971285719004
+RPS: 60.90 420.17 361.48
+^CExiting with error_code=0 (0 is clean exit)
+Examine /tmp/print_outs-311bc846.txt for logs
+
+[?2004h[01;32mlab-admin@ece-a63826[00m:[01;34m~/llama2-expr[00m$ exit
+[?2004lexit
