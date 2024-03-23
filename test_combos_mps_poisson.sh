@@ -1,4 +1,4 @@
-c#!/bin/bash 
+#!/bin/bash 
 
 # Retrieve the starting line number from the command-line argument
 start_line="$1"
