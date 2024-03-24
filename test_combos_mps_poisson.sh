@@ -32,7 +32,7 @@ done < <(sed -n "${start_line},+114p" "$input_file")
 for model_mix in "${model_mixes[@]}"
 do
     # ./run.sh --device-type a100 --device-id 0 --modes mps-uncap --distribution closed ${model_mix}
-    cmd="./run.sh --device-type a100 --device-id ${device_id} --modes mps-uncap --duration 60 --distribution poisson --load-start 0.8 --load-end 1.0 ${model_mix}"
+    cmd="./run.sh --device-type a100 --device-id ${device_id} --modes mps-uncap --duration 60 --distribution poisson --load-start 0.1 --load-end 0.4 ${model_mix}"
     echo "${cmd}"
     eval $cmd
 done
