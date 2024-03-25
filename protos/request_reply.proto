@@ -1,0 +1,18 @@
+// Our schedulers message definition for gRPC requests
+
+// TODO: change all "schedulers" to our scheduler's name
+
+syntax = "proto3";
+
+package tiebreakercontroller;
+
+enum RequestReplyEnum {
+  INVALID = 0;
+  SUCCESS = 1;
+  FAILURE = 2;
+}
+
+message RequestReply {
+  RequestReplyEnum status = 1;
+  string msg = 2; 
+}

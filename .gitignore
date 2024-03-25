@@ -6,3 +6,4 @@
 *output_nsys.nsys-rep
 *raw_ncu.csv
 print_outs.txt
+*__pycache__
