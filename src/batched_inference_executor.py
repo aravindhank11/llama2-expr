@@ -19,7 +19,8 @@ from utils import (
     AtomicBoolean,
     DistributionType,
     WatermarkType,
-    SysVQueue,
+    TopicCreationMode,
+    KafkaClient,
     log,
     orion_block,
 )
@@ -37,12 +38,11 @@ SLO_HISTORY_BUFFER_SIZE = 1000
 
 class BatchedInferenceExecutor:
     def __init__(
-        self, model_obj, distribution_type, rps, tid,
+        self, model_obj, distribution_type, rps, tid, kafka_server, run_id,
+        spawn_id=0,
         num_infer=sys.maxsize,
         thread_barrier=None,
-        return_queue=None,
         duration=-1,
-        qid=-1,
         slo_percentile=0.9,
         slo_lw=float("inf"),
         slo_hw=float("inf"),
@@ -51,7 +51,8 @@ class BatchedInferenceExecutor:
         self.model_obj = model_obj
         self.num_infer = num_infer
         self.rps = rps
-        self.qid = qid
+        self.run_id = run_id
+        self.spawn_id = spawn_id
         self.tid = tid
         self.duration = duration
         self.slo_low_wm = slo_lw
@@ -63,6 +64,7 @@ class BatchedInferenceExecutor:
         self.opc = OnlinePercentile(slo_percentile, SLO_HISTORY_BUFFER_SIZE)
         self.ctrl_slo_comm_running = AtomicBoolean(False)
 
+        self.kafka_server = kafka_server
         self.ctrl_grpc_channel = ctrl_grpc_channel
         self.unique_mix_id = None
         self.stub = None
@@ -71,7 +73,6 @@ class BatchedInferenceExecutor:
 
         # Thread synchronization mechanism
         self.thread_barrier = thread_barrier
-        self.return_queue = return_queue
 
         # Process synchronization mechanism
         self.start = False
@@ -106,7 +107,7 @@ class BatchedInferenceExecutor:
             self.unique_mix_id = split_list[1]
             with grpc.insecure_channel(f'localhost:{port}') as channel:
                 self.stub = tb_controller_pb2_grpc.TieBreaker_ControllerStub(channel)
-        
+
     def _convey_slo_breach(self, watermark_type):
         # watermark_type: HIGH => We violated high watermark
         #                 LOW  => We went below the low watermark
@@ -154,10 +155,21 @@ class BatchedInferenceExecutor:
                 slo_thread.daemon = True
                 slo_thread.start()
 
-    def dequeue_deferred_thread(self, queue):
-        sysvq = SysVQueue(self.qid, create_new_queue=False)
-        rcvd_items = sysvq.read_queue(queue)
-        print(f"Received {rcvd_items} from queue-{self.qid} (tid={self.tid})",
+    def get_unfinished_requests(self, queue):
+        if self.spawn_id <= 0:
+            return
+
+        identifier = (self.run_id + "-" +
+            str(self.spawn_id - 1) + "-" +
+            str(self.tid)
+        )
+        kc = KafkaClient(
+            self.kafka_server,
+            identifier,
+            TopicCreationMode.WAIT_TO_CREATE
+        )
+        rcvd_items = kc.read_queue(queue)
+        print(f"Received {rcvd_items} from {identifier}",
               file=sys.stderr)
 
     def run_infer_executor(self, num_reqs, i=0, is_warmup=False):
@@ -172,11 +184,13 @@ class BatchedInferenceExecutor:
             enqueue_thread.start()
 
         # Enqueue any deferred request to the process
-        if (not is_warmup and self.qid != -1 and
-            self.distribution_type != DistributionType.CLOSED
+        if (
+            not is_warmup and
+            self.distribution_type != DistributionType.CLOSED and
+            self.ctrl_grpc_channel
         ):
             deferred_dequeue_thread = threading.Thread(
-                target=self.dequeue_deferred_thread,
+                target=self.get_unfinished_requests,
                 args=(queue,)
             )
             deferred_dequeue_thread.daemon = True
@@ -260,11 +274,18 @@ class BatchedInferenceExecutor:
                 while not queue.empty():
                     queue.get()
             else:
-                pid = os.getpid()
-                sysvq = SysVQueue(pid, create_new_queue=True)
-                successful_sends = sysvq.dump_queue(queue)
+                identifier = (self.run_id + "-" +
+                     str(self.spawn_id) + "-" +
+                     str(self.tid)
+                )
+                kc = KafkaClient(
+                    self.kafka_server,
+                    identifier,
+                    TopicCreationMode.FORCE_NEW_CREATE
+                )
+                successful_sends = kc.dump_queue(queue)
                 print(
-                    f"Sent {successful_sends} items on queue-{pid} (tid={self.tid})",
+                    f"Sent {successful_sends} items on {identifier}",
                     file=sys.stderr
                 )
             self.job_completed = True
@@ -301,11 +322,15 @@ class BatchedInferenceExecutor:
     def _return_infer_stats(self, infer_stats):
         infer_stats.insert(0, f"{self.model_obj.get_id()}")
         result = (self.tid, infer_stats)
-        if self.return_queue:
-            self.return_queue.put(result)
-        else:
-            with open(f"/tmp/{os.getpid()}.pkl", "wb") as h:
-                pickle.dump(result, h)
+        result_pkl = pickle.dumps(result)
+        identifier = self.run_id + "-result"
+        kc = KafkaClient(
+            self.kafka_server,
+            identifier,
+            TopicCreationMode.CREATE_IF_NO_EXIST
+        )
+        kc.dump_pkl(result_pkl)
+        print(f"Sent results on {identifier}", file=sys.stderr)
 
     def _thread_block(self):
         if self.thread_barrier:
@@ -332,15 +357,17 @@ class BatchedInferenceExecutor:
         # Ready for experiment
         self._indicate_ready()
 
-        torch.cuda.cudart().cudaProfilerStart()
-        torch.cuda.nvtx.range_push("start")
+        if torch.cuda.is_available():
+            torch.cuda.cudart().cudaProfilerStart()
+            torch.cuda.nvtx.range_push("start")
         infer_stats = self.run_infer_executor(
             self.num_infer + reqs_completed,
             i=reqs_completed,
             is_warmup=False
         )
-        torch.cuda.nvtx.range_pop()
-        torch.cuda.cudart().cudaProfilerStop()
+        if torch.cuda.is_available():
+            torch.cuda.nvtx.range_pop()
+            torch.cuda.cudart().cudaProfilerStop()
 
         # Give stats back to user
         self._return_infer_stats(infer_stats)
@@ -349,15 +376,21 @@ class BatchedInferenceExecutor:
 if __name__ == "__main__":
     # Parse argument
     parser = argparse.ArgumentParser(allow_abbrev=False)
-    parser.add_argument("--device-id", type=int, default=0)
-    parser.add_argument("--model-type", type=str, default="vision")
-    parser.add_argument("--model", type=str, default="resnet50")
-    parser.add_argument("--batch-size", type=int, default=4)
+
+    # Required params
+    parser.add_argument("--device-id", type=int, required=True)
+    parser.add_argument("--model-type", type=str, required=True)
+    parser.add_argument("--model", type=str, required=True)
+    parser.add_argument("--batch-size", type=int, required=True)
+    parser.add_argument("--distribution-type", type=str, required=True)
+    parser.add_argument("--rps", type=float, required=True)
+    parser.add_argument("--tid", type=int, required=True)
+    parser.add_argument("--kafka-server", type=str, required=True)
+    parser.add_argument("--run-id", type=str, required=True)
+
+    # Optional params
+    parser.add_argument("--spawn-id", type=int, default=0)
     parser.add_argument("--num-infer", type=int, default=sys.maxsize)
-    parser.add_argument("--distribution-type", type=str, default="closed")
-    parser.add_argument("--rps", type=float, default=30)
-    parser.add_argument("--tid", type=int, default=0)
-    parser.add_argument("--qid", type=int, default=-1)
     parser.add_argument("--slo-percentile", type=float, default=90)
     parser.add_argument("--slo-lw", type=float, default=0)
     parser.add_argument("--slo-hw", type=float, default=float("inf"))
@@ -375,12 +408,18 @@ if __name__ == "__main__":
     # Create executor object
     if opt.ctrl_grpc == "null" or not opt.ctrl_grpc:
         opt.ctrl_grpc = None
+
+    if opt.kafka_server == "null" or not opt.kafka_server:
+        opt.kafka_server = None
+
     executor_obj = BatchedInferenceExecutor(
         model_obj,
         opt.distribution_type,
         opt.rps,
         opt.tid,
-        qid=opt.qid,
+        opt.kafka_server,
+        opt.run_id,
+        spawn_id=opt.spawn_id,
         num_infer=opt.num_infer,
         slo_percentile=opt.slo_percentile,
         slo_lw=opt.slo_lw,

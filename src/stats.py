@@ -1,10 +1,3 @@
-# Sample command:
-# python3 new_stats.py \
-#    --mode mps-uncap \
-#    --load 0.1 \
-#    --result_dir dir1 \
-#    /tmp/111003.pkl /tmp/111004.pkl /tmp/111005.pkl
-
 import argparse
 import os
 import sys
@@ -13,6 +6,10 @@ import atexit
 import fcntl
 import numpy as np
 import pandas as pd
+from utils import (
+    TopicCreationMode,
+    KafkaClient,
+)
 
 
 TPUT = "tput"
@@ -59,6 +56,19 @@ def create_dir(directory):
         pass
 
 
+def save_pkl_files_from_kafka(kafka_server, run_id):
+    kc = KafkaClient(
+        kafka_server, run_id + "-result",
+        TopicCreationMode.WAIT_TO_CREATE
+    )
+
+    pkl_msgs = kc.read_pkl(3000)
+    unpkl_msgs = []
+    for pkl_msg in pkl_msgs:
+        unpkl_msgs.append(pickle.loads(pkl_msg))
+    return unpkl_msgs
+
+
 if __name__ == "__main__":
     acquire_lock()
     atexit.register(release_lock)
@@ -66,30 +76,24 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", type=str, required=True)
     parser.add_argument("--load", type=float, required=True)
-    parser.add_argument("--result_dir", type=str, required=True)
-    parser.add_argument(
-        "pickle_files",
-        metavar="<pkl_file>",
-        nargs="+",
-        help="List of model and details"
-    )
+    parser.add_argument("--kafka-server", type=str, required=True)
+    parser.add_argument("--run-id", type=str, required=True)
+    parser.add_argument("--result-dir", type=str, required=True)
     opt = parser.parse_args()
 
+    # Create result directory
     create_dir(opt.result_dir)
 
-    models = [None] * len(opt.pickle_files)
+    unpkl_msgs = save_pkl_files_from_kafka(
+        opt.kafka_server, opt.run_id
+    )
+
+    models = [None] * len(unpkl_msgs)
     metrics = {}
     for metric_name in METRIC_NAMES:
-        metrics[metric_name] = [None] * len(opt.pickle_files)
+        metrics[metric_name] = [None] * len(unpkl_msgs)
 
-    for pickle_file in opt.pickle_files:
-        # Validate file paths
-        if not os.path.isfile(pickle_file):
-            print(f"File '{pickle_file}' does not exist.")
-            sys.exit(1)
-
-        # Load arrays from pickle files
-        tid, infer_stats = load_pickle_file(pickle_file)
+    for (tid, infer_stats) in unpkl_msgs:
         model, tput, total_times, queued_times = infer_stats
         populate_stats(TOTAL_PREFIX, total_times, tid, metrics)
         populate_stats(QUEUED_PREFIX, queued_times, tid, metrics)

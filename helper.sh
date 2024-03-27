@@ -1,6 +1,8 @@
 #!/bin/bash
 
 DOCKER="docker"
+ZOOKEEPER_PORT="22181"
+KAFKA_PORT="29092"
 
 # orion details
 ORION_CTR_PREFIX="orion"
@@ -252,7 +254,8 @@ function setup_orion_container {
     ${DOCKER} exec -it ${orion_ctr} bash -c "tar -xf /usr/local/nsight-compute.tar -C /usr/local/ > /dev/null 2>&1"
     ${DOCKER} exec -it ${orion_ctr} bash -c "wget https://developer.nvidia.com/downloads/assets/tools/secure/nsight-systems/2024_1/nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb > /dev/null 2>&1"
     ${DOCKER} exec -it ${orion_ctr} bash -c "dpkg -i nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb > /dev/null 2>&1 && rm -f nsightsystems-linux-cli-public-2024.1.1.59-3380207.deb"
-    ${DOCKER} exec -it ${orion_ctr} bash -c "pip install transformers sysv_ipc psutil > /dev/null 2>&1"
+    ${DOCKER} exec -it ${orion_ctr} bash -c "pip install transformers grpcio grpcio-tools protobuf kafka-python > /dev/null 2>&1"
+
 }
 
 function cleanup_orion_containers {
@@ -361,6 +364,12 @@ function safe_clean_gpu() {
     unlock_gpu ${device_id_arg}
 }
 
+check_kafka_up() {
+    kafka_server_arg=$1
+    local ip=$(echo "${kafka_server_arg}" | awk -F':' '{print $1}')
+    local port=$(echo "${kafka_server_arg}" | awk -F':' '{print $2}')
+    nc -zv ${ip} ${port} > /dev/null
+}
 
 mps_mig_percentages=("" "100" "57,43" "42,29,29" "29,29,28,14" "29,29,14,14,14" "29,15,14,14,14,14" "15,15,14,14,14,14,14")
 mps_equi_percentages=("" "100" "50,50" "34,33,33" "25,25,25,25" "20,20,20,20,20" "17,17,17,17,16,16" "15,15,14,14,14,14,14")

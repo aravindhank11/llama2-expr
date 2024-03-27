@@ -1,13 +1,9 @@
 ### Setup Environment
-* Follow one of the 2 methods below
-    * **Setup using Docker**
-        * Follow OS specific instructions to install `nvidia-container-toolkit`
-        * Install `docker`
-    * Setup using python virtual environment:
-        * `[sudo] apt install python3-venv`
-        * `python3 -m venv tie-breaker-venv`
-        * `source tie-breaker-venv/bin/activate`
-        * `pip install -r packaging/requirements.txt`
+* Setup python virtual environment:
+    * `[sudo] apt install python3-venv`
+    * `python3 -m venv tie-breaker-venv`
+    * `source tie-breaker-venv/bin/activate`
+    * `pip install -r packaging/requirements.txt`
 * Follow the below steps if Benchmarking against Orion (Optional):
     * Perform the following to enable benchmarking for Orion on the host:
     ```
@@ -31,16 +27,6 @@ export VENV=tie-breaker-venv
 
 # Runs a job mix for a particular configuration (Used by run.sh -- but is standalone as well)
 ./run_job_mix.sh --help
-```
-
-
-### To build your own docker image (Optional)
-```
-# NOTE: Make sure to change the variable `TIE_BREAKER_IMG`
-export USE_SUDO=1 # If you want sudo to run docker commands
-source helper.sh
-cd packaging
-./build.sh
 ```
 
 
