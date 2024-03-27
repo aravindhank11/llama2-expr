@@ -250,7 +250,7 @@ class BertBatchedInference(BatchedInference):
             "The largest desert in the world is the Sahara Desert.",
             "Margaret Thatcher was the first female Prime Minister of the United Kingdom."
         ]
-        self.model_path = "deepset/bert-base-cased-squad2" 
+        self.model_path = "/home/lab-admin/bert-base-cased-squad2" 
         self.tokenizer = None
         self.inputs = None
         self.selected_prompts = None
@@ -267,7 +267,7 @@ class BertBatchedInference(BatchedInference):
     def load_data(self):
         self.selected_prompts = random.sample(self.prompts, self._batch_size)
         self.selected_texts = [self.contexts[self.prompts.index(prompt)] for prompt in self.selected_prompts]
-        self.tokenizer = AutoTokenizer.from_pretrained("deepset/bert-base-cased-squad2")
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
         self.inputs = self.tokenizer(self.selected_prompts, self.selected_texts, padding=True, truncation=True, return_tensors="pt")
 
     def infer(self):
