@@ -24,5 +24,5 @@ do
     # ./run.sh --device-type a100 --device-id 0 --modes mps-uncap --distribution closed ${model_mix}
     cmd="./run.sh --device-type a100 --device-id ${device_id} --modes mps-uncap --duration 300 --distribution closed ${model_mix}"
     echo "${model_mix}"
-    # eval $cmd
+    eval $cmd
 done
