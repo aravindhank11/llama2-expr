@@ -6,6 +6,5 @@
     "rps": ${images_per_second},
     "slo-percentile": ${slo_percentile},
     "slo-lw": ${slo_lw},
-    "slo-hw": ${slo_hw},
-    "ctrl-grpc": ${ctrl_grpc}
+    "slo-hw": ${slo_hw}
 }

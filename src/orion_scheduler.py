@@ -9,7 +9,6 @@ from ctypes import (
 import argparse
 import os
 import json
-import pickle
 from queue import Queue
 from threading import Barrier, Thread
 
@@ -118,14 +117,13 @@ def run_scheduler(barrier, threads, model_names, kernel_files, num_kernels):
     barrier.wait()
 
 
-def spin_orion_scheduler(device_id, duration, md_list):
+def spin_orion_scheduler(device_id, duration, kafka_server, run_id, md_list):
     num_clients = len(md_list)
     barrier = Barrier(num_clients + 1)
     threads = []
     model_names = []
     kernel_files = []
     num_kernels = []
-    result_queue = Queue()
 
     for tid, md in enumerate(md_list):
         model_obj = get_batched_inference_object(
@@ -136,9 +134,8 @@ def spin_orion_scheduler(device_id, duration, md_list):
         )
 
         executor_obj = BatchedInferenceExecutor(
-            model_obj, md.distribution_type, md.rps, tid,
-            thread_barrier=barrier, return_queue=result_queue,
-            duration=duration
+            model_obj, md.distribution_type, md.rps, tid, kafka_server, run_id,
+            thread_barrier=barrier, duration=duration
         )
 
         t = Thread(target=run_object, args=(executor_obj,))
@@ -159,9 +156,6 @@ def spin_orion_scheduler(device_id, duration, md_list):
 
     for i, t in enumerate(threads):
         t.join()
-        result = result_queue.get()
-        with open(f"/tmp/{os.getpid()}-{i}.pkl", "wb") as h:
-            pickle.dump(result, h)
 
 
 if __name__ == "__main__":
@@ -170,10 +164,12 @@ if __name__ == "__main__":
     parser.add_argument("--device-id", type=int, default=0)
     parser.add_argument("--duration", type=int, required=True)
     parser.add_argument("--model-details", type=str, required=True)
+    parser.add_argument("--kafka-server", type=str, required=True)
+    parser.add_argument("--run-id", type=str, required=True)
     opt = parser.parse_args()
 
     model_details = []
     for model_detail in json.loads(opt.model_details):
         model_details.append(ModelDetails(opt.device_type, model_detail))
 
-    spin_orion_scheduler(opt.device_id, opt.duration, model_details)
+    spin_orion_scheduler(opt.device_id, opt.duration, opt.kafka_server, opt.run_id, model_details)

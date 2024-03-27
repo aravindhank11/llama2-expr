@@ -7,7 +7,7 @@ torchaudio
 pandas
 gdown
 matplotlib
-sysv_ipc
 grpcio
 grpcio-tools
 protobuf
+kafka-python

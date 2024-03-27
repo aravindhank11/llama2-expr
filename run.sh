@@ -77,13 +77,12 @@ generate_json_input() {
     export slo_percentile=0
     export slo_hw=1000000000
     export slo_lw=0
-    export ctrl_grpc=null
 
     template=$(cat model-param.json.template)
     json_input=$(echo $template | envsubst)
 
     unset model_type model batch_size distribution_type images_per_second
-    unset slo_percentile slo_hw slo_lw ctrl_grpc
+    unset slo_percentile slo_hw slo_lw
 }
 
 generate_model_params() {
@@ -92,6 +91,19 @@ generate_model_params() {
     for json_str in "${json_arr[@]}"; do
         model_params=$(jq ". += [$json_str]" <<< "$model_params")
     done
+}
+
+compute_stats() {
+    local mode_arg=$1
+    local load_arg=$2
+    local run_id_arg=$3
+
+    python3 src/stats.py \
+        --mode ${mode_arg} \
+        --load ${load_arg} \
+        --kafka-server ${kafka_server} \
+        --run-id ${run_id_arg} \
+        --result-dir ${result_dir}
 }
 
 generate_closed_loop_load() {
@@ -105,9 +117,17 @@ generate_closed_loop_load() {
     generate_model_params json_array[@]
     for mode in ${modes[@]}
     do
-        cmd="./run_job_mix.sh --device-type ${device_type} --load 1 '${model_params}'"
+        local run_id_arg=$(uuidgen)
+        cmd="./run_job_mix.sh \
+            --device-type ${device_type} \
+            --load 1 \
+            --kafka-server ${kafka_server} \
+            --run-id ${run_id_arg} \
+            '${model_params}'"
         log "Running closed loop experiment for ${mode}"
         run_cmd "${cmd}" ${device_id} ${mode} ${duration}
+
+        compute_stats ${mode} 1 ${run_id_arg}
     done
 }
 
@@ -127,15 +147,22 @@ generate_distribution_load() {
                 json_array+=("${json_input}")
             done
 
+            # Get parameters for the model
             generate_model_params json_array[@]
+
+            # Run the command
+            local run_id_arg=$(uuidgen)
             cmd="./run_job_mix.sh \
                 --device-type ${device_type} \
                 --load ${ratio} \
+                --run-id ${run_id_arg} \
+                --kafka-server ${kafka_server} \
                 '${model_params}'"
-
             log "=> ${mode} ${ratio}"
-
             run_cmd "${cmd}" ${device_id} ${mode} ${duration}
+
+            # Collect stats
+            compute_stats ${mode} ${ratio} ${run_id_arg}
         done
     done
 }
@@ -317,12 +344,20 @@ setup_expr() {
     source helper.sh && helper_setup
     WS=$(git rev-parse --show-toplevel)
     DOCKER_WS=~/$(basename ${WS})
+
+    # Get result dir
     distribution_types=()
     for (( i=0; i<${num_procs}; i++ ))
     do
         distribution_types+=(${distribution})
     done
     get_result_dir models[@] batch_sizes[@] distribution_types[@] ${device_type}
+
+    # kafka server
+    kafka_server="localhost:${KAFKA_PORT}"
+    check_kafka_up ${kafka_server}
+
+    # Add trap for cleanup and prints
     trap print_log_location EXIT
     PRINT_OUTS=/tmp/print_outs-$(uuidgen | cut -c 1-8).txt
     rm -f ${PRINT_OUTS}

@@ -4,7 +4,10 @@ print_help() {
     echo "Usage: ${0} [OPTIONS] model1-parameter model2-parameter ..."
     echo "Options:"
     echo "  --device-type   DEVICE_TYPE                   v100, a100, h100                                   (required)"
+    echo "  --kafka-server  KAFKA_SERVER                  localhost:29092                                    (required)"
+    echo "  --run-id        UNIQUE RUN ID                 1                                                  (required)"
     echo "  --load          LOAD_INDICATOR                0.5, 0.2, 1                                        (default 1)"
+    echo "  --ctrl-grpc     CTRL_GRPC_ENDPOINT            localhost:1234                                     (default null)"
     echo "  --tie-breaker                                                                                    (pass flag for enabling tie-breaker)"
     echo "  -h, --help                                    Show this help message"
     echo -e "\n"
@@ -14,9 +17,9 @@ print_help() {
     echo -e "\n"
 
     echo "Example:"
-    echo " $0 --device-type a100 --load 1 '[{\"model-type\": \"vision\", \"model\": \"vgg19\", \"batch-size\": 32, \"distribution-type\": \"poisson\", \"rps\": 40}, {\"model-type\": \"vision\", \"model\": \"mobilenet_v2\", \"batch-size\": 4, \"distribution-type\": \"closed\", \"rps\": 0}]'"
+    echo " $0 --device-type a100 --load 1 --run-id 1 --kafka-server localhost:29092 '[{\"model-type\": \"vision\", \"model\": \"vgg19\", \"batch-size\": 32, \"distribution-type\": \"poisson\", \"rps\": 40}, {\"model-type\": \"vision\", \"model\": \"mobilenet_v2\", \"batch-size\": 4, \"distribution-type\": \"closed\", \"rps\": 0}]'"
     echo ""
-    echo " $0 --device-type a100 --load 0.2 --tie-breaker '[{\"model-type\": \"vision\", \"model\": \"vgg19\", \"batch-size\": 32, \"distribution-type\": \"poisson\", \"rps\": 40}, {\"model-type\": \"vision\", \"model\": \"mobilenet_v2\", \"batch-size\": 4, \"distribution-type\": \"point\", \"rps\": 220}]'"
+    echo " $0 --device-type a100 --load 0.2 --tie-breaker --run-id 1 --kafka-server localhost:29092 --ctrl-grpc localhost:1234 '[{\"model-type\": \"vision\", \"model\": \"vgg19\", \"batch-size\": 32, \"distribution-type\": \"poisson\", \"rps\": 40}, {\"model-type\": \"vision\", \"model\": \"mobilenet_v2\", \"batch-size\": 4, \"distribution-type\": \"point\", \"rps\": 220}]'"
     echo -e "\n"
 
     echo "NOTE: MIG must be enabled | disabled explicitly followed by a reboot"
@@ -28,6 +31,7 @@ get_input() {
     # Parse arguments
     load=1
     is_tie_breaker=false
+    ctrl_grpc=null
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --device-type)
@@ -36,6 +40,18 @@ get_input() {
                 ;;
             --load)
                 load="$2"
+                shift 2
+                ;;
+            --run-id)
+                run_id="$2"
+                shift 2
+                ;;
+            --ctrl-grpc)
+                ctrl_grpc="$2"
+                shift 2
+                ;;
+            --kafka-server)
+                kafka_server="$2"
                 shift 2
                 ;;
             --tie-breaker)
@@ -109,6 +125,20 @@ validate_input() {
         exit 1
     fi
 
+    if [[ -z ${kafka_server} ]]; then
+        echo "kafka-server is a required argument"
+        print_help
+        exit 1
+    fi
+
+    check_kafka_up ${kafka_server}
+
+    if [[ -z ${run_id} ]]; then
+        echo "run-id is a required argument"
+        print_help
+        exit 1
+    fi
+
     if [[ ${num_procs} -eq 0 ]]; then
         echo "Need at least 1 model configuration to run"
         print_help
@@ -116,26 +146,17 @@ validate_input() {
     fi
 }
 
-read_queue() {
-    local qid=$1
-
-    (timeout 5 python3 -c \
-        "from src.utils import SysVQueue; \
-        from queue import Queue; \
-        SysVQueue(${qid}, create_new_queue=False).read_queue(Queue())" || :) &
-    read_queue_pids+=($!)
-}
-
 run_orion_expr() {
     local mode_arg=$1
     local device_id_arg=$2
-    local run_uuid_arg=$3
+    local uuid_arg=$3
+    local run_id_arg=$4
 
     # Setup directory to collect stats
     tmpdir=$(mktemp -d)
 
     # Setup orion container
-    setup_orion_container ${device_id_arg} ${run_uuid_arg}
+    setup_orion_container ${device_id_arg} ${uuid_arg}
 
     # Run the experiment
     duration=120
@@ -144,32 +165,17 @@ run_orion_expr() {
         python3.8 src/orion_scheduler.py \
         --device-type ${device_type} \
         --duration ${duration} \
+        --kafka-server ${kafka_server} \
+        --run-id ${run_id_arg} \
         --model-details '${model_run_params_raw}'"
-
-    # Copy the results
-    rm -f ${tmpdir}/*
-    ${DOCKER} exec ${orion_ctr} sh -c "ls /tmp/*.pkl" | while read -r file; do
-        ${DOCKER} cp ${orion_ctr}:${file} ${tmpdir}
-    done
-
-    # Collect the pickle files
-    pkl_files=()
-    for f in $(ls ${tmpdir})
-    do
-        pkl_files+=(${tmpdir}/${f})
-    done
-
-    compute_stats pkl_files[@] ${mode_arg} ${load} ${result_dir}
 }
 
 run_other_expr() {
     local mode_arg=$1
     local device_id_arg=$2
-    local run_uuid_arg=$3
-    declare -a prev_proc_arg=("${!4}")
-    if [[ ${#prev_proc_arg[@]} -gt 0 ]]; then
-        is_prev=1
-    fi
+    local uuid_arg=$3
+    local run_id_arg=$4
+    local spawn_id_arg=$5
 
     assert_mig_status ${mode_arg} ${device_id_arg}
     enable_mps_if_needed ${mode_arg} ${device_id_arg}
@@ -220,13 +226,18 @@ run_other_expr() {
         # Assumes: we can run 7 models in parallel in a device
         cpu=$(((device_id_arg * 7) + (c+1)))
 
+        # We always set device-id to 0, as CUDA_VISIBLE_DEVICES exports only 1 GPU per model
         cmd="${export_prefix} && \
             taskset -c ${cpu} python3 src/batched_inference_executor.py \
+            --device-id 0 \
             ${model_run_params[$c]} \
-            --tid ${c}
-            --uid ${run_uuid_arg}"
-        if [[ ${is_prev} -eq 1 ]]; then
-            cmd="${cmd} --qid ${prev_proc_arg[$c]}"
+            --kafka-server ${kafka_server} \
+            --run-id ${run_id_arg} \
+            --spawn-id ${spawn_id_arg} \
+            --tid ${c} \
+            --uuid ${uuid_arg}"
+        if [[ ! -z ${ctrl_grpc} && ${ctrl_grpc} != "null" ]]; then
+            cmd+=" --ctrl-grpc ${ctrl_grpc}"
         fi
         cmd+=" > /dev/null &"
 
@@ -235,7 +246,7 @@ run_other_expr() {
     done
 
     readarray -t forked_pids < <(ps -eaf | grep batched_inference_executor.py |
-        grep ${run_uuid_arg} | grep -v grep |
+        grep ${uuid_arg} | grep -v grep |
         awk '{for (i=1; i<=NF; i++) if ($i == "--tid") print $(i+1),$0}' |
         sort -n | cut -d' ' -f2- | awk '{print $2}')
     if [[ ${#forked_pids[@]} -ne ${num_procs} ]]; then
@@ -290,6 +301,8 @@ run_other_expr() {
     kill -SIGUSR1 ${loaded_procs[@]}
 }
 
+
+prev_spawn_id_run=-1
 read_fifo()
 {
     pipe_name=$1
@@ -297,6 +310,13 @@ read_fifo()
     echo "Got: ${json_data}"
     mode_to_run=$(echo "$json_data" | jq -r '.mode')
     device_id_to_run=$(echo "$json_data" | jq -r '.["device-id"]')
+    spawn_id_to_run=$(echo "$json_data" | jq -r '.["spawn-id"]')
+    if [[ ${spawn_id_to_run} == "null" ]]; then
+        spawn_id_to_run=$((prev_spawn_id_run+1))
+        echo "Setting spawn id to: ${spawn_id_to_run}"
+    fi
+    prev_spawn_id_run=${spawn_id_to_run}
+
     modes_ran+=(${mode_to_run})
     device_ids_ran+=(${device_id_to_run})
 }
@@ -317,15 +337,15 @@ run_expr()
         lock_gpu ${device_id_to_run}
 
         # Get a unique id for the run
-        local run_uuid=$(uuidgen)
-        uuids_ran+=(${run_uuid})
+        local uuid=$(uuidgen)
+        uuids_ran+=(${uuid})
 
         # Start the experiment
         if [[ ${mode_to_run} == "orion" ]]; then
-            run_orion_expr ${mode_to_run} ${device_id_to_run} ${run_uuid}
+            run_orion_expr ${mode_to_run} ${device_id_to_run} ${uuid} ${run_id}
             return
         else
-            run_other_expr ${mode_to_run} ${device_id_to_run} ${run_uuid} prev[@]
+            run_other_expr ${mode_to_run} ${device_id_to_run} ${uuid} ${run_id} ${spawn_id_to_run}
         fi
 
         # Make the previously started processes to stop
@@ -347,13 +367,6 @@ run_expr()
         fi
     done
 
-    # Read the queue that is being dumped by the last procs
-    read_queue_pids=()
-    for prev_pid in ${prev[@]}
-    do
-        read_queue ${prev_pid}
-    done
-
     # Make sure to stop all inferences
     safe_clean_gpu prev[@] ${prev_mode_run} ${prev_device_id_run}
 
@@ -367,40 +380,16 @@ run_expr()
         wait ${read_queue_pid}
     done
 
-    # Get stats
-    pkl_files=()
+    # Wait for the process to exit
     for pid in "${procs[@]}"
     do
         while taskset -c 0 kill -0 ${pid} >/dev/null 2>&1; do sleep 1; done
-        pkl_file="/tmp/${pid}.pkl"
-        pkl_files+=(${pkl_file})
     done
 
     mode_run=${prev_mode_run}
     if [[ ${is_tie_breaker} == true ]]; then
         mode_run="tie-breaker"
     fi
-    if [[ ${#pkl_files[@]} -gt 0 ]]; then
-        compute_stats pkl_files[@] ${mode_run} ${load} ${result_dir}
-    else
-        echo "No modes were run, so not computing stats"
-    fi
-}
-
-compute_stats()
-{
-    declare -a pkl_files_arg=("${!1}")
-    local mode_arg=$2
-    local load_arg=$3
-    local result_dir_arg=$4
-
-    python3 src/stats.py \
-        --mode ${mode_arg} \
-        --load ${load_arg} \
-        --result_dir ${result_dir_arg} \
-        ${pkl_files_arg[@]}
-
-    echo "Results stored in: ${result_dir_arg}"
 }
 
 setup_expr()
@@ -420,7 +409,8 @@ setup_expr()
     ipcrm --all=msg || :
 }
 
-cd ~/llama2-expr
+git_dir=$(git rev-parse --show-toplevel)
+cd ${git_dir}
 source helper.sh && helper_setup
 get_input $@
 validate_input
