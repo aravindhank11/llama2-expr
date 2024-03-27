@@ -104,7 +104,7 @@ class BatchedInferenceExecutor:
             print("Creating stub to TieBreaker Controller")
             port = split_list[0]
             self.unique_mix_id = split_list[1]
-            with grpc.insecure_channel(f'localhost:{port}'):
+            with grpc.insecure_channel(f'localhost:{port}') as channel:
                 self.stub = tb_controller_pb2_grpc.TieBreaker_ControllerStub(channel)
         
     def _convey_slo_breach(self, watermark_type):
