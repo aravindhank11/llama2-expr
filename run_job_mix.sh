@@ -256,7 +256,7 @@ run_other_expr() {
     echo ${forked_pids[@]}
     for pid in "${forked_pids[@]}"
     do
-        load_ctr=100
+        load_ctr=1000
         while [[ ${load_ctr} -gt 0 ]];
         do
             if [[ -f /tmp/${pid} ]]; then

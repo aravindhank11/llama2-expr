@@ -1,0 +1,2 @@
+mode,load,0_llama-16,1_bert-16,2_vgg11-4
+mps-uncap,1.0,0.0,0.0,0.0

@@ -250,12 +250,12 @@ class BertBatchedInference(BatchedInference):
             "The largest desert in the world is the Sahara Desert.",
             "Margaret Thatcher was the first female Prime Minister of the United Kingdom."
         ]
-        self.model_path = "/home/lab-admin/bert-base-cased-squad2" 
+        self.model_path = "deepset/bert-base-cased-squad2"
         self.tokenizer = None
         self.inputs = None
         self.selected_prompts = None
         self.selected_texts = None
-        
+
     def get_id(self):
         return f"{self._model_name}-{self._batch_size}"
 
@@ -263,7 +263,7 @@ class BertBatchedInference(BatchedInference):
         self._model = BertForQuestionAnswering.from_pretrained(
             self.model_path
         ).to(self._device)
-    
+
     def load_data(self):
         self.selected_prompts = random.sample(self.prompts, self._batch_size)
         self.selected_texts = [self.contexts[self.prompts.index(prompt)] for prompt in self.selected_prompts]
@@ -284,8 +284,8 @@ class BertBatchedInference(BatchedInference):
             num_tokens_generated = len(predict_answer_tokens)
             total_tokens_generated += num_tokens_generated
         return total_tokens_generated
-    
-    
+
+
 
 def get_batched_inference_object(model_type, device_id, model, batch_size):
     if model_type == "vision":
