@@ -1,0 +1,2 @@
+mode,load,0_llama-8,1_squeezenet1_1-4,2_efficientnet_b6-2
+mps-uncap,1.0,220.6601905822754,2.4204254150390625,18.45866203308105

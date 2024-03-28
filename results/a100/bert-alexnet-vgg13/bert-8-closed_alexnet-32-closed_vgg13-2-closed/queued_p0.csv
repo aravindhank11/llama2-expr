@@ -1,0 +1,3 @@
+mode,load,0_bert-8,1_alexnet-32,2_vgg13-2
+mps-uncap,1.0,0.0,0.0,0.0
+mps-uncap,1.0,0.0,0.0,0.0

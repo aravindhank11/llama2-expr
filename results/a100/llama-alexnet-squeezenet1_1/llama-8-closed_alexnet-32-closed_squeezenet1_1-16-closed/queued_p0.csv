@@ -1,0 +1,2 @@
+mode,load,0_llama-8,1_alexnet-32,2_squeezenet1_1-16
+mps-uncap,1.0,0.0,0.0,0.0
