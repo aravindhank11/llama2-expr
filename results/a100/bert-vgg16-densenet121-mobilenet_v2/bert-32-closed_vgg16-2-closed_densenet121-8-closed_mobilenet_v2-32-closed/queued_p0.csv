@@ -1,0 +1,2 @@
+mode,load,0_bert-32,1_vgg16-2,2_densenet121-8,3_mobilenet_v2-32
+mps-uncap,1.0,0.0,0.0,0.0,0.0

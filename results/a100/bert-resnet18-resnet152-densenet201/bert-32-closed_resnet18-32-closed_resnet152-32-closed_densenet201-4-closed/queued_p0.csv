@@ -1,0 +1,2 @@
+mode,load,0_bert-32,1_resnet18-32,2_resnet152-32,3_densenet201-4
+mps-uncap,1.0,0.0,0.0,0.0,0.0

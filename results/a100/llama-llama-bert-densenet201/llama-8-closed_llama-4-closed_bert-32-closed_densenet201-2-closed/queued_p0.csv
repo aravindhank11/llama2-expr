@@ -1,0 +1,2 @@
+mode,load,0_llama-8,1_llama-4,2_bert-32,3_densenet201-2
+mps-uncap,1.0,0.0,0.0,0.0,0.0

@@ -1,0 +1,2 @@
+mode,load,0_llama-2,1_llama-4,2_llama-2,3_resnet101-8
+mps-uncap,1.0,0.0,0.0,0.0,0.0

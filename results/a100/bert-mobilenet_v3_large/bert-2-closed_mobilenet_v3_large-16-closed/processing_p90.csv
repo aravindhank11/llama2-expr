@@ -1,0 +1,2 @@
+mode,load,0_bert-2,1_mobilenet_v3_large-16
+mps-uncap,1.0,5.012989044189453,3.341197967529297

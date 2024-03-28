@@ -1,0 +1,2 @@
+mode,load,0_bert-8,1_mobilenet_v2-2
+mps-uncap,1.0,8.109569549560547,2.530813217163086

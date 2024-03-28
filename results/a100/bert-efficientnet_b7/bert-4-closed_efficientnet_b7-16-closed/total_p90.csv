@@ -1,0 +1,2 @@
+mode,load,0_bert-4,1_efficientnet_b7-16
+mps-uncap,1.0,15.311479568481445,32.64729976654053

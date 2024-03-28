@@ -1,0 +1,2 @@
+mode,load,0_bert-8,1_bert-16,2_bert-16,3_vgg11-16
+mps-uncap,1.0,0.0,0.0,0.0,0.0
